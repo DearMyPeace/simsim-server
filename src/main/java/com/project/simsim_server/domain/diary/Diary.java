@@ -6,7 +6,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -27,16 +26,6 @@ public class Diary extends BaseTimeEntity {
     @Column(name = "diary_content", columnDefinition = "TEXT", length = 500)
     private String content;
 
-    @Column(name = "diary_emotion1")
-    private String emotion1;
-
-    @Column(name = "diary_emotion1_score")
-    @ColumnDefault("0")
-    private int emotion1Score;
-
-    @Column(name = "diary_ai_reply", columnDefinition = "TEXT", length = 500)
-    private String aiReply;
-
     @Column(name = "diary_list_key", nullable = false)
     private String listKey;
 
@@ -45,11 +34,20 @@ public class Diary extends BaseTimeEntity {
     private String diaryDeleteYn;
 
     @Builder
-    public Diary(String content, Long userPk) {
+    public Diary(Long userPk, String content) {
         LocalDateTime localDateTimeNow = LocalDateTime.now();
         this.content = content;
         this.userPk = userPk;
         this.listKey = userPk + "-" + localDateTimeNow.format(DateTimeFormatter.ofPattern("yyMMddHHmmss"));
         this.diaryDeleteYn = "N";
+    }
+
+    public Diary update(String content) {
+        this.content = content;
+        return this;
+    }
+
+    public void delete() {
+        this.diaryDeleteYn = "Y";
     }
 }
