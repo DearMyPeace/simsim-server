@@ -1,12 +1,13 @@
-package com.project.simsim_server.controller;
+package com.project.simsim_server.controller.diary;
 
-import com.project.simsim_server.dto.DiaryRequestDTO;
-import com.project.simsim_server.dto.DiaryResponseDTO;
-import com.project.simsim_server.service.DiaryService;
+import com.project.simsim_server.dto.diary.DiaryRequestDTO;
+import com.project.simsim_server.dto.diary.DiaryResponseDTO;
+import com.project.simsim_server.service.diary.DiaryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*") //TODO - 테스트용, 추후 제거
 @RequestMapping("/api/v1/diary")
 @RestController
 public class DiaryController {
@@ -15,14 +16,14 @@ public class DiaryController {
 
     /**
      * 유저가 특정 일기 하나만을 클릭하여 상세 내용을 조회
-     * @param diaryPk
+     * @param diaryId
      * @return DiaryResponseDTO (하나의 일기의 상세 내용) / 데이터가 없는 경우 에러
      */
-    @GetMapping("/{diaryPk}")
+    @GetMapping("/{diaryId}")
     public DiaryResponseDTO findById(
-            @PathVariable Long diaryPk
+            @PathVariable Long diaryId
     ) {
-        return diaryService.findById(diaryPk);
+        return diaryService.findById(diaryId);
     }
 
 
@@ -45,7 +46,7 @@ public class DiaryController {
      * @return dairyResponseDTO / 데이터가 없는 경우 에러
      */
     @PostMapping("/save")
-    public DiaryResponseDTO save(
+    public DiaryResponseDTO saveDiary(
             @RequestBody DiaryRequestDTO diaryRequestDTO
     ) {
         return diaryService.save(diaryRequestDTO);
@@ -55,26 +56,26 @@ public class DiaryController {
 
     /**
      * 유저가 일기 상세 페이지에서 수정한 내용을 DB에 저장
-     * @param diaryPk
+     * @param diaryId
      * @param diaryRequestDTO
      * @return dairyResponseDTO / 데이터가 없는 경우 에러
      */
-    @PatchMapping("/{diaryPk}")
+    @PatchMapping("/{diaryId}")
     public DiaryResponseDTO updateDiary(
-            @PathVariable Long diaryPk,
+            @PathVariable Long diaryId,
             @RequestBody DiaryRequestDTO diaryRequestDTO
     ) {
-        return diaryService.updateDiary(diaryPk, diaryRequestDTO);
+        return diaryService.update(diaryId, diaryRequestDTO);
     }
 
 
     /**
      * 유저가 일기를 삭제(실제 데이터가 DB에서 삭제되는 것이 아니라 deleteYn의 값이 "N"으로 변경)
-     * @param diaryPk
+     * @param diaryId
      */
-    @DeleteMapping("/{diaryPk}")
-    public void deleteDiary(@PathVariable Long diaryPk) {
+    @DeleteMapping("/{diaryId}")
+    public void deleteDiary(@PathVariable Long diaryId) {
 
-        diaryService.deleteDiary(diaryPk);
+        diaryService.delete(diaryId);
     }
 }

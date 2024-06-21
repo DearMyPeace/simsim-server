@@ -12,16 +12,17 @@ import java.time.format.DateTimeFormatter;
 
 @Getter
 @NoArgsConstructor
+@Table(name = "diary_tbl")
 @Entity
 public class Diary extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "diary_pk")
-    private Long diaryPk;
+    @Column(name = "diary_id")
+    private Long diaryId;
 
-    @Column(name = "user_pk", nullable = false)
-    private Long userPk;
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
 
     @Column(name = "diary_content", columnDefinition = "TEXT", length = 500)
     private String content;
@@ -34,11 +35,11 @@ public class Diary extends BaseTimeEntity {
     private String diaryDeleteYn;
 
     @Builder
-    public Diary(Long userPk, String content) {
+    public Diary(Long userId, String content) {
         LocalDateTime localDateTimeNow = LocalDateTime.now();
         this.content = content;
-        this.userPk = userPk;
-        this.listKey = userPk + "-" + localDateTimeNow.format(DateTimeFormatter.ofPattern("yyMMddHHmmss"));
+        this.userId = userId;
+        this.listKey = userId + "-" + localDateTimeNow.format(DateTimeFormatter.ofPattern("yyMMddHHmmss"));
         this.diaryDeleteYn = "N";
     }
 

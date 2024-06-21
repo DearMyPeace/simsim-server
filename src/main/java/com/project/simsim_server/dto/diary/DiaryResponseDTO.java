@@ -1,4 +1,4 @@
-package com.project.simsim_server.dto;
+package com.project.simsim_server.dto.diary;
 
 import com.project.simsim_server.domain.diary.Diary;
 import lombok.Getter;
@@ -10,16 +10,16 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class DiaryResponseDTO {
 
-    private Long diaryPk;
-    private Long userPk;
+    private Long diaryId;
+    private Long userId;
     private String content;
     private String deleteYn;
     private LocalDateTime createdDate;
     private LocalDateTime modifiedDate;
 
     public DiaryResponseDTO(Diary diaryEntity) {
-        this.diaryPk = diaryEntity.getDiaryPk();
-        this.userPk = diaryEntity.getUserPk();
+        this.diaryId = diaryEntity.getDiaryId();
+        this.userId = diaryEntity.getUserId();
         this.content = diaryEntity.getContent();
         this.deleteYn = diaryEntity.getDiaryDeleteYn();
         this.createdDate = diaryEntity.getCreatedDate();

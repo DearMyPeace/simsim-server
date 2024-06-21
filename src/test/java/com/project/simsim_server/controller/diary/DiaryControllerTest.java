@@ -1,9 +1,9 @@
-package com.project.simsim_server.controller;
+package com.project.simsim_server.controller.diary;
 
 import com.project.simsim_server.domain.diary.Diary;
-import com.project.simsim_server.dto.DiaryRequestDTO;
-import com.project.simsim_server.dto.DiaryResponseDTO;
-import com.project.simsim_server.repository.DiaryRepository;
+import com.project.simsim_server.dto.diary.DiaryRequestDTO;
+import com.project.simsim_server.dto.diary.DiaryResponseDTO;
+import com.project.simsim_server.repository.diary.DiaryRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
 
 /**
  * 일기 수정 테스트는 Postman과 DBeaver로 확인
@@ -41,52 +40,53 @@ class DiaryControllerTest {
     }
 
 
-
     /**
      * 테스트용 다이어리 샘플 등록 함수
      * @return ResponseEntity<DiaryResponseDTO> 일기 저장 후 HTTP 응답 정보
      */
     private ResponseEntity<DiaryResponseDTO> makeTestDiarySample() {
-        Long userPK = 8L;
+        //given
+        Long userId = 8L;
         String content = "DiaryController Test!";
         String url = "http://localhost:" + port + "/api/v1/diary/save";
 
         DiaryRequestDTO diaryRequestDTO = DiaryRequestDTO.builder()
-                .userPk(userPK)
+                .userId(userId)
                 .content(content)
                 .build();
 
+        //when
         return testTemplate.postForEntity(url, diaryRequestDTO, DiaryResponseDTO.class);
     }
 
     @Test
-    public void 일기_저장() {
-        //given
+    public void 일기_저장요청() {
+        //given & when
         ResponseEntity<DiaryResponseDTO> sample = makeTestDiarySample();
 
         //then
         assertThat(sample.getStatusCode())
                 .isEqualTo(HttpStatus.OK);
         assertThat(Objects.requireNonNull(sample.getBody())
-                .getDiaryPk()).isPositive();
+                .getDiaryId()).isPositive();
 
         List<Diary> diaries = diaryRepository.findAll();
-        assertThat(diaries.getFirst().getUserPk())
-                .isEqualTo(sample.getBody().getUserPk());
+        assertThat(diaries.getFirst().getUserId())
+                .isEqualTo(sample.getBody().getUserId());
         assertThat(diaries.getFirst().getContent())
                 .isEqualTo(sample.getBody().getContent());
     }
 
     @Test
-    public void 특정일기_가져오기() {
+    public void 특정일기_조회요청() {
         //given
         ResponseEntity<DiaryResponseDTO> sample = makeTestDiarySample();
 
         //when
-        Long diaryPk = Objects.requireNonNull(sample.getBody())
-                .getDiaryPk();
+        Long diaryId = Objects.requireNonNull(sample.getBody())
+                .getDiaryId();
         String url2 = "http://localhost:" + port + "/api/v1/diary/"
-                + diaryPk;
+                + diaryId;
         ResponseEntity<DiaryResponseDTO> getResponseEntity =
                 testTemplate.getForEntity(url2, DiaryResponseDTO.class);
 
@@ -99,19 +99,19 @@ class DiaryControllerTest {
     }
 
     @Test
-    public void 일기_삭제() {
+    public void 일기_삭제요청() {
         //given
         ResponseEntity<DiaryResponseDTO> sample = makeTestDiarySample();
 
         //when
-        Long diaryPk = Objects.requireNonNull(sample.getBody()).getDiaryPk();
-        String url2 = "http://localhost:" + port + "/api/v1/diary/" + diaryPk;
+        Long diaryId = Objects.requireNonNull(sample.getBody()).getDiaryId();
+        String url2 = "http://localhost:" + port + "/api/v1/diary/" + diaryId;
         testTemplate.delete(url2);
 
         //then
         assertThat(sample.getStatusCode()).isEqualTo(HttpStatus.OK);
 
-        String url3 = "http://localhost:" + port + "/api/v1/diary/" + diaryPk;
+        String url3 = "http://localhost:" + port + "/api/v1/diary/" + diaryId;
         ResponseEntity<DiaryResponseDTO> getResponseEntity =
                 testTemplate.getForEntity(url3, DiaryResponseDTO.class);
         assertThat(Objects.requireNonNull(getResponseEntity.getBody()).getDeleteYn()).isEqualTo("Y");

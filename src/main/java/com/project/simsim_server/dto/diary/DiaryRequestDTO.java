@@ -1,4 +1,4 @@
-package com.project.simsim_server.dto;
+package com.project.simsim_server.dto.diary;
 
 import com.project.simsim_server.domain.diary.Diary;
 import lombok.Builder;
@@ -9,18 +9,18 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class DiaryRequestDTO {
 
-    private Long userPk;
+    private Long userId;
     private String content;
 
     @Builder
-    public DiaryRequestDTO(Long userPk, String content) {
-        this.userPk = userPk;
+    public DiaryRequestDTO(Long userId, String content) {
+        this.userId = userId;
         this.content = content;
     }
 
     public Diary toEntity() {
         return Diary.builder()
-                .userPk(userPk)
+                .userId(userId)
                 .content(content)
                 .build();
     }
