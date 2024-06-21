@@ -1,4 +1,4 @@
-package com.project.simsim_server.repository;
+package com.project.simsim_server.repository.diary;
 
 import com.project.simsim_server.domain.diary.Diary;
 import org.assertj.core.api.Assertions;
@@ -23,11 +23,11 @@ class DiaryRepositoryTest {
     @Test
     public void 일기작성_불러오기() {
         //given
-        Long userPk = 8L;
+        Long userId = 8L;
         String content = "Hello World";
 
         diaryRepository.save(Diary.builder()
-                .userPk(userPk)
+                .userId(userId)
                 .content(content)
                 .build()
         );
