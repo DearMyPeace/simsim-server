@@ -61,8 +61,7 @@ public class Users extends BaseTimeEntity {
     }
 
     public Users update(String name) {
-        byte[] bytes = name.getBytes(StandardCharsets.ISO_8859_1);
-        this.name = new String(bytes, StandardCharsets.UTF_8);
+        this.name = name;
         return this;
     }
 
