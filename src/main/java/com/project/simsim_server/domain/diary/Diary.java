@@ -1,11 +1,11 @@
 package com.project.simsim_server.domain.diary;
 
-import com.project.simsim_server.domain.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -14,7 +14,7 @@ import java.time.format.DateTimeFormatter;
 @NoArgsConstructor
 @Table(name = "diary_tbl")
 @Entity
-public class Diary extends BaseTimeEntity {
+public class Diary {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,17 +34,27 @@ public class Diary extends BaseTimeEntity {
     @ColumnDefault("'N'")
     private String diaryDeleteYn;
 
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+    @Column(name = "created_date", nullable = false)
+    private LocalDateTime createdDate;
+
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+    @Column(name = "modified_date", nullable = false)
+    private LocalDateTime modifiedDate;
+
     @Builder
-    public Diary(Long userId, String content) {
-        LocalDateTime localDateTimeNow = LocalDateTime.now();
+    public Diary(Long userId, String content, LocalDateTime createdDate, LocalDateTime modifiedDate) {
         this.content = content;
         this.userId = userId;
-        this.listKey = userId + "-" + localDateTimeNow.format(DateTimeFormatter.ofPattern("yyMMddHHmmss"));
+        this.listKey = userId + "-" + createdDate.format(DateTimeFormatter.ofPattern("yyMMddHHmmss"));
         this.diaryDeleteYn = "N";
+        this.createdDate = createdDate;
+        this.modifiedDate = modifiedDate;
     }
 
-    public Diary update(String content) {
+    public Diary update(String content, LocalDateTime modifiedDate) {
         this.content = content;
+        this.modifiedDate = modifiedDate;
         return this;
     }
 
@@ -52,3 +62,4 @@ public class Diary extends BaseTimeEntity {
         this.diaryDeleteYn = "Y";
     }
 }
+
