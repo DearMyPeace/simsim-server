@@ -28,9 +28,8 @@ public class DailyAIReplyController {
         return dailyAIReplyService.findByCreatedDateAndUserIdOrderByCreatedDateDesc(userId, count);
     }
 
-    //TODO - AI API 확인 후 적용
-//    @PostMapping("/save")
-//    public AILetterResponseDTO saveAiResult(@RequestBody AILetterRequestDTO requestDTO) {
-//        return dailyAIReplyService.save(requestDTO);
-//    }
+    @PostMapping("/save")
+    public AILetterResponseDTO saveAiResult(@RequestBody AILetterRequestDTO requestDTO) {
+        return dailyAIReplyService.save(requestDTO);
+    }
 }

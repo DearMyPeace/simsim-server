@@ -28,16 +28,23 @@ dependencies {
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	implementation 'com.fasterxml.jackson.core:jackson-core:2.16.1'
 
 	//Security
-	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	testImplementation 'org.springframework.security:spring-security-test'
 
+	// Google Login API 호출 프론트로 이동
+	implementation 'com.auth0:java-jwt:4.4.0'
+	implementation 'com.google.api-client:google-api-client:2.2.0'
+	implementation group: 'com.google.api-client', name: 'google-api-client-jackson2', version: '1.28.1'
+	//	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+
+
 	//JWT
-	// implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
-	// runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3'
-	// runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.3'
+	 implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
+	 runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3'
+	 runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.3'
 
 	//DB & JPA
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'

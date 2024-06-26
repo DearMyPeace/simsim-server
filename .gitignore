@@ -27,6 +27,7 @@ out/
 !**/src/test/**/out/
 *.properties
 *.yml
+.DS_Store
 
 ### NetBeans ###
 /nbproject/private/

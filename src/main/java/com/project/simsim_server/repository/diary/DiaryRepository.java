@@ -14,7 +14,7 @@ public interface DiaryRepository extends JpaRepository<Diary, Long> {
 
     @Query("SELECT d FROM Diary d WHERE d.userId = :userId " +
             "AND d.diaryDeleteYn = 'N'" +
-            "AND d.createdDate >= :startDate AND d.createdDate < :endDate")
+            "AND d.createdDate BETWEEN :startDate AND :endDate ")
     List<Diary> findDiariesByCreatedAtBetweenAndUserId(
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate,
