@@ -12,7 +12,7 @@ create table users_tbl (
     created_date datetime(6) not null,
     modified_date datetime(6) not null,
     primary key (user_id)
-);
+) CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 drop table if exists diary_tbl;
 create table diary_tbl (
@@ -38,4 +38,12 @@ create table daily_ai_response_tbl (
     created_date datetime(6) not null,
     modified_date datetime(6) not null,
     primary key (ai_id)
+) CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+
+drop table if exists persona_info_tbl;
+create table persona_info_tbl (
+    persona_id bigint not null auto_increment,
+    persona_name varchar(10) not null unique,
+    persona_code char(1) not null unique,
+    primary key (persona_id)
 ) CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;

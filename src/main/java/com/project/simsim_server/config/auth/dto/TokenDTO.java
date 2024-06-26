@@ -1,25 +1,23 @@
-package com.project.simsim_server.config.redis;
+package com.project.simsim_server.config.auth.dto;
 
 import jakarta.persistence.Id;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.*;
 import org.springframework.data.redis.core.RedisHash;
-import org.springframework.data.redis.core.index.Indexed;
 
+@Builder
 @Getter
+@Setter
+@NoArgsConstructor
 @AllArgsConstructor
 @RedisHash(value = "jwt", timeToLive = 60 * 60 * 24 * 7)
-public class Token {
-
+public class TokenDTO {
     @Id
     private String id;
 
+    private String accessToken;
     private String refreshToken;
 
-    @Indexed
-    private String accessToken;
-
-    public Token updateRefreshToken(String refreshToken) {
+        public TokenDTO updateRefreshToken(String refreshToken) {
         this.refreshToken = refreshToken;
         return this;
     }

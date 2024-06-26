@@ -39,9 +39,14 @@ public class DailyAiInfo extends BaseTimeEntity {
 
 
     @Builder
-    public DailyAiInfo(Long userId, LocalDate targetDate) {
+    public DailyAiInfo(Long userId, LocalDate targetDate, String diarySummary,
+            String replyContent, String analyzeEmotions, String analyzeFactors) {
         this.userId = userId;
         this.targetDate = targetDate;
+        this.diarySummary = diarySummary;
+        this.replyContent = replyContent;
+        this.analyzeEmotions = analyzeEmotions;
+        this.analyzeFactors = analyzeFactors;
     }
 
     public DailyAiInfo updateAiResult(String diarySummary, String replyContent) {

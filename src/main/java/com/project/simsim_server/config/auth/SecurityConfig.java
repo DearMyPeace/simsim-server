@@ -1,41 +1,93 @@
 package com.project.simsim_server.config.auth;
 
+import com.project.simsim_server.config.auth.jwt.JwtAuthorizationFilter;
+import com.project.simsim_server.config.auth.jwt.JwtUtils;
 import com.project.simsim_server.domain.user.Role;
+import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.security.reactive.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-@Configuration
+import java.util.List;
+
+@RequiredArgsConstructor
 @EnableWebSecurity
+@Configuration
 public class SecurityConfig {
+
+    private final JwtAuthorizationFilter jwtAuthorizationFilter;
+    private JwtUtils jwtUtils;
+
+    /**
+     * Spring Security 제외 (필터를 거치지 않음)
+     */
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, CustomOAuth2UserService customOAuth2UserService) throws Exception {
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return web -> web.ignoring()
+                .requestMatchers(String.valueOf(PathRequest.toStaticResources().atCommonLocations()))
+                .requestMatchers("/error");
+    }
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
+        http.httpBasic(AbstractHttpConfigurer::disable);
+        http.csrf(AbstractHttpConfigurer::disable);
+        http.cors(AbstractHttpConfigurer::disable);
+        http.rememberMe(AbstractHttpConfigurer::disable);
+
         http
-                .csrf(AbstractHttpConfigurer::disable)
-                .headers(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/", "/css/**", "/images/**",
-                                "static/**", "/js/**", "/form").permitAll()
-                        .requestMatchers("/api/v1/**").hasRole(Role.USER.name())
-                        .anyRequest().authenticated())
-                .logout((auth) -> auth
+            .headers(AbstractHttpConfigurer::disable)
+            .authorizeHttpRequests((request) -> request
+                .requestMatchers("/", "/home", "/signup", "/api/v1/auth/google",
+                        "/api/v1/**","/form", "index.html").permitAll()
+                .requestMatchers("/admin").hasRole(Role.ADMIN.name())
+                .requestMatchers(HttpMethod.POST,"/notice").hasRole(Role.ADMIN.name())
+                .requestMatchers(HttpMethod.PATCH,"/notice/{noticeId}").hasRole(Role.ADMIN.name())
+                .requestMatchers(HttpMethod.DELETE,"/notice/{noticeId}").hasRole(Role.ADMIN.name())
+                .anyRequest().authenticated()
+            )
+            .sessionManagement((session) -> session
+                    .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            )
+            .logout((logout) -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/")
-                )
-                .oauth2Login((auth) -> auth
-                        .userInfoEndpoint((endpoint) -> endpoint
-                                .userService(customOAuth2UserService))
-                );
+            )
+            .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
     @Bean
-    public BCryptPasswordEncoder bCryptPasswordEncoder(){
-        return new BCryptPasswordEncoder();
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.addAllowedOriginPattern("*");
+        configuration.setAllowedOrigins(List.of("https://localhost:8080", "http://localhost", "https://localhost:8081"));
+
+        configuration.addAllowedOrigin("http://localhost:8080");
+        configuration.addAllowedOrigin("http://localhost:8081");
+        configuration.addAllowedOrigin("http://127.0.0.1:8080");
+        configuration.addAllowedOrigin("http://127.0.0.1:8081");
+
+        configuration.addAllowedHeader("*");
+        configuration.addAllowedMethod("*");
+        configuration.setAllowCredentials(true);
+
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 }
