@@ -38,7 +38,6 @@ dependencies {
 	implementation 'com.auth0:java-jwt:4.4.0'
 	implementation 'com.google.api-client:google-api-client:2.2.0'
 	implementation group: 'com.google.api-client', name: 'google-api-client-jackson2', version: '1.28.1'
-	//	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 
 
 	//JWT
@@ -49,6 +48,7 @@ dependencies {
 	//DB & JPA
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
+    //	runtimeOnly 'com.mysql:mysql-connector-j' // MySQL 드라이버, 배포 시 이걸로 변경
 
 	//Redis
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
