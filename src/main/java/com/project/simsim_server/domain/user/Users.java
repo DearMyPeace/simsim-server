@@ -71,6 +71,16 @@ public class Users extends BaseTimeEntity {
         return this;
     }
 
+    public String updatePersona(String persona) {
+        this.persona = persona;
+        return this.persona;
+    }
+
+    public String updateBgImg(String bgimg) {
+        this.bgImage = bgimg;
+        return this.bgImage;
+    }
+
     public Users delete() {
         this.userStatus = "N";
         return this;
@@ -84,5 +94,6 @@ public class Users extends BaseTimeEntity {
     public String getRoleKey() {
         return this.role.getKey();
     }
+
 }
 
