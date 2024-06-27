@@ -50,7 +50,8 @@ public class SecurityConfig {
         http
             .headers(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests((request) -> request
-                .requestMatchers("/", "/home", "/signup", "/api/v1/auth/google",
+                .requestMatchers("/", "/home", "/signup", "/api/v1/auth/google", "/swagger-ui/**",
+                        "/index.html", "/favicon", "/v3/api-docs/**",
                         "/api/v1/**","/form", "index.html").permitAll()
                 .requestMatchers("/admin").hasRole(Role.ADMIN.name())
                 .requestMatchers(HttpMethod.POST,"/notice").hasRole(Role.ADMIN.name())
@@ -74,7 +75,8 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.addAllowedOriginPattern("*");
-        configuration.setAllowedOrigins(List.of("https://localhost:8080", "http://localhost", "https://localhost:8081"));
+        configuration.setAllowedOrigins(List.of("https://localhost:8080", "http://localhost",
+                "https://localhost:8081"));
 
         configuration.addAllowedOrigin("http://localhost:8080");
         configuration.addAllowedOrigin("http://localhost:8081");
