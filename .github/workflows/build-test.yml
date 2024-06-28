@@ -1,0 +1,38 @@
+name: Build and Test
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'temurin'  # 또는 'zulu', 'temurin' 등
+          java-version: 21
+
+      - name: Create application.yml
+        run: |
+          cat <<EOF > src/main/resources/application.yml
+            ${{ secrets.APP }}
+          EOF
+          cat <<EOF > src/main/resources/application.properties
+            ${{ secrets.PROP }}
+          EOF
+          cat <<EOF > gradle/wrapper/gradle-wrapper.properties
+            ${{ secrets.GRADLE_WRAPPER }}
+          EOF
+
+      - name: Build with Gradle
+        run: ./gradlew build
+
+      - name: Run tests with Gradle
+        run: ./gradlew test
