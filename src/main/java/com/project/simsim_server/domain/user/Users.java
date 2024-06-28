@@ -66,9 +66,9 @@ public class Users extends BaseTimeEntity {
         return this;
     }
 
-    public Users updateGrade(Grade grade) {
+    public String updateGrade(Grade grade) {
         this.grade = grade;
-        return this;
+        return this.grade.getKey();
     }
 
     public String updatePersona(String persona) {

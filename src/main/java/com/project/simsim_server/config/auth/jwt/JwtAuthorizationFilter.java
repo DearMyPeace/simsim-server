@@ -1,13 +1,13 @@
 package com.project.simsim_server.config.auth.jwt;
 
-import com.project.simsim_server.config.auth.dto.UserTokenInfo;
-import com.project.simsim_server.config.redis.RedisService;
+import com.project.simsim_server.config.auth.dto.JwtPayloadDTO;
+import com.project.simsim_server.service.redis.RedisService;
 import com.project.simsim_server.domain.diary.Diary;
 import com.project.simsim_server.domain.user.Reply;
 import com.project.simsim_server.domain.user.Users;
 import com.project.simsim_server.repository.diary.DiaryRepository;
 import com.project.simsim_server.repository.user.UsersRepository;
-import com.project.simsim_server.exception.AuthException;
+import com.project.simsim_server.exception.OAuthException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -86,15 +86,15 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                         checkRefreshToken(response, refreshToken, accessToken);
                     } else {
                         log.info("refresh token not exist");
-                        throw new AuthException(REFRESH_TOKEN_NOT_EXIST);
+                        throw new OAuthException(REFRESH_TOKEN_NOT_EXIST);
                     }
                 } else {
                     log.info("access token not valid");
-                    throw new AuthException(JWT_NOT_VALID);
+                    throw new OAuthException(JWT_NOT_VALID);
                 }
             }
         } else {
-            throw new AuthException(ACCESS_TOKEN_NOT_EXIST);
+            throw new OAuthException(ACCESS_TOKEN_NOT_EXIST);
         }
         filterChain.doFilter(request, response);
     }
@@ -102,14 +102,14 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     private void checkRefreshToken(HttpServletResponse response, Optional<String> refreshToken, Optional<String> accessToken) {
         if (!jwtUtils.validateToken(refreshToken.get())) {
             log.info("refresh token not valid");
-            throw new AuthException(JWT_NOT_VALID);
+            throw new OAuthException(JWT_NOT_VALID);
         }
         Users users = getUsers(accessToken.get());
         Optional<String> optionalRt = redisService.getValues(users.getEmail()).describeConstable();
         if(optionalRt.isPresent()) {
             String rt = optionalRt.get();
             if(!rt.equals(refreshToken.get())) {
-                throw new AuthException(JWT_NOT_VALID);
+                throw new OAuthException(JWT_NOT_VALID);
             }
         }
         reIssueToken(users, response);
@@ -125,14 +125,14 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         if (!diaries.isEmpty()) {
             replyStatus = Reply.OCCUPIED;
         }
-        UserTokenInfo userTokenInfo
-                = UserTokenInfo.fromUser(user, replyStatus.getKey());
+        JwtPayloadDTO jwtPayloadDTO
+                = JwtPayloadDTO.fromUser(user);
 
-        String refreshToken = jwtUtils.generateRefreshToken(userTokenInfo);
-        String accessToken = jwtUtils.generateAccessToken(userTokenInfo);
+        String refreshToken = jwtUtils.generateRefreshToken(jwtPayloadDTO);
+        String accessToken = jwtUtils.generateAccessToken(jwtPayloadDTO);
 
         //securityContext에 저장
-        saveAuthentication(userTokenInfo);
+        saveAuthentication(jwtPayloadDTO);
 
 
         //레디스에 리프레시 토큰 저장
@@ -146,7 +146,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         accessTokenCookie.setMaxAge((int) (accessExpireTime / 1000)); // seconds
 
         Cookie refreshTokenCookie =
-                new Cookie("Refresh-Token", refreshToken);
+                new Cookie("refresh", refreshToken);
         refreshTokenCookie.setHttpOnly(true);
         refreshTokenCookie.setPath("/");
         refreshTokenCookie.setMaxAge((int) (refreshExpireTime / 1000)); // seconds
@@ -162,12 +162,12 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
     }
 
-    private void saveAuthentication(UserTokenInfo userTokenInfo) {
+    private void saveAuthentication(JwtPayloadDTO jwtPayloadDTO) {
         List<GrantedAuthority> roles = new ArrayList<>();
-        roles.add(new SimpleGrantedAuthority(userTokenInfo.getUserRole().name()));
+        roles.add(new SimpleGrantedAuthority(jwtPayloadDTO.getUserRole().name()));
 
         Authentication authentication =
-                new UsernamePasswordAuthenticationToken(userTokenInfo, null, roles);
+                new UsernamePasswordAuthenticationToken(jwtPayloadDTO, null, roles);
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }

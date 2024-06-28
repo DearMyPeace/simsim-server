@@ -1,5 +1,6 @@
-package com.project.simsim_server.config.redis;
+package com.project.simsim_server.service.redis;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -16,18 +17,21 @@ public class RedisService {
     private final RedisTemplate<String, Object> redisTemplate;
 
     // TTL 설정 X
+    @Transactional
     public void setValues(String key, String data) {
         ValueOperations<String, Object> values = redisTemplate.opsForValue();
         values.set(key, data);
     }
 
     // refrshToken TTL 설정 O
+    @Transactional
     public void setValues(String key, String data, Duration duration) {
         ValueOperations<String, Object> values = redisTemplate.opsForValue();
         values.set(key, data, duration);
     }
 
     // redis에 저장된 refreshToken 삭제
+    @Transactional
     public void deleteValues(String key) {
         redisTemplate.delete(key);
     }

@@ -1,21 +1,17 @@
 package com.project.simsim_server.service.user;
 
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
-import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.JsonFactory;
-import com.google.api.client.json.gson.GsonFactory;
 import com.project.simsim_server.config.auth.dto.*;
+import com.project.simsim_server.config.auth.dto.JwtPayloadDTO;
 import com.project.simsim_server.config.auth.jwt.JwtUtils;
-import com.project.simsim_server.domain.diary.Diary;
-import com.project.simsim_server.domain.user.Reply;
+import com.project.simsim_server.config.auth.dto.TokenDTO;
 import com.project.simsim_server.domain.user.Role;
+import com.project.simsim_server.exception.UserNotFoundException;
+import com.project.simsim_server.service.redis.RedisService;
 import com.project.simsim_server.domain.user.Users;
-import com.project.simsim_server.repository.diary.DiaryRepository;
 import com.project.simsim_server.repository.user.UsersRepository;
 import jakarta.security.auth.message.AuthException;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -28,54 +24,39 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.time.Duration;
+import java.util.*;
 
 @Slf4j
+@RequiredArgsConstructor
 @Transactional
 @Service
 public class AuthService {
-    private final GoogleIdTokenVerifier verifier;
+
     private final JwtUtils jwtUtils;
     private final UsersRepository usersRepository;
-    private final DiaryRepository diaryRepository;
     private final RestTemplate restTemplate;
+    private final RedisService redisService;
+
+    private final String BEARER = "Bearer ";
+    private final String SERVER = "Server";
     private final String GOOGLE_PROFILE_URL = "https://www.googleapis.com/userinfo/v2/me";
+    private final String GOOGLE_CANCLE_URL = "https://accounts.google.com/o/oauth2/revoke?token={access_token}";
 
-    public AuthService(
-            @Value("${spring.security.oauth2.client.registration.google.client-id}") String clientId,
-            JwtUtils jwtUtils,
-            UsersRepository usersRepository,
-            DiaryRepository diaryRepository,
-            RestTemplate restTemplate
-    ) {
-        this.restTemplate = restTemplate;
-        NetHttpTransport transport = new NetHttpTransport();
-        JsonFactory jsonFactory = new GsonFactory();
-        this.verifier = new GoogleIdTokenVerifier.Builder(transport, jsonFactory)
-                .setAudience(Collections.singleton(clientId))
-                .build();
-        this.jwtUtils = jwtUtils;
-        this.usersRepository = usersRepository;
-        this.diaryRepository = diaryRepository;
-    }
-
+    /**
+     * Google 소셜 로그인을 통한 회원 가입 및 로그인
+     * @param tokenRequest
+     * @return
+     * @throws AuthException
+     */
+    @Transactional
     public TokenDTO login(CustomTokenRequestDTO tokenRequest) throws AuthException {
 
         /**
-         * 구글 로그인 토큰 검증
+         * 구글 로그인 Access 토큰으로 회원 정보 가져오기
          */
         try {
-//            GoogleIdToken idToken = verifier.verify(tokenRequest.getAccess_token());
-//            if(idToken == null) {
-//                throw new IllegalArgumentException("IdToken is Empty.");
-//            }
-//            GoogleIdToken.Payload payload = idToken.getPayload();
-//            String userName = payload.getSubject();
-//            String userEmail = payload.getEmail();
-            GoogleUserInfo userInfo = getGoogleUserInfo(tokenRequest.getAccess_token());
+            GoogleUserInfoDTO userInfo = getGoogleUserInfo(tokenRequest.getAccess_token());
             String userEmail = userInfo.getEmail();
             String userName = userInfo.getName();
 
@@ -85,31 +66,30 @@ public class AuthService {
              * - 회원 정보가 없으면 새로 DB에 등록
              */
             Users user = usersRepository.findByEmail(userEmail)
-                    .map(entity -> entity.update(userName))
+                    .map((entity) -> entity.update(userName))
                     .orElse(Users.builder()
                             .name(userName)
                             .email(userEmail)
                             .role(Role.USER)
-                            .build()
-                    );
+                            .build());
             Users savedUser = usersRepository.save(user);
-            // 하단 편지 메뉴 표시 상태
-            Reply replyStatus = Reply.EMPTY;
-            LocalDateTime yesterday = LocalDateTime.now().minusDays(1);
-            List<Diary> diaries = diaryRepository.findDiariesByCreatedDateAndUserId(yesterday,
-                    savedUser.getUserId());
-            if (!diaries.isEmpty()) {
-                replyStatus = Reply.OCCUPIED;
-            }
-            UserTokenInfo userTokenInfo
-                    = UserTokenInfo.fromUser(savedUser, replyStatus.getKey());
 
+            /**
+             * JWT 토큰 발급
+             */
+            JwtPayloadDTO jwtPayloadDTO
+                    = JwtPayloadDTO.fromUser(savedUser);
 
-//            String accessToken = "Bearer_" + jwtUtils.generateAccessToken(userTokenInfo);
-            String accessToken = "Bearer" + jwtUtils.generateAccessToken(userTokenInfo);
-            String refreshToken = jwtUtils.generateRefreshToken(userTokenInfo);
+            String accessToken = BEARER + jwtUtils.generateAccessToken(jwtPayloadDTO);
+            String refreshToken = jwtUtils.generateRefreshToken(jwtPayloadDTO);
             log.info("access token = {}", accessToken);
-            saveAuthentication(userTokenInfo);
+            saveAuthentication(jwtPayloadDTO);
+
+            /**
+             * Redis에 Refresh 토큰 저장
+             */
+            redisService.setValues(savedUser.getEmail(), refreshToken,
+                    Duration.ofMillis(jwtUtils.getRefreshExpireTime()));
 
             return TokenDTO.builder()
                     .accessToken(accessToken)
@@ -117,28 +97,90 @@ public class AuthService {
                     .build();
 
         } catch (Exception e) {
-            log.error("error : ", e);
-            throw new AuthException("Login Failed.");
+            log.error("에러 : ", e);
+            throw new AuthException("로그인 실패");
         }
     }
 
-    private void saveAuthentication(UserTokenInfo userTokenInfo) {
-
+    private void saveAuthentication(JwtPayloadDTO jwtPayloadDTO) {
         List<GrantedAuthority> roles = new ArrayList<>();
-        roles.add(new SimpleGrantedAuthority(userTokenInfo.getUserRole().name()));
+        roles.add(new SimpleGrantedAuthority(jwtPayloadDTO.getUserRole().name()));
 
         Authentication authentication =
-                new UsernamePasswordAuthenticationToken(userTokenInfo, null, roles);
-
+                new UsernamePasswordAuthenticationToken(jwtPayloadDTO, null, roles);
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
-    private GoogleUserInfo getGoogleUserInfo(String accessToken) {
+    private GoogleUserInfoDTO getGoogleUserInfo(String accessToken) {
         final HttpHeaders headers = new HttpHeaders();
-//        headers.add(HttpHeaders.AUTHORIZATION, "Bearer_" + accessToken);
-        headers.add(HttpHeaders.AUTHORIZATION, "Bearer" + accessToken);
+        headers.add(HttpHeaders.AUTHORIZATION, BEARER + accessToken);
         final HttpEntity<CustomTokenRequestDTO> httpEntity = new HttpEntity<>(headers);
-        return restTemplate.exchange(GOOGLE_PROFILE_URL, HttpMethod.GET, httpEntity, GoogleUserInfo.class)
+        return restTemplate.exchange(GOOGLE_PROFILE_URL, HttpMethod.GET, httpEntity, GoogleUserInfoDTO.class)
                 .getBody();
+    }
+
+
+    @Transactional
+    public void logout(String accessToken, Long userId) {
+        String resolveAccessToken = resolveToken(accessToken);
+        String principal = getPrincipal(resolveAccessToken);
+
+        //DB에 존재하는 회원인지 확인
+        Optional<Users> user = usersRepository.findByUserStatusAndEmail(principal);
+        if (user.isEmpty())
+            throw new UserNotFoundException("[로그아웃 에러] 해당 유저를 찾을 수 없습니다. 검색한 Email : " + principal,
+                    "USER_NOT_FOUND");
+
+        // Redis에 저장되어 있는 RT 삭제
+        String refreshTokenInRedis = redisService.getValues(principal);
+        if (refreshTokenInRedis != null) {
+            redisService.deleteValues(principal);
+        }
+
+        // Redis에 로그아웃 처리한 AT 저장
+        long expiration = jwtUtils.getAccessExpireTime() - new Date().getTime();
+        redisService.setValues("logout " + principal, accessToken, Duration.ofMillis(expiration));
+        log.info(principal + " : " + "logout" + "(" + new Date() + ")");
+    }
+
+
+
+    @Transactional
+    public void delete(String accessToken, Long userId) {
+        String resolveAccessToken = resolveToken(accessToken);
+        String principal = getPrincipal(resolveAccessToken);
+
+        Optional<Users> user = usersRepository.findById(userId);
+        if (user.isEmpty())
+            throw new UserNotFoundException("[회원탈퇴 에러] 해당 유저를 찾을 수 없습니다.", "USER_NOT_FOUND");
+        Users userInfo = user.get();
+        Users deleteUser = userInfo.delete();
+        usersRepository.save(deleteUser);
+
+        // Redis에 저장되어 있는 RT 삭제
+        String refreshTokenInRedis = redisService.getValues(principal);
+        if (refreshTokenInRedis != null) {
+            redisService.deleteValues(principal);
+        }
+        // Redis에 회원탈퇴 처리한 AT 저장
+        long expiration = jwtUtils.getAccessExpireTime() - new Date().getTime();
+        redisService.setValues("delete " + principal, accessToken, Duration.ofMillis(expiration));
+
+        log.info(principal + " : " + "delete" + "(" + new Date() + ")");
+    }
+
+
+    public String resolveToken(String accessToken) {
+        if (accessToken != null && accessToken.startsWith(BEARER)) {
+            return accessToken.substring(7);
+        }
+        return null;
+    }
+
+    /**
+     * AccessToken에서 회원 정보 추출
+     */
+    public String getPrincipal(String requestAccessToken) {
+        return jwtUtils.getAuthentication(requestAccessToken).getName();
     }
 }
