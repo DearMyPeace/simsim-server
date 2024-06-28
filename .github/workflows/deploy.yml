@@ -27,7 +27,7 @@ jobs:
           cat <<EOF > src/main/resources/application.properties
             ${{ secrets.PROP }}
           EOF
-          cat <<EOF gradle/wrapper/gradle-wrapper.properties
+          cat <<EOF > gradle/wrapper/gradle-wrapper.properties
             ${{ secrets.GRADLE_WRAPPER }}
           EOF
 
