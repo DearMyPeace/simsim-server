@@ -38,7 +38,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: spring-boot-app
-          path: build/libs/*.jar
+          path: build/libs/simsim-server-0.0.1-SNAPSHOT.jar
 
   deploy:
     runs-on: ubuntu-latest
@@ -62,9 +62,9 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan $TARGET_HOST >> ~/.ssh/known_hosts
 
-          scp build/libs/*.jar $TARGET_USER@$TARGET_HOST:$TARGET_PATH
+          scp build/libs/simsim-server-0.0.1-SNAPSHOT.jar $TARGET_USER@$TARGET_HOST:$TARGET_PATH
           ssh $TARGET_USER@$TARGET_HOST << EOF
             sudo systemctl stop spring
-            mv $TARGET_PATH/*.jar $TARGET_PATH/spring.jar
+            mv $TARGET_PATH/simsim-server-0.0.1-SNAPSHOT.jar $TARGET_PATH/spring.jar
             sudo systemctl start spring
           EOF
