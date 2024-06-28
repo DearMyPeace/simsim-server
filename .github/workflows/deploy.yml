@@ -16,25 +16,25 @@ jobs:
       - name: Set up JDK 21
         uses: actions/setup-java@v2
         with:
-          distribution: 'temurin'  # 또는 'zulu', 'temurin' 등
+          distribution: 'temurin'
           java-version: 21
 
       - name: Create application.yml
         run: |
-          cat <<EOF > src/main/resources/application.yml
-            ${{ secrets.APP }}
-          EOF
-          cat <<EOF > src/main/resources/application.properties
-            ${{ secrets.PROP }}
-          EOF
-          cat <<EOF > gradle/wrapper/gradle-wrapper.properties
-            ${{ secrets.GRADLE_WRAPPER }}
-          EOF
+          mkdir -p src/main/resources
+          echo "${{ secrets.APP }}" > src/main/resources/application.yml
+          echo "${{ secrets.PROP }}" > src/main/resources/application.properties
+          mkdir -p gradle/wrapper
+          echo "${{ secrets.GRADLE_WRAPPER }}" > gradle/wrapper/gradle-wrapper.properties
 
       - name: Build with Gradle
         run: ./gradlew build
 
+      - name: List build directory
+        run: ls -al build/libs
+
       - name: Archive JAR
+        if: success()
         uses: actions/upload-artifact@v2
         with:
           name: spring-boot-app
