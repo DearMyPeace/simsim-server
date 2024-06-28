@@ -1,4 +1,4 @@
-name: Deploy
+name: Build and Deploy
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -33,23 +33,6 @@ jobs:
       - name: List build directory
         run: ls -al build/libs
 
-      - name: Archive JAR
-        if: success()
-        uses: actions/upload-artifact@v2
-        with:
-          name: spring-boot-app
-          path: build/libs/simsim-server-0.0.1-SNAPSHOT.jar
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
-
-    steps:
-      - name: Download JAR
-        uses: actions/download-artifact@v2
-        with:
-          name: spring-boot-app
-
       - name: Deploy to server
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
@@ -62,6 +45,7 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan $TARGET_HOST >> ~/.ssh/known_hosts
 
+          ls -al build/libs
           scp build/libs/simsim-server-0.0.1-SNAPSHOT.jar $TARGET_USER@$TARGET_HOST:$TARGET_PATH
           ssh $TARGET_USER@$TARGET_HOST << EOF
             sudo systemctl stop spring
