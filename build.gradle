@@ -47,8 +47,8 @@ dependencies {
 
 	//DB & JPA
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
-    //	runtimeOnly 'com.mysql:mysql-connector-j' // MySQL 드라이버, 배포 시 이걸로 변경
+	// runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
+    	runtimeOnly 'com.mysql:mysql-connector-j:8.0.33'
 
 	//Redis
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
