@@ -1,6 +1,6 @@
-package com.project.simsim_server.dto.setting;
+package com.project.simsim_server.dto.user;
 
-import com.project.simsim_server.domain.setting.Persona;
+import com.project.simsim_server.domain.user.Persona;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
