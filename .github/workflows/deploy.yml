@@ -19,6 +19,15 @@ jobs:
           distribution: 'temurin'  # 또는 'zulu', 'temurin' 등
           java-version: 21
 
+      - name: Create application.yml
+        run: |
+          cat <<EOF > src/main/resources/application.yml
+            ${{ secrets.APP }}
+          EOF
+          cat <<EOF > src/main/resources/application.properties
+            ${{ secrets.PROP }}
+          EOF
+
       - name: Build with Gradle
         run: ./gradlew build
 
