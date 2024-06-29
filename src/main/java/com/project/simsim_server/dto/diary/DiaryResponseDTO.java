@@ -5,6 +5,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Getter
 @NoArgsConstructor
@@ -14,15 +17,20 @@ public class DiaryResponseDTO {
     private Long userId;
     private String content;
     private String deleteYn;
-    private LocalDateTime createdDate;
-    private LocalDateTime modifiedDate;
+    private String createdDate;
+    private String modifiedDate;
 
     public DiaryResponseDTO(Diary diaryEntity) {
         this.diaryId = diaryEntity.getDiaryId();
         this.userId = diaryEntity.getUserId();
         this.content = diaryEntity.getContent();
         this.deleteYn = diaryEntity.getDiaryDeleteYn();
-        this.createdDate = diaryEntity.getCreatedDate();
-        this.modifiedDate = diaryEntity.getModifiedDate();
+        this.createdDate = convertToUTC(diaryEntity.getCreatedDate());
+        this.modifiedDate = convertToUTC(diaryEntity.getModifiedDate());
+    }
+
+    private String convertToUTC(LocalDateTime localDateTime) {
+        ZonedDateTime zonedDateTime = ZonedDateTime.of(localDateTime, ZoneId.systemDefault()).withZoneSameInstant(ZoneId.of("UTC"));
+        return zonedDateTime.format(DateTimeFormatter.ISO_INSTANT);
     }
 }
