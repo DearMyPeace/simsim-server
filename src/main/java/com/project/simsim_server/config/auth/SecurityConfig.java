@@ -44,7 +44,7 @@ public class SecurityConfig {
 
         http.httpBasic(AbstractHttpConfigurer::disable);
         http.csrf(AbstractHttpConfigurer::disable);
-        http.cors(AbstractHttpConfigurer::disable);
+        http.cors(cors -> cors.configurationSource(corsConfigurationSource()));
         http.rememberMe(AbstractHttpConfigurer::disable);
 
         http
