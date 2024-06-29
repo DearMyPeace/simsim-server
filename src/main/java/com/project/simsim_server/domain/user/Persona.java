@@ -1,4 +1,4 @@
-package com.project.simsim_server.domain.setting;
+package com.project.simsim_server.domain.user;
 
 import jakarta.persistence.*;
 import lombok.Builder;

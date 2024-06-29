@@ -75,13 +75,16 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.addAllowedOriginPattern("*");
-        configuration.setAllowedOrigins(List.of("https://localhost:8080", "http://localhost",
-                "https://localhost:8081"));
+        configuration.setAllowedOrigins(
+            List.of("https://localhost:8080", "http://localhost",
+                    "https://localhost:8081", "https://dear-my-peace.site/")
+        );
 
         configuration.addAllowedOrigin("http://localhost:8080");
         configuration.addAllowedOrigin("http://localhost:8081");
         configuration.addAllowedOrigin("http://127.0.0.1:8080");
         configuration.addAllowedOrigin("http://127.0.0.1:8081");
+        configuration.addAllowedOrigin("https://dear-my-peace.site/");
 
         configuration.addAllowedHeader("*");
         configuration.addAllowedMethod("*");

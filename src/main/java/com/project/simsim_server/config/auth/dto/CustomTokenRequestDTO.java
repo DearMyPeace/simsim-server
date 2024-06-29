@@ -6,8 +6,8 @@ import lombok.Getter;
 public class CustomTokenRequestDTO {
     private String access_token;
     private String authuser;
-    private int expires_in;
     private String prompt;
     private String scope;
     private String token_type;
+    private int expires_in;
 }

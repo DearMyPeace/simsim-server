@@ -1,7 +1,7 @@
-package com.project.simsim_server.controller.setting;
+package com.project.simsim_server.controller.user;
 
-import com.project.simsim_server.dto.setting.PersonaResponseDTO;
-import com.project.simsim_server.service.setting.PersonaService;
+import com.project.simsim_server.dto.user.PersonaResponseDTO;
+import com.project.simsim_server.service.user.PersonaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;

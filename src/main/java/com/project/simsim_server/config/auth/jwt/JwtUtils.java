@@ -2,20 +2,20 @@ package com.project.simsim_server.config.auth.jwt;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.project.simsim_server.config.auth.dto.JwtPayloadDTO;
 import com.project.simsim_server.config.auth.dto.TokenDTO;
-import com.project.simsim_server.config.auth.dto.UserTokenInfo;
-import com.project.simsim_server.repository.diary.DiaryRepository;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -26,33 +26,32 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+@RequiredArgsConstructor
 @Service
 public class JwtUtils {
 
+    @Getter
     @Value("${spring.jwt.access.expiration}")
     private Long accessExpireTime;
+    @Getter
     @Value("${spring.jwt.refresh.expiration}")
     private Long refreshExpireTime;
+    @Value("${spring.jwt.key1}")
+    private String key;
+
     private SecretKey secretKey;
-    private DiaryRepository diaryRepository;
-    private UserDetailsService userDetailsService;
     private CustomUserDetailsService customUserDetailsService;
     private TokenService tokenService;
     private static final String ACCESS_TOKEN_SUBJECT = "AccessToken";
     private static final String REFRESH_TOKEN_SUBJECT = "RefreshToken";
-//    private static final String BEARER = "Bearer_";
-    private static final String BEARER = "Bearer";
+    private static final String BEARER = "Bearer ";
     private static final String ACCESS_TOKEN_HEADER = "Authorization";
-    private static final String REFRESH_TOKEN_HEADER = "Refresh-Token";
+    private static final String REFRESH_TOKEN_HEADER = "refresh";
 
-    public JwtUtils(@Value("${spring.jwt.key1}") String key, DiaryRepository diaryRepository,
-                    UserDetailsService userDetailsService, CustomUserDetailsService customUserDetailsService,
-                    TokenService tokenService) {
+
+    @PostConstruct
+    public void init() {
         this.secretKey = Keys.hmacShaKeyFor(key.getBytes(StandardCharsets.UTF_8));
-        this.diaryRepository = diaryRepository;
-        this.userDetailsService = userDetailsService;
-        this.customUserDetailsService = customUserDetailsService;
-        this.tokenService = tokenService;
     }
 
     /**
@@ -60,56 +59,51 @@ public class JwtUtils {
      * @param token JWT
      * @return UserTokenInfo JWT 안에 저장된 로그인한 회원 정보
      */
-    public UserTokenInfo getUserInfo(String token) {
+    public JwtPayloadDTO getUserInfo(String token) {
         Claims claims = Jwts.parser()
                 .verifyWith(secretKey)
                 .build()
                 .parseSignedClaims(token).getPayload();
 
-        return UserTokenInfo.fromClaims(claims);
+        return JwtPayloadDTO.fromClaims(claims);
     }
 
 
     /**
      * AccessToken 생성
-     * @param userTokenInfo
+     * @param jwtPayloadDTO
      * @return AccessToken 반환
      */
-    public String generateAccessToken(UserTokenInfo userTokenInfo) {
-        return generateToken(userTokenInfo, ACCESS_TOKEN_SUBJECT, accessExpireTime);
+    public String generateAccessToken(JwtPayloadDTO jwtPayloadDTO) {
+        return generateToken(jwtPayloadDTO, ACCESS_TOKEN_SUBJECT, accessExpireTime);
     }
+
 
     /**
      * RefreshToken 생성
-     * @param userTokenInfo
+     * @param jwtPayloadDTO
      * @return RefreshToken 반환
      */
-    public String generateRefreshToken(UserTokenInfo userTokenInfo) {
-        return generateToken(userTokenInfo, REFRESH_TOKEN_SUBJECT, refreshExpireTime);
+    public String generateRefreshToken(JwtPayloadDTO jwtPayloadDTO) {
+        return generateToken(jwtPayloadDTO, REFRESH_TOKEN_SUBJECT, 10L);
     }
+
 
     /**
      * AccessToken 및 RefreshToken 생성
-     * @param userTokenInfo
+     * @param jwtPayloadDTO
      * @param expireTime
      * @return 토큰 반환
      */
-    public String generateToken(UserTokenInfo userTokenInfo, String subject, Long expireTime) {
+    public String generateToken(JwtPayloadDTO jwtPayloadDTO, String subject, Long expireTime) {
         Date now = new Date();
         Date expireDate = new Date(now.getTime() + expireTime);
         
         return Jwts.builder()
                 .subject(subject)
-                .claim("id", userTokenInfo.getUserId())
-                .claim("name", userTokenInfo.getUserName())
-                .claim("email", userTokenInfo.getUserEmail())
-                .claim("role", userTokenInfo.getUserRole().getKey())
-                .claim("grade", userTokenInfo.getUserGrade().getKey())
-                .claim("pieceCnt", userTokenInfo.getUserPieceCnt())
-                .claim("persona", userTokenInfo.getUserPersona())
-                .claim("bgImage", userTokenInfo.getUserBgImage())
-                .claim("status", userTokenInfo.getUserStatus())
-                .claim("replyStatus", userTokenInfo.getReplyStatus())
+                .claim("id", jwtPayloadDTO.getUserId())
+                .claim("email", jwtPayloadDTO.getUserEmail())
+                .claim("role", jwtPayloadDTO.getUserRole().getKey())
                 .issuedAt(now)
                 .expiration(expireDate)
                 .signWith(secretKey, Jwts.SIG.HS512)
@@ -122,6 +116,7 @@ public class JwtUtils {
                 .filter(at -> at.startsWith(BEARER))
                 .map(at -> at.replace(BEARER, ""));
     }
+
 
     public Optional<String> extractRefreshToken(HttpServletRequest request) {
         return Optional.ofNullable(request.getHeader(REFRESH_TOKEN_HEADER));
@@ -156,15 +151,17 @@ public class JwtUtils {
         }
     }
 
+
     public Authentication getAuthentication(String token) {
-        UserTokenInfo userTokenInfo = getUserInfo(token);
-        CustomUserDetails userDetails = (CustomUserDetails) customUserDetailsService.loadUserByUsername(userTokenInfo.getUserEmail());
-        List<GrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority(userTokenInfo.getUserRole().name()));
+        JwtPayloadDTO jwtPayloadDTO = getUserInfo(token);
+        CustomUserDetails userDetails = (CustomUserDetails) customUserDetailsService.loadUserByUsername(jwtPayloadDTO.getUserEmail());
+        List<GrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority(jwtPayloadDTO.getUserRole().name()));
         return new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
     }
 
-    private List<GrantedAuthority> getAuthorities(UserTokenInfo userTokenInfo) {
-        return Collections.singletonList(new SimpleGrantedAuthority(userTokenInfo.getUserRole().name()));
+
+    private List<GrantedAuthority> getAuthorities(JwtPayloadDTO jwtPayloadDTO) {
+        return Collections.singletonList(new SimpleGrantedAuthority(jwtPayloadDTO.getUserRole().name()));
     }
 
     public String getEmail(String accessToken) {
@@ -179,8 +176,8 @@ public class JwtUtils {
 
             if (validateToken(refreshToken)) {
                 Authentication authentication = getAuthentication(refreshToken);
-                UserTokenInfo userTokenInfo = (UserTokenInfo) authentication.getPrincipal();
-                String reissueAccessToken = generateAccessToken(userTokenInfo);
+                JwtPayloadDTO jwtPayloadDTO = (JwtPayloadDTO) authentication.getPrincipal();
+                String reissueAccessToken = generateAccessToken(jwtPayloadDTO);
                 tokenService.updateToken(reissueAccessToken, token);
                 return reissueAccessToken;
             }
