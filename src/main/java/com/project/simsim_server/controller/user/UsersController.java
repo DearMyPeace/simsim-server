@@ -20,9 +20,9 @@ public class UsersController {
      * 회원 정보 조회
      * @return UserInfoResponseDTO 회원 정보
      */
-    @GetMapping("/me")
-    public UserInfoResponseDTO getUserInfo() {
-        String authentication = getUserIdFromAuthentication();
+    @GetMapping("/me/{userId}") //TODO - userId 추후 제거
+    public UserInfoResponseDTO getUserInfo(@PathVariable("userId") String authentication) {
+//        String authentication = getUserIdFromAuthentication();
         Long userId = Long.parseLong(authentication);
         return userService.findByUserId(userId);
     }
@@ -32,11 +32,13 @@ public class UsersController {
      * @param personaCode
      * @return PersonaResponseDTO 변경 후 페르소나 코드, 페르소나 명칭
      */
-    @PatchMapping("/persona/{personaCode}/{userId}")
-    public PersonaResponseDTO changeUserPersona(@PathVariable String personaCode)
+    @PatchMapping("/persona/{personaCode}") //TODO - userId 추후 제거
+    public PersonaResponseDTO changeUserPersona(
+            @PathVariable String personaCode,
+            @RequestBody Long userId)
     {
-        String authentication = getUserIdFromAuthentication();
-        Long userId = Long.parseLong(authentication);
+//        String authentication = getUserIdFromAuthentication();
+//        Long userId = Long.parseLong(authentication);
         return userService.updatePersona(personaCode, userId);
     }
 
