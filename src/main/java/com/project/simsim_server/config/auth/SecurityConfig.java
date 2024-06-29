@@ -79,7 +79,7 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(
                 List.of(
                         "https://localhost:8080", "http://localhost",
-                        "https://localhost:8081", "https://dear-my-peace.site/",
+                        "https://localhost:8081", "https://dear-my-peace.site",
                         "http://localhost:8080", "http://localhost:8081",
                         "http://127.0.0.1:8080", "http://127.0.0.1:8081"
                 )
