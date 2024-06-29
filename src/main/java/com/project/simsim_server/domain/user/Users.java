@@ -39,7 +39,7 @@ public class Users extends BaseTimeEntity {
     private int pieceCnt;
 
     @Column(name = "user_persona", nullable = false)
-    @ColumnDefault("'P'")
+    @ColumnDefault("'F'")
     private String persona;
 
     @Column(name = "user_bg_image")
