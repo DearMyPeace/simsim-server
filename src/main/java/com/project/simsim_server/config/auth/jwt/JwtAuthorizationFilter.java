@@ -181,33 +181,3 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
         return result;
     }
 }
-//
-//public class JwtAuthorizationFilter extends OncePerRequestFilter {
-//
-//    private final JwtUtils jwtUtils;
-//
-//    public JwtAuthorizationFilter(JwtUtils jwtUtils) {
-//        this.jwtUtils = jwtUtils;
-//    }
-//
-//    @Override
-//    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
-//            throws IOException, ServletException {
-//        String token = getTokenFromRequest(request);
-//        if (token != null && jwtUtils.validateToken(token)) {
-//            Authentication authentication = jwtUtils.getAuthentication(token);
-//            if (authentication != null) {
-//                SecurityContextHolder.getContext().setAuthentication(authentication);
-//            }
-//        }
-//        chain.doFilter(request, response);
-//    }
-//
-//    private String getTokenFromRequest(HttpServletRequest request) {
-//        String bearerToken = request.getHeader("Authorization");
-//        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-//            return bearerToken.substring(7);
-//        }
-//        return null;
-//    }
-//}
