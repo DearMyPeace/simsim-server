@@ -85,7 +85,7 @@ public class SecurityConfig {
                 )
         );
         configuration.setAllowCredentials(true);
-        configuration.setAllowedMethods(List.of("*"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "refresh", "Content-type",
                 "Origin", "Accept", "Access-Control-Allow-Origin",
                 "Access-Control-Allow-Headers", "Access-Control-Allow-Methods"));
