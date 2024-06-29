@@ -48,25 +48,25 @@ public class SecurityConfig {
         http.rememberMe(AbstractHttpConfigurer::disable);
 
         http
-            .headers(AbstractHttpConfigurer::disable)
-            .authorizeHttpRequests((request) -> request
-                .requestMatchers("/", "/home", "/signup", "/api/v1/auth/google", "/swagger-ui/**",
-                        "/index.html", "/favicon", "/v3/api-docs/**", "/api/v1/user/**", "/api/v1/persona/**",
-                        "/api/v1/**","/form", "index.html").permitAll()
-                .requestMatchers("/admin").hasRole(Role.ADMIN.name())
-                .requestMatchers(HttpMethod.POST,"/notice").hasRole(Role.ADMIN.name())
-                .requestMatchers(HttpMethod.PATCH,"/notice/{noticeId}").hasRole(Role.ADMIN.name())
-                .requestMatchers(HttpMethod.DELETE,"/notice/{noticeId}").hasRole(Role.ADMIN.name())
-                .anyRequest().authenticated()
-            )
-            .sessionManagement((session) -> session
-                    .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            )
-            .logout((logout) -> logout
+                .headers(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests((request) -> request
+                        .requestMatchers("/", "/home", "/signup", "/api/v1/auth/google", "/swagger-ui/**",
+                                "/index.html", "/favicon", "/v3/api-docs/**", "/api/v1/user/**", "/api/v1/persona/**",
+                                "/api/v1/**","/form", "index.html").permitAll()
+                        .requestMatchers("/admin").hasRole(Role.ADMIN.name())
+                        .requestMatchers(HttpMethod.POST,"/notice").hasRole(Role.ADMIN.name())
+                        .requestMatchers(HttpMethod.PATCH,"/notice/{noticeId}").hasRole(Role.ADMIN.name())
+                        .requestMatchers(HttpMethod.DELETE,"/notice/{noticeId}").hasRole(Role.ADMIN.name())
+                        .anyRequest().authenticated()
+                )
+                .sessionManagement((session) -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                .logout((logout) -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/")
-            )
-            .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class);
+                )
+                .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -77,21 +77,24 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(
                 List.of(
+                        "https://accounts.google.com",
                         "https://localhost:8080", "http://localhost",
                         "https://localhost:8081", "https://dear-my-peace.site",
                         "http://localhost:8080", "http://localhost:8081",
                         "http://127.0.0.1:8080", "http://127.0.0.1:8081"
                 )
         );
-
-//        configuration.addAllowedOriginPattern("*");
-//        configuration.addAllowedHeader("*");
-//        configuration.addAllowedMethod("*");
-
         configuration.setAllowCredentials(true);
+        configuration.setAllowedMethods(List.of("*"));
+        configuration.setAllowedHeaders(List.of("Authorization", "refresh", "Content-type",
+                "Origin", "Accept", "Access-Control-Allow-Origin",
+                "Access-Control-Allow-Headers", "Access-Control-Allow-Methods"));
+        configuration.setExposedHeaders(List.of("Authorization", "refresh"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
+
         return source;
     }
 }
+
