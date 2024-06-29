@@ -10,9 +10,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+//@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/persona")
-@CrossOrigin(origins = "*")
 @RestController
 public class PersonaController {
 

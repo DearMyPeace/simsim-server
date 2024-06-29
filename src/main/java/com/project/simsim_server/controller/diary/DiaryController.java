@@ -15,9 +15,9 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
 
+//@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/diary")
-@CrossOrigin(origins = "*")
 @RestController
 public class DiaryController {
 

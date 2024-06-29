@@ -15,8 +15,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 
+//@CrossOrigin(origins = "*")
 @Slf4j
-@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/auth")
 @RestController
