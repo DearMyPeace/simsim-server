@@ -51,7 +51,7 @@ public class SecurityConfig {
             .headers(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests((request) -> request
                 .requestMatchers("/", "/home", "/signup", "/api/v1/auth/google", "/swagger-ui/**",
-                        "/index.html", "/favicon", "/v3/api-docs/**",
+                        "/index.html", "/favicon", "/v3/api-docs/**", "/api/v1/user/**", "/api/v1/persona/**",
                         "/api/v1/**","/form", "index.html").permitAll()
                 .requestMatchers("/admin").hasRole(Role.ADMIN.name())
                 .requestMatchers(HttpMethod.POST,"/notice").hasRole(Role.ADMIN.name())
@@ -71,25 +71,24 @@ public class SecurityConfig {
         return http.build();
     }
 
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.addAllowedOriginPattern("*");
         configuration.setAllowedOrigins(
-            List.of("https://localhost:8080", "http://localhost",
-                    "https://localhost:8081", "https://dear-my-peace.site/")
+                List.of(
+                        "https://localhost:8080", "http://localhost",
+                        "https://localhost:8081", "https://dear-my-peace.site/",
+                        "http://localhost:8080", "http://localhost:8081",
+                        "http://127.0.0.1:8080", "http://127.0.0.1:8081"
+                )
         );
-
-        configuration.addAllowedOrigin("http://localhost:8080");
-        configuration.addAllowedOrigin("http://localhost:8081");
-        configuration.addAllowedOrigin("http://127.0.0.1:8080");
-        configuration.addAllowedOrigin("http://127.0.0.1:8081");
-        configuration.addAllowedOrigin("https://dear-my-peace.site/");
 
         configuration.addAllowedHeader("*");
         configuration.addAllowedMethod("*");
-        configuration.setAllowCredentials(true);
 
+        configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
