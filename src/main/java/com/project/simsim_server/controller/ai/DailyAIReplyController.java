@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.List;
 
+//@CrossOrigin(origins = "*") //TODO - 테스트용, 추후 제거
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*") //TODO - 테스트용, 추후 제거
 @RequestMapping("/api/v1/aiLetters")
 @RestController
 public class DailyAIReplyController {
