@@ -5,6 +5,7 @@ import com.project.simsim_server.config.auth.dto.JwtPayloadDTO;
 import com.project.simsim_server.config.auth.jwt.JwtUtils;
 import com.project.simsim_server.config.auth.dto.TokenDTO;
 import com.project.simsim_server.domain.user.Role;
+import com.project.simsim_server.exception.OAuthException;
 import com.project.simsim_server.exception.UserNotFoundException;
 import com.project.simsim_server.service.redis.RedisService;
 import com.project.simsim_server.domain.user.Users;
@@ -26,6 +27,8 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.Duration;
 import java.util.*;
+
+import static com.project.simsim_server.exception.AuthErrorCode.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -75,7 +78,7 @@ public class AuthService {
             Users savedUser = usersRepository.save(user);
 
             /**
-             * JWT 토큰 발급
+             * DB에 저장된 회원정보로 JWT 토큰 발급
              */
             JwtPayloadDTO jwtPayloadDTO
                     = JwtPayloadDTO.fromUser(savedUser);
@@ -88,7 +91,7 @@ public class AuthService {
             /**
              * Redis에 Refresh 토큰 저장
              */
-            redisService.setValues(savedUser.getEmail(), refreshToken,
+            redisService.setValues(jwtPayloadDTO.getUserEmail(), refreshToken,
                     Duration.ofMillis(jwtUtils.getRefreshExpireTime()));
 
             return TokenDTO.builder()
@@ -120,55 +123,119 @@ public class AuthService {
     }
 
 
+    /**
+     * 로그 아웃
+     * @param accessToken
+     * @param userId
+     */
     @Transactional
     public void logout(String accessToken, Long userId) {
         String resolveAccessToken = resolveToken(accessToken);
         String principal = getPrincipal(resolveAccessToken);
 
         //DB에 존재하는 회원인지 확인
-        Optional<Users> user = usersRepository.findByUserStatusAndEmail(principal);
+        Optional<Users> user = usersRepository.findByIdAndUserStatus(Long.parseLong(principal));
         if (user.isEmpty())
-            throw new UserNotFoundException("[로그아웃 에러] 해당 유저를 찾을 수 없습니다. 검색한 Email : " + principal,
+            throw new UserNotFoundException("[로그아웃 에러] 해당 유저를 찾을 수 없습니다." + principal,
                     "USER_NOT_FOUND");
 
-        // Redis에 저장되어 있는 RT 삭제
-        String refreshTokenInRedis = redisService.getValues(principal);
+        // Redis에서 RefreshToken 삭제
+        String userEmail = user.get().getEmail();
+        String refreshTokenInRedis = redisService.getValues(userEmail);
         if (refreshTokenInRedis != null) {
-            redisService.deleteValues(principal);
+            redisService.deleteValues(userEmail);
         }
 
-        // Redis에 로그아웃 처리한 AT 저장
-        long expiration = jwtUtils.getAccessExpireTime() - new Date().getTime();
-        redisService.setValues("logout " + principal, accessToken, Duration.ofMillis(expiration));
         log.info(principal + " : " + "logout" + "(" + new Date() + ")");
     }
 
 
-
+    /**
+     * 회원 탈퇴
+     * @param accessToken
+     * @param userId
+     */
     @Transactional
     public void delete(String accessToken, Long userId) {
         String resolveAccessToken = resolveToken(accessToken);
         String principal = getPrincipal(resolveAccessToken);
 
-        Optional<Users> user = usersRepository.findById(userId);
+        Optional<Users> user = usersRepository.findByIdAndUserStatus(userId);
         if (user.isEmpty())
             throw new UserNotFoundException("[회원탈퇴 에러] 해당 유저를 찾을 수 없습니다.", "USER_NOT_FOUND");
         Users userInfo = user.get();
         Users deleteUser = userInfo.delete();
         usersRepository.save(deleteUser);
 
-        // Redis에 저장되어 있는 RT 삭제
-        String refreshTokenInRedis = redisService.getValues(principal);
+        // Redis에서 RefreshToken 삭제
+        String userEmail = user.get().getEmail();
+        String refreshTokenInRedis = redisService.getValues(userEmail);
         if (refreshTokenInRedis != null) {
-            redisService.deleteValues(principal);
+            redisService.deleteValues(userEmail);
         }
-        // Redis에 회원탈퇴 처리한 AT 저장
-        long expiration = jwtUtils.getAccessExpireTime() - new Date().getTime();
-        redisService.setValues("delete " + principal, accessToken, Duration.ofMillis(expiration));
 
         log.info(principal + " : " + "delete" + "(" + new Date() + ")");
     }
 
+
+    /**
+     * 토큰 재발급
+     * @param requestRefreshToken
+     * @param requestAccessToken
+     * @return
+     */
+    @Transactional
+    public TokenDTO reissue(String requestRefreshToken, String requestAccessToken) {
+
+        log.info("----[AuthService] 리프레스 토큰 및 액세스 토큰 재발급 시작 ----");
+        String resolveAccessToken = resolveToken(requestAccessToken);
+        String principal = getPrincipal(resolveAccessToken);
+
+        Optional<Users> user = usersRepository.findByIdAndUserStatus(Long.parseLong(principal));
+        if (user.isEmpty())
+            throw new UserNotFoundException("[토큰 재발급 에러] 해당 유저를 찾을 수 없습니다.", "USER_NOT_FOUND");
+
+        if (!jwtUtils.validateToken(requestRefreshToken)) {
+            redisService.deleteValues(user.get().getEmail());
+            SecurityContextHolder.clearContext();
+            return null;
+        }
+
+        String refreshTokenInRedis = redisService.getValues(user.get().getEmail());
+        if (refreshTokenInRedis == null) {
+            SecurityContextHolder.clearContext();
+            return null;
+        } else if (!requestRefreshToken.equals(refreshTokenInRedis) || jwtUtils.isTokenExpired(requestRefreshToken)) {
+            redisService.deleteValues(user.get().getEmail());
+            SecurityContextHolder.clearContext();
+            return null;
+        }
+
+        Authentication authentication = jwtUtils.getAuthentication(requestAccessToken);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String authorities = jwtUtils.getAuthorities(authentication);
+
+
+        JwtPayloadDTO jwtPayloadDTO
+                = JwtPayloadDTO.fromUser(user.get());
+
+        String accessToken = BEARER + jwtUtils.generateAccessToken(jwtPayloadDTO);
+        String refreshToken = jwtUtils.generateRefreshToken(jwtPayloadDTO);
+        redisService.deleteValues(jwtPayloadDTO.getUserEmail());
+        saveAuthentication(jwtPayloadDTO);
+        log.info("access token = {}", accessToken);
+
+        /**
+         * Redis에 Refresh 토큰 저장
+         */
+        redisService.setValues(jwtPayloadDTO.getUserEmail(), refreshToken,
+                Duration.ofMillis(jwtUtils.getRefreshExpireTime()));
+
+        return TokenDTO.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
+    }
 
     public String resolveToken(String accessToken) {
         if (accessToken != null && accessToken.startsWith(BEARER)) {
