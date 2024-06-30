@@ -4,30 +4,41 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.project.simsim_server.config.auth.dto.JwtPayloadDTO;
 import com.project.simsim_server.config.auth.dto.TokenDTO;
+import com.project.simsim_server.domain.diary.Diary;
+import com.project.simsim_server.domain.user.Reply;
+import com.project.simsim_server.domain.user.Users;
+import com.project.simsim_server.repository.diary.DiaryRepository;
+import com.project.simsim_server.service.redis.RedisService;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
 import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
 
+@Slf4j
 @RequiredArgsConstructor
-@Service
+@Component
 public class JwtUtils {
 
     @Getter
@@ -41,18 +52,22 @@ public class JwtUtils {
 
     private SecretKey secretKey;
     private CustomUserDetailsService customUserDetailsService;
-    private TokenService tokenService;
     private static final String ACCESS_TOKEN_SUBJECT = "AccessToken";
     private static final String REFRESH_TOKEN_SUBJECT = "RefreshToken";
     private static final String BEARER = "Bearer ";
     private static final String ACCESS_TOKEN_HEADER = "Authorization";
     private static final String REFRESH_TOKEN_HEADER = "refresh";
+    private final DiaryRepository diaryRepository;
+    private final RedisService redisService;
 
-
+    /**
+     * Secretkey 생성
+     */
     @PostConstruct
     public void init() {
         this.secretKey = Keys.hmacShaKeyFor(key.getBytes(StandardCharsets.UTF_8));
     }
+
 
     /**
      * JWT 안의 회원 정보 반환
@@ -85,7 +100,7 @@ public class JwtUtils {
      * @return RefreshToken 반환
      */
     public String generateRefreshToken(JwtPayloadDTO jwtPayloadDTO) {
-        return generateToken(jwtPayloadDTO, REFRESH_TOKEN_SUBJECT, 10L);
+        return generateToken(jwtPayloadDTO, REFRESH_TOKEN_SUBJECT, refreshExpireTime);
     }
 
 
@@ -136,9 +151,10 @@ public class JwtUtils {
      */
     public boolean validateToken(String token) {
         try {
-            Jwts.parser().verifyWith(secretKey)
+            Claims payload = Jwts.parser().verifyWith(secretKey)
                     .build().parseSignedClaims(token)
                     .getPayload();
+            log.info("[JwtUtils validateToken()] Claim Payload: {}", payload);
             return true;
         } catch (ExpiredJwtException e) {
             throw new JwtException("Expired or invalid JWT token", e);
@@ -151,17 +167,28 @@ public class JwtUtils {
         }
     }
 
+    private void saveAuthentication(JwtPayloadDTO jwtPayloadDTO) {
+        List<GrantedAuthority> roles = new ArrayList<>();
+        roles.add(new SimpleGrantedAuthority(jwtPayloadDTO.getUserRole().name()));
+
+        Authentication authentication =
+                new UsernamePasswordAuthenticationToken(jwtPayloadDTO, null, roles);
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+    }
 
     public Authentication getAuthentication(String token) {
         JwtPayloadDTO jwtPayloadDTO = getUserInfo(token);
-        CustomUserDetails userDetails = (CustomUserDetails) customUserDetailsService.loadUserByUsername(jwtPayloadDTO.getUserEmail());
+        CustomUserDetails userDetails = (CustomUserDetails) customUserDetailsService.loadUserByUsername(jwtPayloadDTO.getUserId().toString());
         List<GrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority(jwtPayloadDTO.getUserRole().name()));
         return new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
     }
 
 
-    private List<GrantedAuthority> getAuthorities(JwtPayloadDTO jwtPayloadDTO) {
-        return Collections.singletonList(new SimpleGrantedAuthority(jwtPayloadDTO.getUserRole().name()));
+    public String getAuthorities(Authentication authentication) {
+        return authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.joining(","));
     }
 
     public String getEmail(String accessToken) {
@@ -169,21 +196,6 @@ public class JwtUtils {
         return jwt.getClaim("email").asString();
     }
 
-    public String reissueAccessToken(String accessToken) {
-        if (StringUtils.hasText(accessToken)) {
-            TokenDTO token = tokenService.findByAccessTokenOrThrow(accessToken);
-            String refreshToken = token.getRefreshToken();
-
-            if (validateToken(refreshToken)) {
-                Authentication authentication = getAuthentication(refreshToken);
-                JwtPayloadDTO jwtPayloadDTO = (JwtPayloadDTO) authentication.getPrincipal();
-                String reissueAccessToken = generateAccessToken(jwtPayloadDTO);
-                tokenService.updateToken(reissueAccessToken, token);
-                return reissueAccessToken;
-            }
-        }
-        return null;
-    }
 
     public boolean isTokenExpired(String token) {
         DecodedJWT jwt = JWT.decode(token);

@@ -1,7 +1,8 @@
 package com.project.simsim_server.config.auth;
 
-import com.project.simsim_server.config.auth.jwt.JwtAuthorizationFilter;
+import com.project.simsim_server.config.filter.JwtAuthenticationFilter;
 import com.project.simsim_server.config.auth.jwt.JwtUtils;
+import com.project.simsim_server.config.filter.JwtExceptionFilter;
 import com.project.simsim_server.domain.user.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.reactive.PathRequest;
@@ -26,7 +27,7 @@ import java.util.List;
 @Configuration
 public class SecurityConfig {
 
-    private final JwtAuthorizationFilter jwtAuthorizationFilter;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private JwtUtils jwtUtils;
 
     /**
@@ -66,7 +67,8 @@ public class SecurityConfig {
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/")
                 )
-                .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JwtExceptionFilter(), jwtAuthenticationFilter.getClass());
 
         return http.build();
     }
