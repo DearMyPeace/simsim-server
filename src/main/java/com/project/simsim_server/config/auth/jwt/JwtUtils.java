@@ -167,21 +167,11 @@ public class JwtUtils {
         }
     }
 
-    private void saveAuthentication(JwtPayloadDTO jwtPayloadDTO) {
-        List<GrantedAuthority> roles = new ArrayList<>();
-        roles.add(new SimpleGrantedAuthority(jwtPayloadDTO.getUserRole().name()));
-
-        Authentication authentication =
-                new UsernamePasswordAuthenticationToken(jwtPayloadDTO, null, roles);
-
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-    }
-
     public Authentication getAuthentication(String token) {
         JwtPayloadDTO jwtPayloadDTO = getUserInfo(token);
-        CustomUserDetails userDetails = (CustomUserDetails) customUserDetailsService.loadUserByUsername(jwtPayloadDTO.getUserId().toString());
         List<GrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority(jwtPayloadDTO.getUserRole().name()));
-        return new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
+        CustomUserDetails userDetails = (CustomUserDetails) customUserDetailsService.loadUserByUsername(jwtPayloadDTO.getUserId().toString());
+        return new UsernamePasswordAuthenticationToken(userDetails.getUser().getUserId(), null, authorities);
     }
 
 

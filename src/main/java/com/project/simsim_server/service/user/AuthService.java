@@ -17,6 +17,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -40,6 +41,7 @@ public class AuthService {
     private final UsersRepository usersRepository;
     private final RestTemplate restTemplate;
     private final RedisService redisService;
+    private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
     private final String BEARER = "Bearer ";
     private final String SERVER = "Server";
@@ -106,12 +108,18 @@ public class AuthService {
     }
 
     private void saveAuthentication(JwtPayloadDTO jwtPayloadDTO) {
-        List<GrantedAuthority> roles = new ArrayList<>();
-        roles.add(new SimpleGrantedAuthority(jwtPayloadDTO.getUserRole().name()));
+        UsernamePasswordAuthenticationToken authenticationToken =
+                new UsernamePasswordAuthenticationToken(jwtPayloadDTO.getUserId(), jwtPayloadDTO.getUserEmail());
 
-        Authentication authentication =
-                new UsernamePasswordAuthenticationToken(jwtPayloadDTO, null, roles);
+        Authentication authentication = authenticationManagerBuilder.getObject()
+                .authenticate(authenticationToken);
         SecurityContextHolder.getContext().setAuthentication(authentication);
+        //        List<GrantedAuthority> roles = new ArrayList<>();
+//        roles.add(new SimpleGrantedAuthority(jwtPayloadDTO.getUserRole().name()));
+//
+//        Authentication authentication =
+//                new UsernamePasswordAuthenticationToken(jwtPayloadDTO, null, roles);
+//        SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
     private GoogleUserInfoDTO getGoogleUserInfo(String accessToken) {
