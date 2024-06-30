@@ -1,6 +1,7 @@
 package com.project.simsim_server.controller.user;
 
 import com.project.simsim_server.config.auth.dto.CustomTokenRequestDTO;
+import com.project.simsim_server.config.auth.dto.JwtPayloadDTO;
 import com.project.simsim_server.config.auth.dto.TokenDTO;
 import com.project.simsim_server.config.auth.dto.AccessTokenForFrontDTO;
 import com.project.simsim_server.service.user.AuthService;
@@ -155,6 +156,12 @@ public class AuthController {
             return "-2";
         }
 
-        return authentication.getName();
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof JwtPayloadDTO) {
+            JwtPayloadDTO jwtPayloadDTO = (JwtPayloadDTO) principal;
+            return jwtPayloadDTO.getUserId().toString();  // 사용자 ID를 문자열로 변환하여 반환
+        }
+        
+        return "-1";
     }
 }
