@@ -8,6 +8,7 @@ import jakarta.security.auth.message.AuthException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -55,6 +56,11 @@ public class AuthController {
     @DeleteMapping("/logout")
     public ResponseEntity logout(@RequestHeader("Authorization") String accessToken) {
         String authentication = getUserIdFromAuthentication();
+        if (authentication.equals("-1")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized - No authentication information found");
+        } else if (authentication.equals("-2")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized - Anonymous user");
+        }
         Long userId = Long.parseLong(authentication);
         authService.logout(accessToken, userId);
         ResponseCookie responseCookie = ResponseCookie.from("refresh", "")
@@ -76,6 +82,11 @@ public class AuthController {
     @DeleteMapping("/delete")
     public ResponseEntity cancleAccount(@RequestHeader("Authorization") String accessToken) {
         String authentication = getUserIdFromAuthentication();
+        if (authentication.equals("-1")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized - No authentication information found");
+        } else if (authentication.equals("-2")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized - Anonymous user");
+        }
         Long userId = Long.parseLong(authentication);
         authService.delete(accessToken, userId);
         ResponseCookie responseCookie = ResponseCookie.from("refresh", "")
@@ -130,6 +141,16 @@ public class AuthController {
 
     private String getUserIdFromAuthentication() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null) {
+            // 인증 정보가 없는 경우 로깅
+            return "-1";
+        }
+
+        if (authentication.getPrincipal() instanceof String && authentication.getPrincipal().equals("anonymousUser")) {
+            // anonymousUser인 경우 처리 로직 추가 (필요 시)
+            return "-2";
+        }
+
         return authentication.getName();
     }
 }
