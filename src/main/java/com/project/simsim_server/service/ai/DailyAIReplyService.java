@@ -66,7 +66,7 @@ public class DailyAIReplyService {
 
     public AILetterResponseDTO save(AILetterRequestDTO requestDTO) {
 
-        if (requestDTO.getTargetDate().isAfter(LocalDate.now().minusDays(1))) {
+        if (requestDTO.getTargetDate().isAfter(LocalDate.now())) {
             throw new IllegalArgumentException("해당 날짜는 AI 편지를 조회할 수 없습니다.");
         }
         // 조회할 일자의 일기 내용을 가져옴
