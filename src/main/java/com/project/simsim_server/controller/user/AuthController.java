@@ -38,9 +38,13 @@ public class AuthController {
         TokenDTO tokenDTO = authService.login(requestDTO);
         ResponseCookie responseCookie = generateRefreshTokenCookie(tokenDTO.getRefreshToken());
 
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String principal = authentication.getName();
+
         AccessTokenForFrontDTO accessToken = AccessTokenForFrontDTO.builder()
                 .grantType("Bearer")
                 .accessToken(tokenDTO.getAccessToken())
+                .principal(principal)
                 .build();
 
         return ResponseEntity.ok()
