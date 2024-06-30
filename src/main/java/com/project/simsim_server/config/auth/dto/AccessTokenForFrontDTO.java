@@ -7,10 +7,12 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class AccessTokenForFrontDTO {
+    private String grantType;
     private String accessToken;
 
     @Builder
     public AccessTokenForFrontDTO(String grantType, String accessToken) {
+        this.grantType = grantType;
         this.accessToken = accessToken;
     }
 }
