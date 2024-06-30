@@ -28,7 +28,7 @@ public class UsersService {
 
 
     public PersonaResponseDTO updatePersona(String personaCode, Long userId) {
-        Optional<Users> user = usersRepository.findById(userId);
+        Optional<Users> user = usersRepository.findByIdAndUserStatus(userId);
         if (user.isEmpty())
             throw new UserNotFoundException("[페르소나 변경 에러] 해당 유저를 찾을 수 없습니다.",
                     "USER_NOT_FOUND");
@@ -59,7 +59,7 @@ public class UsersService {
 
 
     public UserInfoResponseDTO findByUserId(Long userId) {
-        Optional<Users> user = usersRepository.findById(userId);
+        Optional<Users> user = usersRepository.findByIdAndUserStatus(userId);
         if (user.isEmpty())
             throw new UserNotFoundException("[회원 조회 에러] 해당 유저를 찾을 수 없습니다.",
                     "USER_NOT_FOUND");

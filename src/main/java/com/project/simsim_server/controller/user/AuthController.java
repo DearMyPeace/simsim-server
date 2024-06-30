@@ -14,7 +14,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 
@@ -25,7 +24,6 @@ import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 public class AuthController {
 
     private final AuthService authService;
-    private final Long REFRESH_COOKIE_EXPIRE = 7 * 24 * 60 * 60L;
 
     /**
      * 구글 로그인
@@ -120,9 +118,10 @@ public class AuthController {
     }
 
     private ResponseCookie generateRefreshTokenCookie(String refreshToken) {
+        Long REFRESH_COOKIE_EXPIRE = 7 * 24 * 60 * 60L;
         return ResponseCookie.from("refresh", refreshToken)
                 .httpOnly(true)
-                .secure(false)
+                .secure(true)
                 .maxAge(REFRESH_COOKIE_EXPIRE)
                 .path("/")
                 .sameSite("None")
