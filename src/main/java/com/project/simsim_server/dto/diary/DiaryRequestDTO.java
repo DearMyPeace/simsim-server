@@ -14,7 +14,6 @@ import java.time.ZonedDateTime;
 @NoArgsConstructor
 public class DiaryRequestDTO {
 
-    private Long userId;
     private String content;
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")
     private LocalDateTime createdDate;
@@ -22,8 +21,7 @@ public class DiaryRequestDTO {
     private LocalDateTime modifiedDate;
 
     @Builder
-    public DiaryRequestDTO(Long userId, String content, LocalDateTime createdDate, LocalDateTime modifiedDate) {
-        this.userId = userId;
+    public DiaryRequestDTO(String content, LocalDateTime createdDate, LocalDateTime modifiedDate) {
         this.content = content;
         this.createdDate = createdDate;
         this.modifiedDate = modifiedDate;
@@ -31,7 +29,6 @@ public class DiaryRequestDTO {
 
     public Diary toEntity() {
         return Diary.builder()
-                .userId(userId)
                 .content(content)
                 .createdDate(ZonedDateTime.of(createdDate, ZoneId.of("UTC")).withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime())
                 .modifiedDate(ZonedDateTime.of(modifiedDate, ZoneId.of("UTC")).withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime())
