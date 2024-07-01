@@ -3,6 +3,8 @@ package com.project.simsim_server.controller.user;
 import com.project.simsim_server.config.auth.dto.CustomTokenRequestDTO;
 import com.project.simsim_server.config.auth.dto.TokenDTO;
 import com.project.simsim_server.config.auth.dto.AccessTokenForFrontDTO;
+import com.project.simsim_server.exception.ErrorResponse;
+import com.project.simsim_server.exception.UserNotFoundException;
 import com.project.simsim_server.service.user.AuthService;
 import jakarta.security.auth.message.AuthException;
 import lombok.RequiredArgsConstructor;
@@ -37,17 +39,21 @@ public class AuthController {
     @PostMapping("/google")
     public ResponseEntity googleAuthLogin(@RequestBody CustomTokenRequestDTO requestDTO) throws AuthException {
 
-        TokenDTO tokenDTO = authService.login(requestDTO);
-        ResponseCookie responseCookie = generateRefreshTokenCookie(tokenDTO.getRefreshToken());
+        try {
+            TokenDTO tokenDTO = authService.login(requestDTO);
+            ResponseCookie responseCookie = generateRefreshTokenCookie(tokenDTO.getRefreshToken());
 
-        AccessTokenForFrontDTO accessToken = AccessTokenForFrontDTO.builder()
-                .grantType("Bearer")
-                .accessToken(tokenDTO.getAccessToken())
-                .build();
+            AccessTokenForFrontDTO accessToken = AccessTokenForFrontDTO.builder()
+                    .grantType("Bearer")
+                    .accessToken(tokenDTO.getAccessToken())
+                    .build();
 
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, responseCookie.toString())
-                .body(accessToken);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.SET_COOKIE, responseCookie.toString())
+                    .body(accessToken);
+        } catch (UserNotFoundException ex) {
+            return handleUserNotFoundException(ex);
+        }
     }
 
     /**
@@ -135,4 +141,17 @@ public class AuthController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return authentication.getName();
     }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleUserNotFoundException(UserNotFoundException ex) {
+        ErrorResponse errorResponse = new ErrorResponse(ex.getMessage(), ex.getErrorCode());
+        ResponseCookie responseCookie = ResponseCookie.from("refresh", "")
+                .maxAge(0)
+                .path("/")
+                .build();
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .header(HttpHeaders.SET_COOKIE, responseCookie.toString())
+                .body(errorResponse);
+    }
 }
+

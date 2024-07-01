@@ -3,6 +3,8 @@ package com.project.simsim_server.controller.user;
 import com.project.simsim_server.dto.user.PersonaResponseDTO;
 import com.project.simsim_server.service.user.PersonaService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

@@ -7,6 +7,8 @@ import com.project.simsim_server.service.diary.DiaryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -31,7 +33,9 @@ public class DiaryController {
     @GetMapping("/{targetDate}")
     public List<DiaryResponseDTO> findByCreatedDate(
             @PathVariable LocalDate targetDate) {
-        return diaryService.findByCreatedDate(targetDate);
+        String authentication = getUserIdFromAuthentication();
+        Long userId = Long.parseLong(authentication);
+        return diaryService.findByCreatedDate(targetDate, userId);
     }
 
 
@@ -46,7 +50,9 @@ public class DiaryController {
             @PathVariable String year,
             @PathVariable String month
     ) {
-        return diaryService.countDiariesByDate(year, month);
+        String authentication = getUserIdFromAuthentication();
+        Long userId = Long.parseLong(authentication);
+        return diaryService.countDiariesByDate(year, month, userId);
     }
 
 
@@ -59,7 +65,9 @@ public class DiaryController {
     public DiaryResponseDTO saveDiary(
             @RequestBody DiaryRequestDTO diaryRequestDTO
     ) {
-        return diaryService.save(diaryRequestDTO);
+        String authentication = getUserIdFromAuthentication();
+        Long userId = Long.parseLong(authentication);
+        return diaryService.save(diaryRequestDTO, userId);
     }
 
 
@@ -76,7 +84,9 @@ public class DiaryController {
             @RequestBody DiaryRequestDTO diaryRequestDTO
     ) {
         try {
-            return diaryService.update(diaryId, diaryRequestDTO);
+            String authentication = getUserIdFromAuthentication();
+            Long userId = Long.parseLong(authentication);
+            return diaryService.update(diaryId, diaryRequestDTO, userId);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
@@ -89,6 +99,13 @@ public class DiaryController {
      */
     @DeleteMapping("/{diaryId}")
     public void deleteDiary(@PathVariable Long diaryId) {
-        diaryService.delete(diaryId);
+        String authentication = getUserIdFromAuthentication();
+        Long userId = Long.parseLong(authentication);
+        diaryService.delete(diaryId, userId);
+    }
+
+    private String getUserIdFromAuthentication() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication.getName();
     }
 }

@@ -9,13 +9,14 @@ import org.springframework.data.repository.query.Param;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface DailyAiInfoRepository extends JpaRepository<DailyAiInfo, Long> {
 
     @Query("SELECT dr FROM DailyAiInfo dr WHERE dr.userId =:userId " +
             "AND dr.createdDate <= :targetDateTime " +
             "ORDER BY dr.createdDate DESC")
-    public List<DailyAiInfo> findTopNByCreatedAtBeforeAndUserId(
+    List<DailyAiInfo> findTopNByCreatedAtBeforeAndUserId(
             @Param("userId") Long userId,
             @Param("targetDate") LocalDateTime targetDateTime,
             Pageable pageable
@@ -23,8 +24,12 @@ public interface DailyAiInfoRepository extends JpaRepository<DailyAiInfo, Long> 
 
     @Query("SELECT dr FROM DailyAiInfo dr WHERE dr.userId =:userId " +
             "AND dr.targetDate =:targetDate")
-    public List<DailyAiInfo> findByCreatedAtBeforeAndUserId(
+    List<DailyAiInfo> findByCreatedAtBeforeAndUserId(
         @Param("userId") Long userId,
         @Param("targetDate") LocalDate targetDate
     );
+
+    @Query("SELECT dr FROM DailyAiInfo dr WHERE dr.userId =:userId " +
+            "AND dr.targetDate BETWEEN :startDate AND :endDate")
+    List<DailyAiInfo> findAllByIdAndTargetDate(Long userId, LocalDate startDate, LocalDate endDate);
 }
