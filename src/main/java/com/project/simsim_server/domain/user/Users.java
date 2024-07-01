@@ -57,7 +57,7 @@ public class Users extends BaseTimeEntity {
         this.role = role;
         this.grade = Grade.GENERAL;
         this.pieceCnt = 0;
-        this.persona = "P";
+        this.persona = "F";
         this.userStatus = "Y";
     }
 
