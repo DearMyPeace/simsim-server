@@ -89,7 +89,7 @@ public class SecurityConfig {
         );
         configuration.setAllowCredentials(true);
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        configuration.setAllowedHeaders(List.of("Authorization", "refresh", "Content-type",
+        configuration.setAllowedHeaders(List.of("Authorization", "refresh", "Content-Type",
                 "Origin", "Accept", "Access-Control-Allow-Origin", "x-custom-header",
                 "Access-Control-Allow-Headers", "Access-Control-Allow-Methods"));
         configuration.setExposedHeaders(List.of("Authorization", "refresh"));
