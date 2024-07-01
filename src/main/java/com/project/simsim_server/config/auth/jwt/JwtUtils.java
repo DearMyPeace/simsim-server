@@ -3,39 +3,35 @@ package com.project.simsim_server.config.auth.jwt;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.project.simsim_server.config.auth.dto.JwtPayloadDTO;
-import com.project.simsim_server.config.auth.dto.TokenDTO;
-import com.project.simsim_server.domain.diary.Diary;
-import com.project.simsim_server.domain.user.Reply;
-import com.project.simsim_server.domain.user.Users;
+import com.project.simsim_server.exception.OAuthException;
 import com.project.simsim_server.repository.diary.DiaryRepository;
 import com.project.simsim_server.service.redis.RedisService;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
 import jakarta.annotation.PostConstruct;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.project.simsim_server.exception.AuthErrorCode.INVALID_JWT_SIGNATURE;
+import static com.project.simsim_server.exception.AuthErrorCode.JWT_NOT_VALID;
+
+@ToString
 @Slf4j
 @RequiredArgsConstructor
 @Component
@@ -52,8 +48,6 @@ public class JwtUtils {
 
     private SecretKey secretKey;
     private CustomUserDetailsService customUserDetailsService;
-    private static final String ACCESS_TOKEN_SUBJECT = "AccessToken";
-    private static final String REFRESH_TOKEN_SUBJECT = "RefreshToken";
     private static final String BEARER = "Bearer ";
     private static final String ACCESS_TOKEN_HEADER = "Authorization";
     private static final String REFRESH_TOKEN_HEADER = "refresh";
@@ -90,7 +84,7 @@ public class JwtUtils {
      * @return AccessToken 반환
      */
     public String generateAccessToken(JwtPayloadDTO jwtPayloadDTO) {
-        return generateToken(jwtPayloadDTO, ACCESS_TOKEN_SUBJECT, accessExpireTime);
+        return generateToken(jwtPayloadDTO, accessExpireTime);
     }
 
 
@@ -100,7 +94,7 @@ public class JwtUtils {
      * @return RefreshToken 반환
      */
     public String generateRefreshToken(JwtPayloadDTO jwtPayloadDTO) {
-        return generateToken(jwtPayloadDTO, REFRESH_TOKEN_SUBJECT, refreshExpireTime);
+        return generateToken(jwtPayloadDTO, refreshExpireTime);
     }
 
 
@@ -110,12 +104,14 @@ public class JwtUtils {
      * @param expireTime
      * @return 토큰 반환
      */
-    public String generateToken(JwtPayloadDTO jwtPayloadDTO, String subject, Long expireTime) {
+    public String generateToken(JwtPayloadDTO jwtPayloadDTO, Long expireTime) {
         Date now = new Date();
         Date expireDate = new Date(now.getTime() + expireTime);
-        
+
+        log.warn("토큰 유효시간 확인 : {}", expireDate);
+
         return Jwts.builder()
-                .subject(subject)
+                .subject(jwtPayloadDTO.getUserEmail())
                 .claim("id", jwtPayloadDTO.getUserId())
                 .claim("email", jwtPayloadDTO.getUserEmail())
                 .claim("role", jwtPayloadDTO.getUserRole().getKey())
@@ -151,10 +147,8 @@ public class JwtUtils {
      */
     public boolean validateToken(String token) {
         try {
-            Claims payload = Jwts.parser().verifyWith(secretKey)
-                    .build().parseSignedClaims(token)
-                    .getPayload();
-            log.info("[JwtUtils validateToken()] Claim Payload: {}", payload);
+            Claims claims = parseClaims(token);
+            log.info("[JwtUtils validateToken()] Claim Payload: {}", claims);
             return true;
         } catch (ExpiredJwtException e) {
             throw new JwtException("Expired or invalid JWT token", e);
@@ -168,10 +162,18 @@ public class JwtUtils {
     }
 
     public Authentication getAuthentication(String token) {
-        JwtPayloadDTO jwtPayloadDTO = getUserInfo(token);
-        List<GrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority(jwtPayloadDTO.getUserRole().name()));
-        CustomUserDetails userDetails = (CustomUserDetails) customUserDetailsService.loadUserByUsername(jwtPayloadDTO.getUserId().toString());
-        return new UsernamePasswordAuthenticationToken(userDetails.getUser().getUserId(), null, authorities);
+        Claims claims = parseClaims(token);
+        List<SimpleGrantedAuthority> authorities = getAuthorities(claims);
+        User principal = new User(claims.getSubject(), "", authorities);
+
+        log.warn("-----------[SimsimFilter] JwtUtils List<SimpleGrantedAuthority> authorities: {}", authorities);
+        log.warn("-----------[SimsimFilter] JwtUtils Authentication getAuthentication principal: {}", principal);
+
+        return new UsernamePasswordAuthenticationToken(principal, token, authorities);
+//        JwtPayloadDTO jwtPayloadDTO = getUserInfo(token);
+//        List<GrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority(jwtPayloadDTO.getUserRole().name()));
+//        CustomUserDetails userDetails = (CustomUserDetails) customUserDetailsService.loadUserByUsername(jwtPayloadDTO.getUserId().toString());
+//        return new UsernamePasswordAuthenticationToken(userDetails.getUser().getUserId(), null, authorities);
     }
 
 
@@ -182,8 +184,19 @@ public class JwtUtils {
     }
 
     public String getEmail(String accessToken) {
-        DecodedJWT jwt = JWT.decode(accessToken);
-        return jwt.getClaim("email").asString();
+        Claims claims = parseClaims(accessToken);
+        log.warn("디코딩 토큰: {}", claims.get("email", String.class));
+        return claims.get("email", String.class);
+
+    }
+
+    public String getUserId(String accessToken) {
+
+        log.warn("토큰에서 유저정보 가져오기 대상 토큰 : {}", accessToken);
+        Claims claims = parseClaims(accessToken);
+        log.warn("디코딩 토큰: {}", claims.get("id", Long.class));
+
+        return claims.get("id", Long.class).toString() ;
     }
 
 
@@ -193,5 +206,18 @@ public class JwtUtils {
         Date now = new Date();
 
         return now.after(expDate);
+    }
+
+    private Claims parseClaims(String token) {
+        try {
+            return Jwts.parser().verifyWith(secretKey).build()
+                    .parseSignedClaims(token).getPayload();
+        } catch (ExpiredJwtException e) {
+            return e.getClaims();
+        } catch (MalformedJwtException e) {
+            throw new OAuthException(JWT_NOT_VALID);
+        } catch (SecurityException e) {
+            throw new OAuthException(INVALID_JWT_SIGNATURE);
+        }
     }
 }

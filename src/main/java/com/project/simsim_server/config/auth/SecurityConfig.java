@@ -1,5 +1,6 @@
 package com.project.simsim_server.config.auth;
 
+import com.project.simsim_server.config.auth.jwt.CustomUserDetailsService;
 import com.project.simsim_server.config.filter.JwtAuthenticationFilter;
 import com.project.simsim_server.config.auth.jwt.JwtUtils;
 import com.project.simsim_server.config.filter.JwtExceptionFilter;
@@ -28,7 +29,9 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    private JwtUtils jwtUtils;
+    private final JwtUtils jwtUtils;
+    private final CustomUserDetailsService customUserDetailsService;
+
 
     /**
      * Spring Security 제외 (필터를 거치지 않음)
@@ -47,13 +50,15 @@ public class SecurityConfig {
         http.csrf(AbstractHttpConfigurer::disable);
         http.cors(cors -> cors.configurationSource(corsConfigurationSource()));
         http.rememberMe(AbstractHttpConfigurer::disable);
+        http.anonymous(AbstractHttpConfigurer::disable);
+        http.logout(AbstractHttpConfigurer::disable);
+        http.formLogin(AbstractHttpConfigurer::disable);
 
         http
                 .headers(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((request) -> request
-                        .requestMatchers("/", "/home", "/signup", "/api/v1/auth/google", "/swagger-ui/**",
-                                "/index.html", "/favicon", "/v3/api-docs/**", "/api/v1/user/**", "/api/v1/persona/**",
-                                "/api/v1/**","/form", "index.html").permitAll()
+                        .requestMatchers( "/api/v1/auth/google", "/api/v1/auth/reissue",
+                                "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/admin").hasRole(Role.ADMIN.name())
                         .requestMatchers(HttpMethod.POST,"/notice").hasRole(Role.ADMIN.name())
                         .requestMatchers(HttpMethod.PATCH,"/notice/{noticeId}").hasRole(Role.ADMIN.name())
@@ -63,11 +68,7 @@ public class SecurityConfig {
                 .sessionManagement((session) -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                .logout((logout) -> logout
-                        .logoutUrl("/logout")
-                        .logoutSuccessUrl("/")
-                )
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JwtAuthenticationFilter(jwtUtils, customUserDetailsService), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(new JwtExceptionFilter(), jwtAuthenticationFilter.getClass());
 
         return http.build();
