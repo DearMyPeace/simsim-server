@@ -66,13 +66,19 @@ public class AuthService {
              * - 회원 정보가 있으면 이름만 변경
              * - 회원 정보가 없으면 새로 DB에 등록
              */
-            Users user = usersRepository.findByEmailAAndUserStatus(userEmail)
-                    .map((entity) -> entity.update(userName))
+            Optional<Users> usersOptional = usersRepository.findByEmail(userEmail);
+            if (usersOptional.isPresent() && usersOptional.get().getUserStatus().equals("N")) {
+                log.warn("탈퇴한 회원입니다.");
+                throw new UserNotFoundException("탈퇴한 회원입니다.", "USER_NOT_FOUND");
+            }
+
+            Users user = usersOptional.map((entity) -> entity.update(userName))
                     .orElse(Users.builder()
                             .name(userName)
                             .email(userEmail)
                             .role(Role.USER)
                             .build());
+
             Users savedUser = usersRepository.save(user);
 
             /**
@@ -96,7 +102,8 @@ public class AuthService {
                     .accessToken(accessToken)
                     .refreshToken(refreshToken)
                     .build();
-
+        } catch (UserNotFoundException e) {
+            throw e;
         } catch (Exception e) {
             throw new OAuthException(LOGIN_FAILED);
         }
