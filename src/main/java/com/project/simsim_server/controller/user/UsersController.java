@@ -5,6 +5,7 @@ import com.project.simsim_server.dto.user.UserInfoResponseDTO;
 import com.project.simsim_server.service.user.UsersService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -21,9 +22,10 @@ public class UsersController {
      * 회원 정보 조회
      * @return UserInfoResponseDTO 회원 정보
      */
-    @GetMapping("/me")
-    public UserInfoResponseDTO getUserInfo() {
+    @GetMapping("/me/{num}")
+    public UserInfoResponseDTO getUserInfo(@PathVariable int num) {
         String authentication = getUserIdFromAuthentication();
+        log.warn("-------조회된 인증 객체 정보: {}", authentication);
         Long userId = Long.parseLong(authentication);
         log.info("[/me API]authentication: {}", authentication);
         return userService.findByUserId(userId);
@@ -57,7 +59,9 @@ public class UsersController {
 
 
     private String getUserIdFromAuthentication() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UsernamePasswordAuthenticationToken authentication =
+                (UsernamePasswordAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
+        log.warn("조회할 객체 : {}", authentication);
         return authentication.getName();
     }
 }

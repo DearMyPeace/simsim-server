@@ -1,5 +1,7 @@
 package com.project.simsim_server.config.filter;
 
+import com.project.simsim_server.config.auth.jwt.CustomUserDetails;
+import com.project.simsim_server.config.auth.jwt.CustomUserDetailsService;
 import com.project.simsim_server.config.auth.jwt.JwtUtils;
 import com.project.simsim_server.service.redis.RedisService;
 import com.project.simsim_server.domain.user.Users;
@@ -14,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -28,10 +31,13 @@ import static com.project.simsim_server.exception.AuthErrorCode.*;
 @RequiredArgsConstructor
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    private static final String[] AUTHENTICATION_NOT_REQUIRED
-            = new String[] { "/", "/login", "/swagger-ui","/v3/api-docs",
-            "/api/v1/auth/google", "/reissue"};
+
     private final JwtUtils jwtUtils;
+    private final CustomUserDetailsService customUserDetailsService;
+
+    private static final String[] AUTHENTICATION_NOT_REQUIRED
+            = new String[] {"/swagger-ui","/v3/api-docs", "/api/v1/auth/google", "/reissue"};
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
@@ -54,7 +60,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     SecurityContextHolder.clearContext();
                     throw new OAuthException(ACCESS_TOKEN_EXPIRED);
                 } else {
-                    setAuthentication(accessToken.get());
+                    String userId = jwtUtils.getUserId(accessToken.get());
+                    CustomUserDetails userDetails = (CustomUserDetails) customUserDetailsService.loadUserByUsername(userId);
+                    setAuthentication(userDetails);
                 }
             } else {
                 log.info("---- [SimSimFilter] JwtAuthenticationFilter : 액세스 토큰이 유효하지 않습니다.");
@@ -70,9 +78,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    private void setAuthentication(String accessToken) {
-        Authentication authentication = jwtUtils.getAuthentication(accessToken);
+    private void setAuthentication(CustomUserDetails userDetails) {
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authentication);
+        log.warn("---- [SimSimFilter] JwtAuthenticationFilter : 생성한 인증 객체 ={}", SecurityContextHolder.getContext().getAuthentication().getName());
     }
 
     @Override

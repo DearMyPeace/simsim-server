@@ -2,6 +2,7 @@ package com.project.simsim_server.service.user;
 
 import com.project.simsim_server.config.auth.dto.*;
 import com.project.simsim_server.config.auth.dto.JwtPayloadDTO;
+import com.project.simsim_server.config.auth.jwt.CustomUserDetails;
 import com.project.simsim_server.config.auth.jwt.JwtUtils;
 import com.project.simsim_server.config.auth.dto.TokenDTO;
 import com.project.simsim_server.domain.user.Role;
@@ -41,8 +42,6 @@ public class AuthService {
     private final UsersRepository usersRepository;
     private final RestTemplate restTemplate;
     private final RedisService redisService;
-    private final AuthenticationManagerBuilder authenticationManagerBuilder;
-
     private final String BEARER = "Bearer ";
     private final String SERVER = "Server";
     private final String GOOGLE_PROFILE_URL = "https://www.googleapis.com/userinfo/v2/me";
@@ -108,18 +107,14 @@ public class AuthService {
     }
 
     private void saveAuthentication(JwtPayloadDTO jwtPayloadDTO) {
-        UsernamePasswordAuthenticationToken authenticationToken =
-                new UsernamePasswordAuthenticationToken(jwtPayloadDTO.getUserId(), jwtPayloadDTO.getUserEmail());
+        List<GrantedAuthority> roles = new ArrayList<>();
+        roles.add(new SimpleGrantedAuthority(jwtPayloadDTO.getUserRole().name()));
 
-        Authentication authentication = authenticationManagerBuilder.getObject()
-                .authenticate(authenticationToken);
+        Authentication authentication =
+                new UsernamePasswordAuthenticationToken(jwtPayloadDTO, null, roles);
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        //        List<GrantedAuthority> roles = new ArrayList<>();
-//        roles.add(new SimpleGrantedAuthority(jwtPayloadDTO.getUserRole().name()));
-//
-//        Authentication authentication =
-//                new UsernamePasswordAuthenticationToken(jwtPayloadDTO, null, roles);
-//        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        log.warn("---- [SimSimFilter] saveAuthentication : 생성한 인증 객체 ={}", SecurityContextHolder.getContext().getAuthentication().getName());
     }
 
     private GoogleUserInfoDTO getGoogleUserInfo(String accessToken) {
@@ -140,6 +135,8 @@ public class AuthService {
     public void logout(String accessToken, Long userId) {
         String resolveAccessToken = resolveToken(accessToken);
         String principal = getPrincipal(resolveAccessToken);
+
+        log.warn("-----[SimsimFilter] AuthService logout principal = {}", principal);
 
         //DB에 존재하는 회원인지 확인
         Optional<Users> user = usersRepository.findByIdAndUserStatus(Long.parseLong(principal));

@@ -12,7 +12,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
@@ -38,13 +40,9 @@ public class AuthController {
         TokenDTO tokenDTO = authService.login(requestDTO);
         ResponseCookie responseCookie = generateRefreshTokenCookie(tokenDTO.getRefreshToken());
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String principal = authentication.getName();
-
         AccessTokenForFrontDTO accessToken = AccessTokenForFrontDTO.builder()
                 .grantType("Bearer")
                 .accessToken(tokenDTO.getAccessToken())
-                .principal(principal)
                 .build();
 
         return ResponseEntity.ok()
@@ -58,13 +56,9 @@ public class AuthController {
      * @return
      */
     @DeleteMapping("/logout")
-    public ResponseEntity logout(@RequestHeader("Authorization") String accessToken) {
+    public ResponseEntity logout(@RequestHeader("Authorization") String accessToken,
+                                 @AuthenticationPrincipal UserDetails userDetails) {
         String authentication = getUserIdFromAuthentication();
-        if (authentication.equals("-1")) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized - No authentication information found");
-        } else if (authentication.equals("-2")) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized - Anonymous user");
-        }
         Long userId = Long.parseLong(authentication);
         authService.logout(accessToken, userId);
         ResponseCookie responseCookie = ResponseCookie.from("refresh", "")
@@ -74,7 +68,7 @@ public class AuthController {
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, responseCookie.toString())
-                .body(null);
+                .body(authentication);
     }
 
 
@@ -100,7 +94,7 @@ public class AuthController {
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, responseCookie.toString())
-                .body(null);
+                .body(authentication);
     }
 
 
