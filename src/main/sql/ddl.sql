@@ -1,12 +1,12 @@
 drop table if exists users_tbl;
 create table users_tbl (
     user_id bigint not null auto_increment,
-    user_email varchar(30) not null,
-    user_name varchar(10) not null,
+    user_email varchar(30) not null unique ,
+    user_name varchar(30) not null,
     user_role enum ('ADMIN','GUEST','USER') not null,
     user_grade tinyint default 0 not null,
     user_piece_cnt integer default 0 not null,
-    user_persona char(1) default 'P' not null,
+    user_persona char(1) default 'F' not null,
     user_bg_image varchar(300),
     user_status char(1) default 'Y' not null,
     created_date datetime(6) not null,
