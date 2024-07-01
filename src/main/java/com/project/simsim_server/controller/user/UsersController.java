@@ -22,8 +22,8 @@ public class UsersController {
      * 회원 정보 조회
      * @return UserInfoResponseDTO 회원 정보
      */
-    @GetMapping("/me/{num}")
-    public UserInfoResponseDTO getUserInfo(@PathVariable int num) {
+    @GetMapping("/me")
+    public UserInfoResponseDTO getUserInfo() {
         String authentication = getUserIdFromAuthentication();
         log.warn("-------조회된 인증 객체 정보: {}", authentication);
         Long userId = Long.parseLong(authentication);
