@@ -1,4 +1,4 @@
-package com.project.simsim_server.repository.setting;
+package com.project.simsim_server.repository.user;
 
 import com.project.simsim_server.domain.user.Persona;
 import org.springframework.data.jpa.repository.JpaRepository;

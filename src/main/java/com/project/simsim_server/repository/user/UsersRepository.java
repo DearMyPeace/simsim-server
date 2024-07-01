@@ -9,11 +9,9 @@ import java.util.Optional;
 
 public interface UsersRepository extends JpaRepository<Users, Long> {
 
-    Optional<Users> findByEmail(String email);
+    @Query("SELECT u FROM Users u WHERE u.email =:userEmail AND u.userStatus = 'Y'")
+    Optional<Users> findByEmailAAndUserStatus(@Param("userEmail") String userEmail);
 
     @Query("SELECT u FROM Users u WHERE u.userId =:userId AND u.userStatus = 'Y'")
     Optional<Users> findByIdAndUserStatus(@Param("userId") Long userId);
-
-    @Query("SELECT u FROM Users u WHERE u.userStatus = 'Y' AND u.email = :email")
-    Optional<Users> findByUserStatusAndEmail(@Param("email") String email);
 }

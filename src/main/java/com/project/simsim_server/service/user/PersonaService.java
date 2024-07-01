@@ -2,7 +2,7 @@ package com.project.simsim_server.service.user;
 
 import com.project.simsim_server.domain.user.Persona;
 import com.project.simsim_server.dto.user.PersonaResponseDTO;
-import com.project.simsim_server.repository.setting.PersonaRepository;
+import com.project.simsim_server.repository.user.PersonaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

@@ -2,7 +2,6 @@ package com.project.simsim_server.service.user;
 
 import com.project.simsim_server.config.auth.dto.*;
 import com.project.simsim_server.config.auth.dto.JwtPayloadDTO;
-import com.project.simsim_server.config.auth.jwt.CustomUserDetails;
 import com.project.simsim_server.config.auth.jwt.JwtUtils;
 import com.project.simsim_server.config.auth.dto.TokenDTO;
 import com.project.simsim_server.domain.user.Role;
@@ -18,7 +17,6 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -43,7 +41,6 @@ public class AuthService {
     private final RestTemplate restTemplate;
     private final RedisService redisService;
     private final String BEARER = "Bearer ";
-    private final String SERVER = "Server";
     private final String GOOGLE_PROFILE_URL = "https://www.googleapis.com/userinfo/v2/me";
     private final String GOOGLE_CANCLE_URL = "https://accounts.google.com/o/oauth2/revoke?token={access_token}";
 
@@ -69,7 +66,7 @@ public class AuthService {
              * - 회원 정보가 있으면 이름만 변경
              * - 회원 정보가 없으면 새로 DB에 등록
              */
-            Users user = usersRepository.findByEmail(userEmail)
+            Users user = usersRepository.findByEmailAAndUserStatus(userEmail)
                     .map((entity) -> entity.update(userName))
                     .orElse(Users.builder()
                             .name(userName)
@@ -101,8 +98,7 @@ public class AuthService {
                     .build();
 
         } catch (Exception e) {
-            log.error("에러 : ", e);
-            throw new AuthException("로그인 실패");
+            throw new OAuthException(LOGIN_FAILED);
         }
     }
 
@@ -138,17 +134,16 @@ public class AuthService {
 
         log.warn("-----[SimsimFilter] AuthService logout principal = {}", principal);
 
-        //DB에 존재하는 회원인지 확인
-        Optional<Users> user = usersRepository.findByIdAndUserStatus(Long.parseLong(principal));
-        if (user.isEmpty())
-            throw new UserNotFoundException("[로그아웃 에러] 해당 유저를 찾을 수 없습니다." + principal,
+        Optional<Users> user = usersRepository.findByIdAndUserStatus(userId);
+        if (user.isEmpty()) {
+            throw new UserNotFoundException("[로그아웃 에러] 해당 유저를 찾을 수 없습니다." + userId,
                     "USER_NOT_FOUND");
+        }
 
         // Redis에서 RefreshToken 삭제
-        String userEmail = user.get().getEmail();
-        String refreshTokenInRedis = redisService.getValues(userEmail);
+        String refreshTokenInRedis = redisService.getValues(principal);
         if (refreshTokenInRedis != null) {
-            redisService.deleteValues(userEmail);
+            redisService.deleteValues(principal);
         }
 
         log.info(principal + " : " + "logout" + "(" + new Date() + ")");

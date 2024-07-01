@@ -165,15 +165,7 @@ public class JwtUtils {
         Claims claims = parseClaims(token);
         List<SimpleGrantedAuthority> authorities = getAuthorities(claims);
         User principal = new User(claims.getSubject(), "", authorities);
-
-        log.warn("-----------[SimsimFilter] JwtUtils List<SimpleGrantedAuthority> authorities: {}", authorities);
-        log.warn("-----------[SimsimFilter] JwtUtils Authentication getAuthentication principal: {}", principal);
-
         return new UsernamePasswordAuthenticationToken(principal, token, authorities);
-//        JwtPayloadDTO jwtPayloadDTO = getUserInfo(token);
-//        List<GrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority(jwtPayloadDTO.getUserRole().name()));
-//        CustomUserDetails userDetails = (CustomUserDetails) customUserDetailsService.loadUserByUsername(jwtPayloadDTO.getUserId().toString());
-//        return new UsernamePasswordAuthenticationToken(userDetails.getUser().getUserId(), null, authorities);
     }
 
 
@@ -185,17 +177,13 @@ public class JwtUtils {
 
     public String getEmail(String accessToken) {
         Claims claims = parseClaims(accessToken);
-        log.warn("디코딩 토큰: {}", claims.get("email", String.class));
         return claims.get("email", String.class);
 
     }
 
     public String getUserId(String accessToken) {
-
-        log.warn("토큰에서 유저정보 가져오기 대상 토큰 : {}", accessToken);
         Claims claims = parseClaims(accessToken);
         log.warn("디코딩 토큰: {}", claims.get("id", Long.class));
-
         return claims.get("id", Long.class).toString() ;
     }
 

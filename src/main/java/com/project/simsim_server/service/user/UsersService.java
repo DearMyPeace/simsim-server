@@ -9,7 +9,7 @@ import com.project.simsim_server.dto.user.UserInfoResponseDTO;
 import com.project.simsim_server.exception.ResourceNotFoundException;
 import com.project.simsim_server.exception.UserNotFoundException;
 import com.project.simsim_server.repository.diary.DiaryRepository;
-import com.project.simsim_server.repository.setting.PersonaRepository;
+import com.project.simsim_server.repository.user.PersonaRepository;
 import com.project.simsim_server.repository.user.UsersRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
