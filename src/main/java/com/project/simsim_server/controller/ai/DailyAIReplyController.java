@@ -4,12 +4,13 @@ import com.project.simsim_server.dto.ai.client.AILetterRequestDTO;
 import com.project.simsim_server.dto.ai.client.AILetterResponseDTO;
 import com.project.simsim_server.service.ai.DailyAIReplyService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
 
-//@CrossOrigin(origins = "*") //TODO - 테스트용, 추후 제거
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/aiLetters")
 @RestController
@@ -19,9 +20,12 @@ public class DailyAIReplyController {
 
     @GetMapping
     public List<AILetterResponseDTO> getAILetters(
-            @RequestParam Long userId,
             @RequestParam(required = false) LocalDate offset,
             @RequestParam("total") int count) {
+
+        String authentication = getUserIdFromAuthentication();
+        Long userId = Long.parseLong(authentication);
+
         if (offset != null) {
             return dailyAIReplyService.findByCreatedDateAndUserIdOrderByCreatedDateDesc(userId, offset, count);
         }
@@ -30,6 +34,15 @@ public class DailyAIReplyController {
 
     @PostMapping("/save")
     public AILetterResponseDTO saveAiResult(@RequestBody AILetterRequestDTO requestDTO) {
-        return dailyAIReplyService.save(requestDTO);
+
+        String authentication = getUserIdFromAuthentication();
+        Long userId = Long.parseLong(authentication);
+        return dailyAIReplyService.save(requestDTO, userId);
+    }
+
+    private String getUserIdFromAuthentication() {
+        UsernamePasswordAuthenticationToken authentication =
+                (UsernamePasswordAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
+        return authentication.getName();
     }
 }

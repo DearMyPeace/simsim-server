@@ -25,9 +25,7 @@ public class UsersController {
     @GetMapping("/me")
     public UserInfoResponseDTO getUserInfo() {
         String authentication = getUserIdFromAuthentication();
-        log.warn("-------조회된 인증 객체 정보: {}", authentication);
         Long userId = Long.parseLong(authentication);
-        log.info("[/me API]authentication: {}", authentication);
         return userService.findByUserId(userId);
     }
 
@@ -37,8 +35,7 @@ public class UsersController {
      * @return PersonaResponseDTO 변경 후 페르소나 코드, 페르소나 명칭
      */
     @PatchMapping("/persona/{personaCode}")
-    public PersonaResponseDTO changeUserPersona(@PathVariable String personaCode)
-    {
+    public PersonaResponseDTO changeUserPersona(@PathVariable String personaCode) {
         String authentication = getUserIdFromAuthentication();
         Long userId = Long.parseLong(authentication);
         return userService.updatePersona(personaCode, userId);
