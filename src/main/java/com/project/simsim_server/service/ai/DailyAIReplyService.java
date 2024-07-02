@@ -125,7 +125,7 @@ public class DailyAIReplyService {
         DailyAiRequestDTO requestData = DailyAiRequestDTO.builder()
                 .targetDate(targetDate)
                 .persona(persona)
-                .diary(diaries)
+                .diarys(diaries)
                 .summary(summaries)
                 .build();
 
@@ -144,6 +144,9 @@ public class DailyAIReplyService {
             log.error("---[SimSimSchedule] AI 응답 실패 userId = {}", user.getUserId());
             return;
         }
+
+        log.warn("---[SimSimSchedule] AI 응답 내용 {},  userId = {}", response.getBody(), user.getUserId());
+
 
         DailyAiResponseDTO aiResponse = response.getBody();
         if (aiResponse == null || aiResponse.getEmotion() == null) {
