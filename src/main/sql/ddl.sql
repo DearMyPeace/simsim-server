@@ -1,7 +1,7 @@
 drop table if exists users_tbl;
 create table users_tbl (
     user_id bigint not null auto_increment,
-    user_email varchar(30) not null unique ,
+    user_email varchar(50) not null unique ,
     user_name varchar(30) not null,
     user_role enum ('ADMIN','GUEST','USER') not null,
     user_grade tinyint default 0 not null,
@@ -15,15 +15,16 @@ create table users_tbl (
 ) CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 drop table if exists diary_tbl;
-create table diary_tbl (
-    diary_id bigint not null auto_increment,
-    user_id bigint not null,
-    diary_content varchar(500),
-    diary_list_key varchar(30) not null,
-    diary_delete_yn char(1) default 'N' not null,
-    created_date datetime(6) not null,
-    modified_date datetime(6) not null,
-    primary key (diary_id)
+CREATE TABLE diary_tbl (
+    diary_id BIGINT NOT NULL AUTO_INCREMENT,
+    user_id BIGINT NOT NULL,
+    diary_content VARCHAR(500),
+    diary_list_key VARCHAR(30) NOT NULL,
+    diary_delete_yn CHAR(1) DEFAULT 'N' NOT NULL,
+    date DATE NOT NULL,
+    created_date DATETIME(6) NOT NULL,
+    modified_date DATETIME(6) NOT NULL,
+    PRIMARY KEY (diary_id)
 ) CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
 drop table if exists daily_ai_response_tbl;

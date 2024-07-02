@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -21,14 +22,14 @@ public interface DiaryRepository extends JpaRepository<Diary, Long> {
             @Param("endDate") LocalDateTime endDate,
             @Param("userId") Long userId);
 
-    @Query("SELECT d.createdDate, COUNT(*) FROM Diary d " +
+    @Query("SELECT d.date, COUNT(*) FROM Diary d " +
             "WHERE d.userId = :userId " +
             "AND d.diaryDeleteYn = 'N' " +
-            "AND d.createdDate BETWEEN :startDate AND :endDate " +
-            "GROUP BY d.createdDate")
+            "AND d.date BETWEEN :startDate AND :endDate " +
+            "GROUP BY d.date")
     List<Object[]> countDiariesByDate(
-            @Param("startDate") LocalDateTime startDate,
-            @Param("endDate") LocalDateTime endDate,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate,
             @Param("userId") Long userId
     );
 

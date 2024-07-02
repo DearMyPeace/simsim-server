@@ -5,8 +5,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
-import org.springframework.format.annotation.DateTimeFormat;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -34,11 +34,12 @@ public class Diary {
     @ColumnDefault("'N'")
     private String diaryDeleteYn;
 
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+    @Column(name = "date", nullable = false)
+    private LocalDate date;
+
     @Column(name = "created_date", nullable = false)
     private LocalDateTime createdDate;
 
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     @Column(name = "modified_date", nullable = false)
     private LocalDateTime modifiedDate;
 
@@ -48,6 +49,7 @@ public class Diary {
         this.userId = userId;
         this.listKey = userId + "-" + createdDate.format(DateTimeFormatter.ofPattern("yyMMddHHmmss"));
         this.diaryDeleteYn = "N";
+        this.date = createdDate.toLocalDate();
         this.createdDate = createdDate;
         this.modifiedDate = modifiedDate;
     }
