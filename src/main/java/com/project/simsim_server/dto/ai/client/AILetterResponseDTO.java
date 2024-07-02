@@ -3,6 +3,7 @@ package com.project.simsim_server.dto.ai.client;
 import com.project.simsim_server.domain.ai.DailyAiInfo;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.time.LocalDate;
 

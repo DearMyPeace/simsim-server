@@ -20,6 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -34,6 +35,7 @@ import java.util.*;
 @Service
 public class DailyAIReplyService {
 
+    private final ObjectMapper objectMapper;
     private final RestTemplate restTemplate;
     private final DailyAiInfoRepository dailyAiInfoRepository;
     private final DiaryRepository diaryRepository;
@@ -67,47 +69,49 @@ public class DailyAIReplyService {
                 .toList();
     }
 
-    public AILetterResponseDTO save(AILetterRequestDTO requestDTO, Long userId) {
 
-        if (requestDTO.getTargetDate().isAfter(LocalDate.now().minusDays(1))) {
-            throw new IllegalArgumentException("해당 날짜는 AI 편지를 열람 할 수 없습니다.");
+    @Transactional
+    public void save() {
+        // 모든 회원 조회
+        List<Users> userList = usersRepository.findAllAndUserStatus();
+
+        // 배치가 1시에 실행되므로 전날 일기 목록 조회
+        LocalDate targetDate = LocalDate.now().minusDays(1);
+        LocalDateTime startDateTime = LocalDate.now().minusDays(1).atStartOfDay();
+        LocalDateTime endDateTime = LocalDate.now().minusDays(1).atTime(LocalTime.MAX);
+
+        for (Users user : userList) {
+            try {
+                processUser(user, targetDate, startDateTime, endDateTime);
+            } catch (Exception e) {
+                log.error("---[SimSimSchedule] 에러 처리 userId = {}", user.getUserId(), e);
+            }
+        }
+    }
+
+
+    private void processUser(Users user, LocalDate targetDate, LocalDateTime startDateTime, LocalDateTime endDateTime) {
+        List<Diary> targetDiaries = diaryRepository.findDiariesByCreatedAtBetweenAndUserId(startDateTime, endDateTime, user.getUserId());
+
+        if (targetDiaries.isEmpty()) {
+            log.info("---[SimSimSchedule] 전날 작성한 일기가 없는 회원 userId = {}", user.getUserId());
+            return;
         }
 
-        List<DailyAiInfo> prevReply
-                = dailyAiInfoRepository.findByCreatedAtBeforeAndUserId(
-                userId, requestDTO.getTargetDate());
-        if (!prevReply.isEmpty()) {
-            return new AILetterResponseDTO(prevReply.get(0));
-        }
+        // 페르소나 정보
+        String persona = user.getPersona();
 
-        //페르소나 정보를 가져옴
-        Optional<Users> user = usersRepository.findByIdAndUserStatus(userId);
-        if (user.isEmpty())
-            throw new UserNotFoundException("[AI 일기 조회 에러] 해당 유저를 찾을 수 없습니다.",
-                    "USER_NOT_FOUND");
-        String persona = user.get().getPersona();
-
-
-        // 조회할 일자의 일기 내용을 가져옴
-        LocalDateTime startDateTime = requestDTO.getTargetDate().atStartOfDay();
-        LocalDateTime endDateTime = requestDTO.getTargetDate().atTime(LocalTime.MAX);
-        List<Diary> result = diaryRepository.findDiariesByCreatedAtBetweenAndUserId(startDateTime,
-                endDateTime, userId);
-        if (result.isEmpty()) {
-            throw new IllegalArgumentException("전날 작성한 일기가 없어 AI 편지를 조회할 수 없습니다.");
-        }
-
-        // 14일 전 ~ 어제까지 축적된 일기 Summary 가져오기
-        LocalDate startDate = requestDTO.getTargetDate().minusDays(14);
-        LocalDate endDate = requestDTO.getTargetDate().minusDays(1);
-        List<DailyAiInfo> summaryList = dailyAiInfoRepository.findAllByIdAndTargetDate(userId, startDate, endDate);
-
+        // 14일~2일전 일기 요약 정보
+        LocalDate startDate = LocalDate.now().minusDays(14);
+        LocalDate endDate = LocalDate.now().minusDays(2);
+        List<DailyAiInfo> summaryList = dailyAiInfoRepository.findAllByIdAndTargetDate(user.getUserId(), startDate, endDate);
 
         List<String> diaries = new ArrayList<>();
-        for (Diary diary : result) {
+        for (Diary diary : targetDiaries) {
             diaries.add(diary.getContent());
         }
 
+        // 감정 정보
         String delimiter = ",";
         List<DiarySummaryDTO> summaries = new ArrayList<>();
         for (DailyAiInfo summary : summaryList) {
@@ -118,48 +122,46 @@ public class DailyAIReplyService {
                     .build());
         }
 
-
         DailyAiRequestDTO requestData = DailyAiRequestDTO.builder()
-                .targetDate(requestDTO.getTargetDate())
+                .targetDate(targetDate)
                 .persona(persona)
                 .diary(diaries)
                 .summary(summaries)
                 .build();
 
-        ObjectMapper objectMapper = new ObjectMapper();
         try {
             String jsonString = objectMapper.writeValueAsString(requestData);
-            log.info("JSON Request = {}", jsonString);
+            log.info("---[SimSimSchedule] AI 요청 데이터 = {}", jsonString);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("---[SimSimSchedule] JSON 직렬화 에러 userId = {}", user.getUserId(), e);
+            return;
         }
 
-        //AI API 호출
-        ResponseEntity<DailyAiResponseDTO> response
-                = restTemplate.postForEntity(AI_URL, requestData, DailyAiResponseDTO.class);
-
+        // AI 요청
+        ResponseEntity<DailyAiResponseDTO> response = restTemplate.postForEntity(AI_URL, requestData, DailyAiResponseDTO.class);
 
         if (response.getStatusCode() != HttpStatus.OK) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "AI HttpResponse Code:"
-                    + response.getStatusCode());
+            log.error("---[SimSimSchedule] AI 응답 실패 userId = {}", user.getUserId());
+            return;
         }
 
-
         DailyAiResponseDTO aiResponse = response.getBody();
-        if (aiResponse.getEmotion() == null)
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Response is empty.");
+        if (aiResponse == null || aiResponse.getEmotion() == null) {
+            log.error("---[SimSimSchedule] AI 응답 내용 없음 userId = {}", user.getUserId());
+            return;
+        }
 
         String emotions = aiResponse.getEmotion().toString();
 
-        //분석 내용을 DB에 저장
-        DailyAiInfo saveInfo = dailyAiInfoRepository.save(DailyAiInfo.builder()
-                .userId(userId)
-                .targetDate(requestDTO.getTargetDate())
+        dailyAiInfoRepository.save(DailyAiInfo.builder()
+                .userId(user.getUserId())
+                .targetDate(targetDate)
                 .diarySummary(aiResponse.getSummary())
                 .replyContent(aiResponse.getReply())
                 .analyzeEmotions(emotions)
                 .build());
 
-        return new AILetterResponseDTO(saveInfo);
+        log.info("---[SimSimSchedule] 처리 완료 userId = {}", user.getUserId());
     }
+
 }

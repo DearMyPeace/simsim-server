@@ -1,13 +1,9 @@
-package com.project.simsim_server.config.filter;
+package com.project.simsim_server.filter;
 
 import com.project.simsim_server.config.auth.jwt.CustomUserDetails;
 import com.project.simsim_server.config.auth.jwt.CustomUserDetailsService;
 import com.project.simsim_server.config.auth.jwt.JwtUtils;
-import com.project.simsim_server.service.redis.RedisService;
-import com.project.simsim_server.domain.user.Users;
-import com.project.simsim_server.repository.diary.DiaryRepository;
-import com.project.simsim_server.repository.user.UsersRepository;
-import com.project.simsim_server.exception.OAuthException;
+import com.project.simsim_server.exception.auth.OAuthException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,9 +11,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -25,7 +19,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.Optional;
 
-import static com.project.simsim_server.exception.AuthErrorCode.*;
+import static com.project.simsim_server.exception.auth.AuthErrorCode.*;
 
 @Slf4j
 @RequiredArgsConstructor

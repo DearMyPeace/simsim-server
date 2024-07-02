@@ -1,15 +1,14 @@
-package com.project.simsim_server.service.user;
+package com.project.simsim_server.service.auth;
 
 import com.nimbusds.jose.JWKSet;
 import com.nimbusds.jose.crypto.RSASSAVerifier;
-import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import com.project.simsim_server.config.auth.dto.*;
 import com.project.simsim_server.config.auth.dto.JwtPayloadDTO;
 import com.project.simsim_server.config.auth.jwt.JwtUtils;
 import com.project.simsim_server.config.auth.dto.TokenDTO;
 import com.project.simsim_server.domain.user.Role;
-import com.project.simsim_server.exception.OAuthException;
+import com.project.simsim_server.exception.auth.OAuthException;
 import com.project.simsim_server.exception.UserNotFoundException;
 import com.project.simsim_server.service.redis.RedisService;
 import com.project.simsim_server.domain.user.Users;
@@ -32,12 +31,11 @@ import org.springframework.web.client.RestTemplate;
 import java.net.URL;
 import java.security.interfaces.RSAKey;
 import java.security.interfaces.RSAPublicKey;
-import java.text.ParseException;
 import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.project.simsim_server.exception.AuthErrorCode.*;
+import static com.project.simsim_server.exception.auth.AuthErrorCode.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -53,9 +51,7 @@ public class AuthService {
     private final String GOOGLE_PROFILE_URL = "https://www.googleapis.com/userinfo/v2/me";
     private final String GOOGLE_CANCLE_URL = "https://accounts.google.com/o/oauth2/revoke?token={access_token}";
     private static final String APPLE_KEYS_URL = "https://appleid.apple.com/auth/keys";
-    private final String APPLE_TOKEN_URL = "https://appleid.apple.com/auth/authorize?";
     private final String APPLE_CANCLE_URL = "https://appleid.apple.com/auth/revoke";
-//    private final String APPLE_TOKEN_URL = "https://appleid.apple.com/auth/token";
 
 
     /**
@@ -166,11 +162,7 @@ public class AuthService {
             throw new UserNotFoundException("탈퇴한 회원입니다.", "USER_NOT_FOUND");
         }
 
-
-        String finalUserName = userName;
-        Users user = usersOptional.map((entity) ->
-                        entity.update(finalUserName))
-                .orElse(Users.builder()
+        Users user = usersOptional.orElse(Users.builder()
                         .name(userName)
                         .email(userEmail)
                         .role(Role.USER)
@@ -313,8 +305,6 @@ public class AuthService {
 
         Authentication authentication = jwtUtils.getAuthentication(requestAccessToken);
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        String authorities = jwtUtils.getAuthorities(authentication);
-
 
         JwtPayloadDTO jwtPayloadDTO
                 = JwtPayloadDTO.fromUser(user.get());
@@ -323,7 +313,7 @@ public class AuthService {
         String refreshToken = jwtUtils.generateRefreshToken(jwtPayloadDTO);
         redisService.deleteValues(jwtPayloadDTO.getUserEmail());
         saveAuthentication(jwtPayloadDTO);
-        log.info("access token = {}", accessToken);
+        log.info("---- [SimSimFilter] reissue 액세스 토큰 = {}", accessToken);
 
         /**
          * Redis에 Refresh 토큰 저장

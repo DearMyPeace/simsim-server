@@ -18,7 +18,7 @@ public interface DailyAiInfoRepository extends JpaRepository<DailyAiInfo, Long> 
             "ORDER BY dr.createdDate DESC")
     List<DailyAiInfo> findTopNByCreatedAtBeforeAndUserId(
             @Param("userId") Long userId,
-            @Param("targetDate") LocalDateTime targetDateTime,
+            @Param("targetDateTime") LocalDateTime targetDateTime,
             Pageable pageable
     );
 

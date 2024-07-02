@@ -1,4 +1,6 @@
-package com.project.simsim_server.exception;
+package com.project.simsim_server.exception.auth;
+
+import com.project.simsim_server.exception.ErrorType;
 
 public enum AuthErrorCode implements ErrorType {
 

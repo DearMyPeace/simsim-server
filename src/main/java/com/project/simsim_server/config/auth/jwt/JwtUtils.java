@@ -5,7 +5,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.simsim_server.config.auth.dto.JwtPayloadDTO;
-import com.project.simsim_server.exception.OAuthException;
+import com.project.simsim_server.exception.auth.OAuthException;
 import com.project.simsim_server.repository.diary.DiaryRepository;
 import com.project.simsim_server.service.redis.RedisService;
 import io.jsonwebtoken.*;
@@ -30,8 +30,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.project.simsim_server.exception.AuthErrorCode.INVALID_JWT_SIGNATURE;
-import static com.project.simsim_server.exception.AuthErrorCode.JWT_NOT_VALID;
+import static com.project.simsim_server.exception.auth.AuthErrorCode.INVALID_JWT_SIGNATURE;
+import static com.project.simsim_server.exception.auth.AuthErrorCode.JWT_NOT_VALID;
 
 @ToString
 @Slf4j

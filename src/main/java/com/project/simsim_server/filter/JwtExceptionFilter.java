@@ -1,6 +1,6 @@
-package com.project.simsim_server.config.filter;
+package com.project.simsim_server.filter;
 
-import com.project.simsim_server.exception.OAuthException;
+import com.project.simsim_server.exception.auth.OAuthException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

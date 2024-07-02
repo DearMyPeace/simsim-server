@@ -5,9 +5,11 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.time.LocalDate;
 
+@ToString
 @Getter
 @NoArgsConstructor
 @Table(name = "daily_ai_response_tbl")
