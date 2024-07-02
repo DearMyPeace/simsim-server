@@ -52,6 +52,7 @@ public class DiaryService {
         if (todayDiaries.size() == MAX_DIARIES_PER_DAY) {
             throw new DiaryLimitExceededException("금일 작성할 수 있는 일기 갯수를 초과했습니다.");
         }
+        diaryRequestDTO.setUserId(userId);
         return new DiaryResponseDTO(diaryRepository.save(diaryRequestDTO.toEntity()));
     }
 
