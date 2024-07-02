@@ -2,6 +2,7 @@ package com.project.simsim_server.controller.ai;
 
 import com.project.simsim_server.dto.ai.client.AILetterRequestDTO;
 import com.project.simsim_server.dto.ai.client.AILetterResponseDTO;
+import com.project.simsim_server.exception.ai.AIException;
 import com.project.simsim_server.service.ai.DailyAIReplyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -10,6 +11,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
+
+import static com.project.simsim_server.exception.ai.AIErrorCode.AILETTERS_NOT_FOUND;
 
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/aiLetters")
@@ -32,13 +35,17 @@ public class DailyAIReplyController {
         return dailyAIReplyService.findByCreatedDateAndUserIdOrderByCreatedDateDesc(userId, count);
     }
 
-    @PostMapping("/save")
-    public AILetterResponseDTO saveAiResult(@RequestBody AILetterRequestDTO requestDTO) {
-
+    @GetMapping("/{today}")
+    public AILetterResponseDTO getAILetter(@PathVariable LocalDate today) {
         String authentication = getUserIdFromAuthentication();
         Long userId = Long.parseLong(authentication);
-        return dailyAIReplyService.save(requestDTO, userId);
+        List<AILetterResponseDTO> letter = dailyAIReplyService.findByCreatedDateAndUserIdOrderByCreatedDateDesc(userId, 1);
+        if (letter.isEmpty()) {
+            throw new AIException(AILETTERS_NOT_FOUND);
+        }
+        return letter.get(0);
     }
+
 
     private String getUserIdFromAuthentication() {
         UsernamePasswordAuthenticationToken authentication =

@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UsersRepository extends JpaRepository<Users, Long> {
@@ -16,4 +17,9 @@ public interface UsersRepository extends JpaRepository<Users, Long> {
     Optional<Users> findByIdAndUserStatus(@Param("userId") Long userId);
 
     Optional<Users> findByEmail(String userEmail);
+
+    Optional<String> findPersonaByUserStatus(String userStatus);
+
+    @Query("SELECT u FROM Users u WHERE u.userStatus = 'Y'")
+    List<Users> findAllAndUserStatus();
 }
