@@ -2,6 +2,8 @@ package com.project.simsim_server.config.auth.jwt;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.simsim_server.config.auth.dto.JwtPayloadDTO;
 import com.project.simsim_server.exception.OAuthException;
 import com.project.simsim_server.repository.diary.DiaryRepository;
@@ -206,6 +208,22 @@ public class JwtUtils {
             throw new OAuthException(JWT_NOT_VALID);
         } catch (SecurityException e) {
             throw new OAuthException(INVALID_JWT_SIGNATURE);
+        }
+    }
+
+    public <T> T decodePayload(String token, Class<T> targetClass) {
+
+        String[] tokenParts = token.split("\\.");
+        String payloadJWT = tokenParts[1];
+        Base64.Decoder decoder = Base64.getUrlDecoder();
+        String payload = new String(decoder.decode(payloadJWT));
+        ObjectMapper objectMapper = new ObjectMapper()
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        try {
+            return objectMapper.readValue(payload, targetClass);
+        } catch (Exception e) {
+            throw new RuntimeException("Error decoding token payload", e);
         }
     }
 }

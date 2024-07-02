@@ -1,5 +1,9 @@
 package com.project.simsim_server.service.user;
 
+import com.nimbusds.jose.JWKSet;
+import com.nimbusds.jose.crypto.RSASSAVerifier;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
 import com.project.simsim_server.config.auth.dto.*;
 import com.project.simsim_server.config.auth.dto.JwtPayloadDTO;
 import com.project.simsim_server.config.auth.jwt.JwtUtils;
@@ -25,8 +29,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
+import java.net.URL;
+import java.security.interfaces.RSAKey;
+import java.security.interfaces.RSAPublicKey;
+import java.text.ParseException;
 import java.time.Duration;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.project.simsim_server.exception.AuthErrorCode.*;
 
@@ -43,6 +52,11 @@ public class AuthService {
     private final String BEARER = "Bearer ";
     private final String GOOGLE_PROFILE_URL = "https://www.googleapis.com/userinfo/v2/me";
     private final String GOOGLE_CANCLE_URL = "https://accounts.google.com/o/oauth2/revoke?token={access_token}";
+    private static final String APPLE_KEYS_URL = "https://appleid.apple.com/auth/keys";
+    private final String APPLE_TOKEN_URL = "https://appleid.apple.com/auth/authorize?";
+    private final String APPLE_CANCLE_URL = "https://appleid.apple.com/auth/revoke";
+//    private final String APPLE_TOKEN_URL = "https://appleid.apple.com/auth/token";
+
 
     /**
      * Google 소셜 로그인을 통한 회원 가입 및 로그인
@@ -51,7 +65,7 @@ public class AuthService {
      * @throws AuthException
      */
     @Transactional
-    public TokenDTO login(CustomTokenRequestDTO tokenRequest) throws AuthException {
+    public TokenDTO loginGoogle(GoogleLoginRequestDTO tokenRequest) throws AuthException {
 
         /**
          * 구글 로그인 Access 토큰으로 회원 정보 가져오기
@@ -95,7 +109,7 @@ public class AuthService {
             /**
              * Redis에 Refresh 토큰 저장
              */
-            redisService.setValues(jwtPayloadDTO.getUserEmail(), refreshToken,
+            redisService.setValues(jwtPayloadDTO.getUserEmail(), "Google " + refreshToken,
                     Duration.ofMillis(jwtUtils.getRefreshExpireTime()));
 
             return TokenDTO.builder()
@@ -109,23 +123,108 @@ public class AuthService {
         }
     }
 
-    private void saveAuthentication(JwtPayloadDTO jwtPayloadDTO) {
-        List<GrantedAuthority> roles = new ArrayList<>();
-        roles.add(new SimpleGrantedAuthority(jwtPayloadDTO.getUserRole().name()));
-
-        Authentication authentication =
-                new UsernamePasswordAuthenticationToken(jwtPayloadDTO, null, roles);
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        log.warn("---- [SimSimFilter] saveAuthentication : 생성한 인증 객체 ={}", SecurityContextHolder.getContext().getAuthentication().getName());
-    }
-
     private GoogleUserInfoDTO getGoogleUserInfo(String accessToken) {
         final HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.AUTHORIZATION, BEARER + accessToken);
-        final HttpEntity<CustomTokenRequestDTO> httpEntity = new HttpEntity<>(headers);
+        final HttpEntity<GoogleLoginRequestDTO> httpEntity = new HttpEntity<>(headers);
         return restTemplate.exchange(GOOGLE_PROFILE_URL, HttpMethod.GET, httpEntity, GoogleUserInfoDTO.class)
                 .getBody();
+    }
+
+    @Transactional
+    public TokenDTO loginApple(AppleLoginRequestDTO tokenRequest) throws Exception {
+        /**
+         * 애플 유효성 검사
+         */
+        AppleUserInfoDTO userInfoDTO
+                = getAppleUserInfo(tokenRequest.getAuthorization().getId_token());
+
+        log.warn("애플 페이로드 디코딩 : {}", userInfoDTO);
+
+        String userEmail = null;
+        String userName = null;
+        if (tokenRequest.getUser() == null || tokenRequest.getUser().getEmail() == null) {
+            userEmail = userInfoDTO.getEmail();
+            userName = String.valueOf(userInfoDTO.getName());
+        } else {
+            userName = tokenRequest.getUser().getName().getFirstName()
+                + tokenRequest.getUser().getName().getLastName();
+            userEmail = tokenRequest.getUser().getEmail();
+        }
+
+        log.warn("애플 이름 : {}, 이메일: {}", userName, userEmail);
+
+        /**
+         * DB 회원 정보 유무 확인
+         * - 회원 정보가 있으면 이름만 변경
+         * - 회원 정보가 없으면 새로 DB에 등록
+         */
+        Optional<Users> usersOptional 
+                = usersRepository.findByEmail(userEmail);
+        if (usersOptional.isPresent() && usersOptional.get().getUserStatus().equals("N")) {
+            log.warn("탈퇴한 회원입니다.");
+            throw new UserNotFoundException("탈퇴한 회원입니다.", "USER_NOT_FOUND");
+        }
+
+
+        String finalUserName = userName;
+        Users user = usersOptional.map((entity) ->
+                        entity.update(finalUserName))
+                .orElse(Users.builder()
+                        .name(userName)
+                        .email(userEmail)
+                        .role(Role.USER)
+                        .build());
+
+        Users savedUser = usersRepository.save(user);
+
+        /**
+         * DB에 저장된 회원정보로 JWT 토큰 발급
+         */
+        JwtPayloadDTO jwtPayloadDTO
+                = JwtPayloadDTO.fromUser(savedUser);
+
+        String accessToken = BEARER + jwtUtils.generateAccessToken(jwtPayloadDTO);
+        String refreshToken = jwtUtils.generateRefreshToken(jwtPayloadDTO);
+        log.info("access token = {}", accessToken);
+        saveAuthentication(jwtPayloadDTO);
+
+        /**
+         * Redis에 Refresh 토큰 저장
+         */
+        redisService.setValues(jwtPayloadDTO.getUserEmail(), "Apple " + refreshToken,
+                Duration.ofMillis(jwtUtils.getRefreshExpireTime()));
+
+        return TokenDTO.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
+    }
+
+    private List<RSAKey> getApplePublicKeys() throws Exception {
+        RestTemplate restTemplate = new RestTemplate();
+        String jwks = restTemplate.getForObject(new URL(APPLE_KEYS_URL).toURI(), String.class);
+        JWKSet jwkSet = JWKSet.parse(jwks);
+        return jwkSet.getKeys().stream()
+                .map(k -> (RSAKey) k)
+                .collect(Collectors.toList());
+    }
+
+    private SignedJWT verifyAndDecode(String idToken) throws Exception {
+        SignedJWT signedJWT = SignedJWT.parse(idToken);
+
+        List<RSAKey> applePublicKeys = getApplePublicKeys();
+        for (RSAKey key : applePublicKeys) {
+            if (signedJWT.verify(new RSASSAVerifier((RSAPublicKey) key))) {
+                return signedJWT;
+            }
+        }
+
+        throw new Exception("JWT verification failed");
+    }
+
+    private AppleUserInfoDTO getAppleUserInfo(String idToken) throws Exception {
+        return jwtUtils.decodePayload(idToken, AppleUserInfoDTO.class);
     }
 
 
@@ -140,12 +239,6 @@ public class AuthService {
         String principal = getPrincipal(resolveAccessToken);
 
         log.warn("-----[SimsimFilter] AuthService logout principal = {}", principal);
-
-        Optional<Users> user = usersRepository.findByIdAndUserStatus(userId);
-        if (user.isEmpty()) {
-            throw new UserNotFoundException("[로그아웃 에러] 해당 유저를 찾을 수 없습니다." + userId,
-                    "USER_NOT_FOUND");
-        }
 
         // Redis에서 RefreshToken 삭제
         String refreshTokenInRedis = redisService.getValues(principal);
@@ -242,6 +335,17 @@ public class AuthService {
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .build();
+    }
+
+    private void saveAuthentication(JwtPayloadDTO jwtPayloadDTO) {
+        List<GrantedAuthority> roles = new ArrayList<>();
+        roles.add(new SimpleGrantedAuthority(jwtPayloadDTO.getUserRole().name()));
+
+        Authentication authentication =
+                new UsernamePasswordAuthenticationToken(jwtPayloadDTO, null, roles);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        log.warn("---- [SimSimFilter] saveAuthentication : 생성한 인증 객체 ={}", SecurityContextHolder.getContext().getAuthentication().getName());
     }
 
     public String resolveToken(String accessToken) {

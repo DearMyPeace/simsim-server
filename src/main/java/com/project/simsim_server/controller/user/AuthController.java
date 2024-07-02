@@ -1,6 +1,7 @@
 package com.project.simsim_server.controller.user;
 
-import com.project.simsim_server.config.auth.dto.CustomTokenRequestDTO;
+import com.project.simsim_server.config.auth.dto.AppleLoginRequestDTO;
+import com.project.simsim_server.config.auth.dto.GoogleLoginRequestDTO;
 import com.project.simsim_server.config.auth.dto.TokenDTO;
 import com.project.simsim_server.config.auth.dto.AccessTokenForFrontDTO;
 import com.project.simsim_server.exception.ErrorResponse;
@@ -14,9 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
@@ -37,10 +36,9 @@ public class AuthController {
      * @return ResponseEntity AccessToken, RefreshToken
      */
     @PostMapping("/google")
-    public ResponseEntity googleAuthLogin(@RequestBody CustomTokenRequestDTO requestDTO) throws AuthException {
-
+    public ResponseEntity googleAuthLogin(@RequestBody GoogleLoginRequestDTO requestDTO) throws AuthException {
         try {
-            TokenDTO tokenDTO = authService.login(requestDTO);
+            TokenDTO tokenDTO = authService.loginGoogle(requestDTO);
             ResponseCookie responseCookie = generateRefreshTokenCookie(tokenDTO.getRefreshToken());
 
             AccessTokenForFrontDTO accessToken = AccessTokenForFrontDTO.builder()
@@ -55,6 +53,41 @@ public class AuthController {
             return handleUserNotFoundException(ex);
         }
     }
+
+    /**
+     * 애플 로그인
+     * @param requestDTO
+     * @return
+     * @throws AuthException
+     */
+    @PostMapping("/apple")
+    public ResponseEntity appleAuthLogin(@RequestBody AppleLoginRequestDTO requestDTO) throws AuthException {
+
+//        log.info("Apple login request: {}", parameter);
+
+        log.info("애플 로그인 요청 정보 = {}", requestDTO.toString());
+
+        try {
+            TokenDTO tokenDTO = authService.loginApple(requestDTO);
+            ResponseCookie responseCookie = generateRefreshTokenCookie(tokenDTO.getRefreshToken());
+
+            AccessTokenForFrontDTO accessToken = AccessTokenForFrontDTO.builder()
+                    .grantType("Bearer")
+                    .accessToken(tokenDTO.getAccessToken())
+                    .build();
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.SET_COOKIE, responseCookie.toString())
+                    .body(accessToken);
+        } catch (UserNotFoundException ex) {
+            return handleUserNotFoundException(ex);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+//        return (ResponseEntity) ResponseEntity.ok();
+    }
+
+
 
     /**
      * 회원 로그아웃
