@@ -39,7 +39,7 @@ public class DailyAIReplyController {
     public AILetterResponseDTO getAILetter(@PathVariable LocalDate today) {
         String authentication = getUserIdFromAuthentication();
         Long userId = Long.parseLong(authentication);
-        List<AILetterResponseDTO> letter = dailyAIReplyService.findByCreatedDateAndUserIdOrderByCreatedDateDesc(userId, 1);
+        List<AILetterResponseDTO> letter = dailyAIReplyService.findByCreatedDateAndUserIdOrderByCreatedDateDesc(userId, today, 1);
         if (letter.isEmpty()) {
             throw new AIException(AILETTERS_NOT_FOUND);
         }
