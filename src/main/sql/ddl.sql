@@ -32,7 +32,7 @@ create table daily_ai_response_tbl (
     ai_id bigint not null auto_increment,
     user_id bigint not null,
     ai_target_date date not null,
-    ai_diary_summary varchar(30),
+    ai_diary_summary varchar(500),
     ai_reply_content varchar(500),
     ai_analyze_emotions varchar(20),
     ai_analyze_factors varchar(300),
