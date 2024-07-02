@@ -62,9 +62,6 @@ public class AuthController {
      */
     @PostMapping("/apple")
     public ResponseEntity appleAuthLogin(@RequestBody AppleLoginRequestDTO requestDTO) throws AuthException {
-
-//        log.info("Apple login request: {}", parameter);
-
         log.info("애플 로그인 요청 정보 = {}", requestDTO.toString());
 
         try {
@@ -84,7 +81,6 @@ public class AuthController {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-//        return (ResponseEntity) ResponseEntity.ok();
     }
 
 
@@ -106,7 +102,8 @@ public class AuthController {
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, responseCookie.toString())
-                .body(authentication);
+                .header(HttpHeaders.LOCATION, "/")
+                .build();
     }
 
 
