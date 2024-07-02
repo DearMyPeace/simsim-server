@@ -17,7 +17,7 @@ public class ScheduleConfiguration {
     private final DailyAIReplyService dailyAIReplyService;
 
     @Async
-    @Scheduled(cron = "0 0 1 * * ?", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 0 3 * * ?", zone = "Asia/Seoul")
     public void generateDailyAIReply() {
         log.info("---[SimSimSchedul] 스케줄링 작업 시작");
         dailyAIReplyService.save();
