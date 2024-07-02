@@ -35,13 +35,13 @@ public class DiaryService {
 
     public List<DiaryCountResponseDTO> countDiariesByDate(String year, String month, Long userId) {
         YearMonth yearMonth = YearMonth.of(Integer.parseInt(year), Integer.parseInt(month));
-        LocalDateTime startDate = yearMonth.atDay(1).atStartOfDay();
-        LocalDateTime endDate = yearMonth.atEndOfMonth().atTime(LocalTime.MAX);
+        LocalDate startDate = yearMonth.atDay(1);
+        LocalDate endDate = yearMonth.atEndOfMonth();
 
         List<Object[]> results = diaryRepository.countDiariesByDate(startDate, endDate, userId);
         return results.stream()
                 .map(result ->
-                        new DiaryCountResponseDTO((LocalDateTime) result[0], (Long) result[1]))
+                        new DiaryCountResponseDTO((LocalDate) result[0], (Long) result[1]))
                 .toList();
     }
 

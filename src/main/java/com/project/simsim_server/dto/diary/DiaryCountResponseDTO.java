@@ -13,8 +13,8 @@ public class DiaryCountResponseDTO {
     private LocalDate markedDate;
     private Long diaryCount;
 
-    public DiaryCountResponseDTO(LocalDateTime targetDate, Long diaryCount) {
-        this.markedDate = targetDate.toLocalDate();
+    public DiaryCountResponseDTO(LocalDate targetDate, Long diaryCount) {
+        this.markedDate = targetDate;
         this.diaryCount = diaryCount;
     }
 }
