@@ -273,38 +273,36 @@ public class AuthService {
     /**
      * 토큰 재발급
      * @param requestRefreshToken
-     * @param requestAccessToken
      * @return
      */
     @Transactional
-    public TokenDTO reissue(String requestRefreshToken, String requestAccessToken) {
+    public TokenDTO reissue(String requestRefreshToken) {
 
         log.info("----[AuthService] 리프레스 토큰 및 액세스 토큰 재발급 시작 ----");
-        String resolveAccessToken = resolveToken(requestAccessToken);
-        String principal = getPrincipal(resolveAccessToken);
+        String principal = getPrincipal(requestRefreshToken);
+
+        log.warn("----[AuthService] 프린시펄 : {}", principal);
 
         Optional<Users> user = usersRepository.findByEmailAndUserStatus(principal);
         if (user.isEmpty())
             throw new UserNotFoundException("[토큰 재발급 에러] 해당 유저를 찾을 수 없습니다.", "USER_NOT_FOUND");
 
+        log.warn("----[AuthService] 유저 정보 : {}", user.get().getEmail());
+
+
         if (!jwtUtils.validateToken(requestRefreshToken)) {
             redisService.deleteValues(user.get().getEmail());
             SecurityContextHolder.clearContext();
-            return null;
         }
 
         String refreshTokenInRedis = redisService.getValues(principal);
         if (refreshTokenInRedis == null) {
             SecurityContextHolder.clearContext();
-            return null;
         } else if (!requestRefreshToken.equals(refreshTokenInRedis) || jwtUtils.isTokenExpired(requestRefreshToken)) {
             redisService.deleteValues(principal);
             SecurityContextHolder.clearContext();
-            return null;
         }
 
-        Authentication authentication = jwtUtils.getAuthentication(requestAccessToken);
-        SecurityContextHolder.getContext().setAuthentication(authentication);
 
         JwtPayloadDTO jwtPayloadDTO
                 = JwtPayloadDTO.fromUser(user.get());

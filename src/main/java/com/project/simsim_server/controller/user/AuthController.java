@@ -130,12 +130,11 @@ public class AuthController {
 
     @PostMapping("/reissue")
     public ResponseEntity reissueToken(
-            @CookieValue(name = "refresh") String requestRefreshToken,
-            @RequestHeader("Authorization") String requestAccessToken) {
+            @CookieValue(name = "refresh") String requestRefreshToken) {
 
-        log.warn("---[SimSimLog] AccessToken = {},  RefreshToken = {}", requestAccessToken, requestRefreshToken);
+        log.warn("---[SimSimLog] RefreshToken = {}", requestRefreshToken);
 
-        TokenDTO reissuedTokenDto = authService.reissue(requestRefreshToken, requestAccessToken);
+        TokenDTO reissuedTokenDto = authService.reissue(requestRefreshToken);
         if (reissuedTokenDto != null) {
             ResponseCookie responseCookie = generateRefreshTokenCookie(reissuedTokenDto.getRefreshToken());
 
@@ -150,7 +149,7 @@ public class AuthController {
                     .header(HttpHeaders.SET_COOKIE, responseCookie.toString())
                     .body(accessToken);
         } else {
-            
+
             log.warn("---[SimSimLog] 토큰 발급 실패");
 
             ResponseCookie responseCookie = ResponseCookie.from("refresh", "")
