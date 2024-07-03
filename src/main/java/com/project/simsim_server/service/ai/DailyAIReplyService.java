@@ -10,6 +10,7 @@ import com.project.simsim_server.dto.ai.fastapi.DailyAiRequestDTO;
 import com.project.simsim_server.dto.ai.fastapi.DailyAiResponseDTO;
 import com.project.simsim_server.dto.ai.fastapi.DiarySummaryDTO;
 import com.project.simsim_server.exception.UserNotFoundException;
+import com.project.simsim_server.exception.ai.AIException;
 import com.project.simsim_server.repository.ai.DailyAiInfoRepository;
 import com.project.simsim_server.repository.diary.DiaryRepository;
 import com.project.simsim_server.repository.user.UsersRepository;
@@ -29,6 +30,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
+
+import static com.project.simsim_server.exception.ai.AIErrorCode.AI_MAIL_FAIL;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -69,13 +72,35 @@ public class DailyAIReplyService {
                 .toList();
     }
 
+    @Transactional
+    public AILetterResponseDTO save(AILetterRequestDTO requestDTO, Long userId) {
+
+        // 전날 일기 목록 조회
+        LocalDate targetDate = LocalDate.now().minusDays(1);
+        LocalDateTime startDateTime = LocalDate.now().minusDays(1).atStartOfDay();
+        LocalDateTime endDateTime = LocalDate.now().minusDays(1).atTime(LocalTime.MAX);
+
+        Users user = usersRepository.findByIdAndUserStatus(userId)
+                .orElseThrow(() -> new AIException(AI_MAIL_FAIL));
+
+        try {
+            DailyAiInfo dailyAiInfo = processUser(user, targetDate, startDateTime, endDateTime);
+            if (dailyAiInfo == null) {
+                throw new AIException(AI_MAIL_FAIL);
+            }
+            return new AILetterResponseDTO(dailyAiInfo);
+        } catch (Exception e) {
+            log.error("---[SimSimSchedule] 에러 처리 userId = {}", user.getUserId(), e);
+            throw new AIException(AI_MAIL_FAIL);
+        }
+    }
 
     @Transactional
-    public void save() {
+    public void saveAuto() {
         // 모든 회원 조회
         List<Users> userList = usersRepository.findAllAndUserStatus();
 
-        // 배치가 1시에 실행되므로 전날 일기 목록 조회
+        // 전날 일기 목록 조회
         LocalDate targetDate = LocalDate.now().minusDays(1);
         LocalDateTime startDateTime = LocalDate.now().minusDays(1).atStartOfDay();
         LocalDateTime endDateTime = LocalDate.now().minusDays(1).atTime(LocalTime.MAX);
@@ -90,12 +115,12 @@ public class DailyAIReplyService {
     }
 
 
-    private void processUser(Users user, LocalDate targetDate, LocalDateTime startDateTime, LocalDateTime endDateTime) {
+    private DailyAiInfo processUser(Users user, LocalDate targetDate, LocalDateTime startDateTime, LocalDateTime endDateTime) {
         List<Diary> targetDiaries = diaryRepository.findDiariesByCreatedAtBetweenAndUserId(startDateTime, endDateTime, user.getUserId());
 
         if (targetDiaries.isEmpty()) {
             log.info("---[SimSimSchedule] 전날 작성한 일기가 없는 회원 userId = {}", user.getUserId());
-            return;
+            return null;
         }
 
         // 페르소나 정보
@@ -134,7 +159,7 @@ public class DailyAIReplyService {
             log.info("---[SimSimSchedule] AI 요청 데이터 = {}", jsonString);
         } catch (IOException e) {
             log.error("---[SimSimSchedule] JSON 직렬화 에러 userId = {}", user.getUserId(), e);
-            return;
+            return null;
         }
 
         // AI 요청
@@ -142,7 +167,7 @@ public class DailyAIReplyService {
 
         if (response.getStatusCode() != HttpStatus.OK) {
             log.error("---[SimSimSchedule] AI 응답 실패 userId = {}", user.getUserId());
-            return;
+            return null;
         }
 
         log.warn("---[SimSimSchedule] AI 응답 내용 {},  userId = {}", response.getBody(), user.getUserId());
@@ -151,12 +176,12 @@ public class DailyAIReplyService {
         DailyAiResponseDTO aiResponse = response.getBody();
         if (aiResponse == null || aiResponse.getEmotion() == null) {
             log.error("---[SimSimSchedule] AI 응답 내용 없음 userId = {}", user.getUserId());
-            return;
+            return null;
         }
 
         String emotions = aiResponse.getEmotion().toString();
 
-        dailyAiInfoRepository.save(DailyAiInfo.builder()
+        DailyAiInfo saveData = dailyAiInfoRepository.save(DailyAiInfo.builder()
                 .userId(user.getUserId())
                 .targetDate(targetDate)
                 .diarySummary(aiResponse.getSummary())
@@ -165,6 +190,7 @@ public class DailyAIReplyService {
                 .build());
 
         log.info("---[SimSimSchedule] 처리 완료 userId = {}", user.getUserId());
+        return saveData;
     }
 
 }
