@@ -20,7 +20,7 @@ public class ScheduleConfiguration {
     @Scheduled(cron = "0 7 4 * * ?", zone = "Asia/Seoul")
     public void generateDailyAIReply() {
         log.info("---[SimSimSchedul] 스케줄링 작업 시작");
-        dailyAIReplyService.save();
+        dailyAIReplyService.saveAuto();
         log.info("---[SimSimSchedul] 스케줄링 작업 종료");
     }
 }

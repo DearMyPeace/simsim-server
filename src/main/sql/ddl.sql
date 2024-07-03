@@ -36,6 +36,7 @@ create table daily_ai_response_tbl (
     ai_reply_content varchar(1024),
     ai_analyze_emotions varchar(20),
     ai_analyze_factors varchar(300),
+    ai_reply_status char(1),
     created_date datetime(6) not null,
     modified_date datetime(6) not null,
     primary key (ai_id)
