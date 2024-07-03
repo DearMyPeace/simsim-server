@@ -4,6 +4,7 @@ import com.project.simsim_server.config.auth.jwt.CustomUserDetails;
 import com.project.simsim_server.config.auth.jwt.CustomUserDetailsService;
 import com.project.simsim_server.config.auth.jwt.JwtUtils;
 import com.project.simsim_server.exception.auth.OAuthException;
+import com.project.simsim_server.service.redis.RedisService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,6 +29,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtils jwtUtils;
     private final CustomUserDetailsService customUserDetailsService;
+    private final RedisService redisService;
 
     private static final String[] AUTHENTICATION_NOT_REQUIRED
             = new String[] {"/swagger-ui","/v3/api-docs", "/api/v1/auth/apple", "/api/v1/auth/google", "/reissue"};
@@ -55,6 +57,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     throw new OAuthException(ACCESS_TOKEN_EXPIRED);
                 } else {
                     String userId = jwtUtils.getUserId(accessToken.get());
+                    String userEmail = jwtUtils.getEmail(accessToken.get());
+                    String values = redisService.getValues(userEmail);
+
+                    log.warn("---- [SimSimFilter] JwtAuthenticationFilter : 검증 이메일 ={}", userEmail);
+                    log.warn("---- [SimSimFilter] JwtAuthenticationFilter : 레디스 토큰 ={}", values);
+
+                    if (values.isEmpty()) {
+                        log.error("---- [SimSimFilter] JwtAuthenticationFilter : 리프레시 토큰이 없습니다.");
+                        throw new OAuthException(REFRESH_TOKEN_NOT_EXIST);
+                    }
+
                     CustomUserDetails userDetails = (CustomUserDetails) customUserDetailsService.loadUserByUsername(userId);
                     setAuthentication(userDetails);
                 }
