@@ -158,7 +158,7 @@ public class AuthController {
 
     private ResponseCookie generateRefreshTokenCookie(String refreshToken) {
 //        Long REFRESH_COOKIE_EXPIRE = 7 * 24 * 60 * 60L;
-        Long REFRESH_COOKIE_EXPIRE = 300000L;
+        Long REFRESH_COOKIE_EXPIRE = 32700L;
         return ResponseCookie.from("refresh", refreshToken)
                 .httpOnly(true)
                 .secure(true)
