@@ -143,11 +143,16 @@ public class AuthController {
                     .grantType("Bearer")
                     .accessToken(reissuedTokenDto.getAccessToken())
                     .build();
+            log.warn("---[SimSimLog] 새로 발급한 토큰 AccessToken = {},  RefreshToken = {}", reissuedTokenDto.getAccessToken(),
+                    reissuedTokenDto.getRefreshToken());
 
             return ResponseEntity.ok()
                     .header(HttpHeaders.SET_COOKIE, responseCookie.toString())
                     .body(accessToken);
         } else {
+            
+            log.warn("---[SimSimLog] 토큰 발급 실패");
+
             ResponseCookie responseCookie = ResponseCookie.from("refresh", "")
                     .maxAge(0)
                     .path("/")
