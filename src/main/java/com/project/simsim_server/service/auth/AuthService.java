@@ -283,7 +283,7 @@ public class AuthService {
         String resolveAccessToken = resolveToken(requestAccessToken);
         String principal = getPrincipal(resolveAccessToken);
 
-        Optional<Users> user = usersRepository.findByIdAndUserStatus(Long.parseLong(principal));
+        Optional<Users> user = usersRepository.findByEmailAndUserStatus(principal);
         if (user.isEmpty())
             throw new UserNotFoundException("[토큰 재발급 에러] 해당 유저를 찾을 수 없습니다.", "USER_NOT_FOUND");
 
@@ -293,12 +293,12 @@ public class AuthService {
             return null;
         }
 
-        String refreshTokenInRedis = redisService.getValues(user.get().getEmail());
+        String refreshTokenInRedis = redisService.getValues(principal);
         if (refreshTokenInRedis == null) {
             SecurityContextHolder.clearContext();
             return null;
         } else if (!requestRefreshToken.equals(refreshTokenInRedis) || jwtUtils.isTokenExpired(requestRefreshToken)) {
-            redisService.deleteValues(user.get().getEmail());
+            redisService.deleteValues(principal);
             SecurityContextHolder.clearContext();
             return null;
         }
