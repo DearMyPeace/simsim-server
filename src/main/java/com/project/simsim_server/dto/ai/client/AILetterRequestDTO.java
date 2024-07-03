@@ -19,7 +19,7 @@ import java.util.List;
 @NoArgsConstructor
 public class AILetterRequestDTO {
 
-    private LocalDate targetDate; // 일기 작성 날자(어제 날짜)
+    private LocalDate targetDate; // 일기 분석 날짜
 
     @Builder
     public AILetterRequestDTO(LocalDate targetDate) {

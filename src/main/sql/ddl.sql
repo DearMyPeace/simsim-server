@@ -31,12 +31,12 @@ drop table if exists daily_ai_response_tbl;
 create table daily_ai_response_tbl (
     ai_id bigint not null auto_increment,
     user_id bigint not null,
-    ai_target_date date not null,
+    ai_target_date date not null,                     # 조회 이벤트 발생 일자
     ai_diary_summary varchar(1024),
     ai_reply_content varchar(1024),
     ai_analyze_emotions varchar(20),
     ai_analyze_factors varchar(300),
-    ai_reply_status char(1),
+    ai_reply_status char(1) default 'N' not null ,
     created_date datetime(6) not null,
     modified_date datetime(6) not null,
     primary key (ai_id)

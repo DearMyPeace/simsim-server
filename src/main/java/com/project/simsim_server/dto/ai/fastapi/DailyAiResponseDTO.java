@@ -1,5 +1,6 @@
 package com.project.simsim_server.dto.ai.fastapi;
 
+import com.project.simsim_server.domain.ai.DailyAiInfo;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

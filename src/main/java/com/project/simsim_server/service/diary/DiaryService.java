@@ -6,6 +6,7 @@ import com.project.simsim_server.dto.diary.DiaryRequestDTO;
 import com.project.simsim_server.dto.diary.DiaryResponseDTO;
 import com.project.simsim_server.exception.DiaryLimitExceededException;
 import com.project.simsim_server.repository.diary.DiaryRepository;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,8 +21,9 @@ import java.util.List;
 @Service
 public class DiaryService {
 
+    @Getter
+    private final int MAX_DIARIES_PER_DAY = 3;
     private final DiaryRepository diaryRepository;
-    private static final int MAX_DIARIES_PER_DAY = 3;
 
     public List<DiaryResponseDTO> findByCreatedDate(LocalDate targetDate, Long userId) {
         LocalDateTime startDate = targetDate.atStartOfDay();

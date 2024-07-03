@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDate;
 
@@ -39,21 +40,32 @@ public class DailyAiInfo extends BaseTimeEntity {
     @Column(name = "ai_analyze_factors")
     private String analyzeFactors;
 
+    @Column(name = "ai_reply_status")
+    @ColumnDefault("'N'")
+    private String replyStatus;
+
 
     @Builder
     public DailyAiInfo(Long userId, LocalDate targetDate, String diarySummary,
-            String replyContent, String analyzeEmotions, String analyzeFactors) {
+            String replyContent, String analyzeEmotions, String analyzeFactors,
+            String replyStatus) {
         this.userId = userId;
         this.targetDate = targetDate;
         this.diarySummary = diarySummary;
         this.replyContent = replyContent;
         this.analyzeEmotions = analyzeEmotions;
         this.analyzeFactors = analyzeFactors;
+        this.replyStatus = "N";
     }
 
     public DailyAiInfo updateAiResult(String diarySummary, String replyContent) {
         this.diarySummary = diarySummary;
         this.replyContent = replyContent;
+        return this;
+    }
+
+    public DailyAiInfo updateReplyStatus(String replyStatus) {
+        this.replyStatus = replyStatus;
         return this;
     }
 }

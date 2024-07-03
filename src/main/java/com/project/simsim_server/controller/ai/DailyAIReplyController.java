@@ -3,7 +3,9 @@ package com.project.simsim_server.controller.ai;
 import com.project.simsim_server.dto.ai.client.AILetterRequestDTO;
 import com.project.simsim_server.dto.ai.client.AILetterResponseDTO;
 import com.project.simsim_server.exception.ai.AIException;
+import com.project.simsim_server.repository.diary.DiaryRepository;
 import com.project.simsim_server.service.ai.DailyAIReplyService;
+import com.project.simsim_server.service.diary.DiaryService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -21,7 +23,9 @@ import static com.project.simsim_server.exception.ai.AIErrorCode.AILETTERS_NOT_F
 @RestController
 public class DailyAIReplyController {
 
+    private final DiaryService diaryService;
     private final DailyAIReplyService dailyAIReplyService;
+    private final DiaryRepository diaryRepository;
 
     /**
      * 원하는 일자, 원하는 갯수에 대해 AI 편지를 조회
@@ -43,23 +47,12 @@ public class DailyAIReplyController {
         return dailyAIReplyService.findByCreatedDateAndUserIdOrderByCreatedDateDesc(userId, count);
     }
 
+
     /**
-     * 오늘 일자에 조회 할 수 있는 AI 편지를 조회(분석 대상은 어제 일자 일기)
-     * @param today 오늘일자
-     * @return AILetterResponseDTO 어제 일기 요약, 그에 대한 AI의 편지
+     * 유저가 편지 조회 버튼을 클릭하면 편지 생성과 동시에 조회하는 API
+     * @param requestDTO
+     * @return AILetterResponseDTO 요약내용, 편지 등
      */
-    @GetMapping("/{today}")
-    public AILetterResponseDTO getAILetter(@PathVariable LocalDate today) {
-        String authentication = getUserIdFromAuthentication();
-        Long userId = Long.parseLong(authentication);
-        List<AILetterResponseDTO> letter = dailyAIReplyService.findByCreatedDateAndUserIdOrderByCreatedDateDesc(userId, today, 1);
-        if (letter.isEmpty()) {
-            throw new AIException(AILETTERS_NOT_FOUND);
-        }
-        return letter.get(0);
-    }
-
-
     @PostMapping("/save")
     public AILetterResponseDTO save(@RequestBody AILetterRequestDTO requestDTO) {
         String authentication = getUserIdFromAuthentication();

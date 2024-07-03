@@ -3,6 +3,7 @@ package com.project.simsim_server.service.ai;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.simsim_server.domain.ai.DailyAiInfo;
 import com.project.simsim_server.domain.diary.Diary;
+import com.project.simsim_server.domain.user.Grade;
 import com.project.simsim_server.domain.user.Users;
 import com.project.simsim_server.dto.ai.client.AILetterRequestDTO;
 import com.project.simsim_server.dto.ai.client.AILetterResponseDTO;
@@ -29,9 +30,10 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.chrono.ChronoLocalDate;
 import java.util.*;
 
-import static com.project.simsim_server.exception.ai.AIErrorCode.AI_MAIL_FAIL;
+import static com.project.simsim_server.exception.ai.AIErrorCode.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -75,16 +77,37 @@ public class DailyAIReplyService {
     @Transactional
     public AILetterResponseDTO save(AILetterRequestDTO requestDTO, Long userId) {
 
-        // 전날 일기 목록 조회
-        LocalDate targetDate = LocalDate.now().minusDays(1);
-        LocalDateTime startDateTime = LocalDate.now().minusDays(1).atStartOfDay();
-        LocalDateTime endDateTime = LocalDate.now().minusDays(1).atTime(LocalTime.MAX);
+        // 유효하지 않은 일자 예외처리
+        if (requestDTO.getTargetDate().isAfter(LocalDate.now())) {
+            throw new AIException(AI_NOT_INVALID_DATE);
+        }
 
         Users user = usersRepository.findByIdAndUserStatus(userId)
                 .orElseThrow(() -> new AIException(AI_MAIL_FAIL));
 
+        // 해당 유저의 가장 마지막 AI 답장 정보 조회
+        List<DailyAiInfo> aiInfo =
+                dailyAiInfoRepository.findByCreatedAtBeforeAndUserId(userId, requestDTO.getTargetDate());
+
+        // 일반 등급이면서 분석 대상 날짜가 동일하면 예외 처리
+        if (user.getGrade() == Grade.GENERAL
+                && !requestDTO.getTargetDate().atStartOfDay()
+                .isBefore(LocalDateTime.of(LocalDate.now(), LocalTime.NOON))) {
+            throw new AIException(NOT_MEET_USER_GRADE);
+        }
+
+        // 기존에 생성된 데이터가 있으면 반환
+        if (!aiInfo.isEmpty()) {
+            DailyAiInfo info = aiInfo.getFirst().updateReplyStatus("Y");
+            DailyAiInfo saveInfo = dailyAiInfoRepository.save(info);
+            return new AILetterResponseDTO(saveInfo);
+        }
+
+        // 기존에 생성된 데이터가 없으면 생성
+        LocalDateTime startDateTime = requestDTO.getTargetDate().atStartOfDay();
+        LocalDateTime endDateTime = requestDTO.getTargetDate().atTime(LocalTime.MAX);
         try {
-            DailyAiInfo dailyAiInfo = processUser(user, targetDate, startDateTime, endDateTime);
+            DailyAiInfo dailyAiInfo = processUser(user, requestDTO.getTargetDate(), startDateTime, endDateTime);
             if (dailyAiInfo == null) {
                 throw new AIException(AI_MAIL_FAIL);
             }
@@ -94,6 +117,7 @@ public class DailyAIReplyService {
             throw new AIException(AI_MAIL_FAIL);
         }
     }
+
 
     @Transactional
     public void saveAuto() {
@@ -119,7 +143,7 @@ public class DailyAIReplyService {
         List<Diary> targetDiaries = diaryRepository.findDiariesByCreatedAtBetweenAndUserId(startDateTime, endDateTime, user.getUserId());
 
         if (targetDiaries.isEmpty()) {
-            log.info("---[SimSimSchedule] 전날 작성한 일기가 없는 회원 userId = {}", user.getUserId());
+            log.info("---[SimSimSchedule] 해당 날짜({})에 작성한 일기가 없는 회원 userId = {}", targetDate, user.getUserId());
             return null;
         }
 
@@ -187,10 +211,10 @@ public class DailyAIReplyService {
                 .diarySummary(aiResponse.getSummary())
                 .replyContent(aiResponse.getReply())
                 .analyzeEmotions(emotions)
+                .replyStatus("N")
                 .build());
 
         log.info("---[SimSimSchedule] 처리 완료 userId = {}", user.getUserId());
         return saveData;
     }
-
 }

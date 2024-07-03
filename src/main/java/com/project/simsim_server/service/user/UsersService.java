@@ -1,6 +1,8 @@
 package com.project.simsim_server.service.user;
 
+import com.project.simsim_server.domain.ai.DailyAiInfo;
 import com.project.simsim_server.domain.diary.Diary;
+import com.project.simsim_server.domain.user.Grade;
 import com.project.simsim_server.domain.user.Persona;
 import com.project.simsim_server.domain.user.Reply;
 import com.project.simsim_server.domain.user.Users;
@@ -8,12 +10,15 @@ import com.project.simsim_server.dto.user.PersonaResponseDTO;
 import com.project.simsim_server.dto.user.UserInfoResponseDTO;
 import com.project.simsim_server.exception.ResourceNotFoundException;
 import com.project.simsim_server.exception.UserNotFoundException;
+import com.project.simsim_server.repository.ai.DailyAiInfoRepository;
 import com.project.simsim_server.repository.diary.DiaryRepository;
 import com.project.simsim_server.repository.user.PersonaRepository;
 import com.project.simsim_server.repository.user.UsersRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -25,6 +30,7 @@ public class UsersService {
     private final UsersRepository usersRepository;
     private final PersonaRepository personaRepository;
     private final DiaryRepository diaryRepository;
+    private final DailyAiInfoRepository aiInfoRepository;
 
 
     public PersonaResponseDTO updatePersona(String personaCode, Long userId) {
@@ -65,11 +71,19 @@ public class UsersService {
                     "USER_NOT_FOUND");
         Users userData = user.get();
 
-        Reply replyStatus = Reply.EMPTY;
+        Reply replyStatus = Reply.DEFAULT;
+
+        List<DailyAiInfo> notReadAiReply = aiInfoRepository.findByUserIdAndReplyStatus(userId);
+        if (!notReadAiReply.isEmpty()) {
+            replyStatus = Reply.RECEIVE;
+            //TODO - 추후 Grade에 따른 분기 추가
+        }
+
+
         LocalDateTime yesterday = LocalDateTime.now().minusDays(1);
         List<Diary> diaries = diaryRepository.findDiariesByCreatedDateAndUserId(yesterday, userId);
         if (!diaries.isEmpty()) {
-            replyStatus = Reply.OCCUPIED;
+            aiInfoRepository.findByCreatedAtBeforeAndUserId(userId, LocalDate.now());
         }
 
         Optional<Persona> persona = personaRepository.findByPersonaCode(userData.getPersona());
