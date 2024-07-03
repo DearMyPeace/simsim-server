@@ -130,8 +130,11 @@ public class AuthController {
 
     @PostMapping("/reissue")
     public ResponseEntity reissueToken(
-            @CookieValue(name = "refresh", required = true) String requestRefreshToken,
+            @CookieValue(name = "refresh") String requestRefreshToken,
             @RequestHeader("Authorization") String requestAccessToken) {
+
+        log.warn("---[SimSimLog] AccessToken = {},  RefreshToken = {}", requestAccessToken, requestRefreshToken);
+
         TokenDTO reissuedTokenDto = authService.reissue(requestRefreshToken, requestAccessToken);
         if (reissuedTokenDto != null) {
             ResponseCookie responseCookie = generateRefreshTokenCookie(reissuedTokenDto.getRefreshToken());
