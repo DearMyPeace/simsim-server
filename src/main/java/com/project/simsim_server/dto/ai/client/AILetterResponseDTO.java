@@ -15,12 +15,14 @@ public class AILetterResponseDTO {
     private LocalDate date;
     private String summary;
     private String content;
+    private String replyStatus;
 
     public AILetterResponseDTO(DailyAiInfo aiEntity) {
         this.id = aiEntity.getAiId();
         this.date = aiEntity.getTargetDate();
         this.summary = aiEntity.getDiarySummary();
         this.content = aiEntity.getReplyContent();
+        this.replyStatus = aiEntity.getReplyStatus();
     }
 }
 

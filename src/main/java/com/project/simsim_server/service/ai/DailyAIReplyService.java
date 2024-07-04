@@ -258,12 +258,18 @@ public class DailyAIReplyService {
                 = LocalDate.of(Integer.parseInt(year), Integer.parseInt(month), Integer.parseInt(day));
 
         List<DailyAiInfo> results = dailyAiInfoRepository.findByCreatedAtAndUserId(userId, targetDate);
+        DailyAiInfo target = results.get(0).updateReplyStatus("Y");
+        dailyAiInfoRepository.save(target);
         return new AILetterResponseDTO(results.getFirst());
     }
 
     public AILetterResponseDTO findByIdAndUserId(Long id, Long userId) {
         return dailyAiInfoRepository.findByAiIdAndUserId(id, userId)
-                .map(AILetterResponseDTO::new)
+                .map((entitiy) -> {
+                    entitiy.updateReplyStatus("Y");
+                    dailyAiInfoRepository.save(entitiy);
+                    return new AILetterResponseDTO(entitiy);
+                })
                 .orElseThrow(() -> new AIException(AILETTERS_NOT_FOUND));
     }
 }
