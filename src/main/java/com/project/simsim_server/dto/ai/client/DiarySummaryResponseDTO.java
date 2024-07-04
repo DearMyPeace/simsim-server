@@ -12,11 +12,13 @@ public class DiarySummaryResponseDTO {
     private Long id;
     private LocalDate date;
     private String summary;
+    private String replyStatus;
 
     public DiarySummaryResponseDTO(DailyAiInfo aiEntity) {
         this.id = aiEntity.getAiId();
         this.date = aiEntity.getTargetDate();
         this.summary = aiEntity.getDiarySummary();
+        this.replyStatus = aiEntity.getReplyStatus();
 
     }
 }
