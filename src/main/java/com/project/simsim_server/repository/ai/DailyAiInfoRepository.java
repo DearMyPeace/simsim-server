@@ -24,7 +24,7 @@ public interface DailyAiInfoRepository extends JpaRepository<DailyAiInfo, Long> 
 
     @Query("SELECT dr FROM DailyAiInfo dr WHERE dr.userId =:userId " +
             "AND dr.targetDate =:targetDate")
-    List<DailyAiInfo> findByCreatedAtBeforeAndUserId(
+    List<DailyAiInfo> findByCreatedAtAndUserId(
         @Param("userId") Long userId,
         @Param("targetDate") LocalDate targetDate
     );
@@ -33,8 +33,6 @@ public interface DailyAiInfoRepository extends JpaRepository<DailyAiInfo, Long> 
             "AND dr.targetDate BETWEEN :startDate AND :endDate")
     List<DailyAiInfo> findAllByIdAndTargetDate(Long userId, LocalDate startDate, LocalDate endDate);
 
-    @Query("SELECT dr FROM DailyAiInfo dr WHERE dr.userId = :userId ORDER BY dr.targetDate DESC")
-    List<DailyAiInfo> findTopByUserIdOrderByTargetDateDesc(@Param("userId") Long userId, Pageable pageable);
 
     @Query("SELECT dr FROM DailyAiInfo dr WHERE dr.userId = :userId AND dr.replyStatus = 'N' ORDER BY dr.targetDate DESC")
     List<DailyAiInfo> findByUserIdAndReplyStatus(Long userId);

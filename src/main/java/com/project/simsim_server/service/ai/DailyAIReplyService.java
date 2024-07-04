@@ -85,9 +85,9 @@ public class DailyAIReplyService {
         Users user = usersRepository.findByIdAndUserStatus(userId)
                 .orElseThrow(() -> new AIException(AI_MAIL_FAIL));
 
-        // 해당 유저의 가장 마지막 AI 답장 정보 조회
+        // 해당 유저의 해당 일자 AI 답장 정보 조회
         List<DailyAiInfo> aiInfo =
-                dailyAiInfoRepository.findByCreatedAtBeforeAndUserId(userId, requestDTO.getTargetDate());
+                dailyAiInfoRepository.findByCreatedAtAndUserId(userId, requestDTO.getTargetDate());
 
         // 일반 등급이면서 분석 대상 날짜가 동일하면 예외 처리
         if (user.getGrade() == Grade.GENERAL
@@ -242,7 +242,7 @@ public class DailyAIReplyService {
         LocalDate targetDate
                 = LocalDate.of(Integer.parseInt(year), Integer.parseInt(month), Integer.parseInt(day));
 
-        List<DailyAiInfo> results = dailyAiInfoRepository.findByCreatedAtBeforeAndUserId(userId, targetDate);
+        List<DailyAiInfo> results = dailyAiInfoRepository.findByCreatedAtAndUserId(userId, targetDate);
         return new AILetterResponseDTO(results.getFirst());
     }
 

@@ -1,10 +1,13 @@
 package com.project.simsim_server.service.diary;
 
+import com.project.simsim_server.domain.ai.DailyAiInfo;
 import com.project.simsim_server.domain.diary.Diary;
 import com.project.simsim_server.dto.diary.DiaryCountResponseDTO;
+import com.project.simsim_server.dto.diary.DiaryDailyResponseDTO;
 import com.project.simsim_server.dto.diary.DiaryRequestDTO;
 import com.project.simsim_server.dto.diary.DiaryResponseDTO;
 import com.project.simsim_server.exception.DiaryLimitExceededException;
+import com.project.simsim_server.repository.ai.DailyAiInfoRepository;
 import com.project.simsim_server.repository.diary.DiaryRepository;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -24,15 +27,25 @@ public class DiaryService {
     @Getter
     private final int MAX_DIARIES_PER_DAY = 3;
     private final DiaryRepository diaryRepository;
+    private final DailyAiInfoRepository dailyAiInfoRepository;
 
-    public List<DiaryResponseDTO> findByCreatedDate(LocalDate targetDate, Long userId) {
-        LocalDateTime startDate = targetDate.atStartOfDay();
-        LocalDateTime endDate = targetDate.atTime(LocalTime.MAX);
+    public DiaryDailyResponseDTO findByCreatedDate(LocalDate targetDate, Long userId) {
+        boolean sendStatus = false;
         List<Diary> diaries = diaryRepository
-                .findDiariesByCreatedAtBetweenAndUserId(startDate, endDate, userId);
-        return diaries.stream()
+                .findByCreatedAtAndUserId(userId, targetDate);
+        List<DiaryResponseDTO> list = diaries.stream()
                 .map(DiaryResponseDTO::new)
                 .toList();
+
+        List<DailyAiInfo> aireply = dailyAiInfoRepository.findByCreatedAtAndUserId(userId, targetDate);
+        if (!aireply.isEmpty()) {
+            sendStatus = true;
+        }
+
+        return DiaryDailyResponseDTO.builder()
+                .sendStatus(sendStatus)
+                .diaries(list)
+                .build();
     }
 
     public List<DiaryCountResponseDTO> countDiariesByDate(String year, String month, Long userId) {
@@ -49,8 +62,9 @@ public class DiaryService {
 
 
     public DiaryResponseDTO save(DiaryRequestDTO diaryRequestDTO, Long userId) {
-        List<DiaryResponseDTO> todayDiaries
-                = findByCreatedDate(diaryRequestDTO.getCreatedDate().toLocalDate(), userId);
+
+        List<Diary> todayDiaries
+                = diaryRepository.findByCreatedAtAndUserId(userId, diaryRequestDTO.getCreatedDate().toLocalDate());
         if (todayDiaries.size() == MAX_DIARIES_PER_DAY) {
             throw new DiaryLimitExceededException("금일 작성할 수 있는 일기 갯수를 초과했습니다.");
         }
