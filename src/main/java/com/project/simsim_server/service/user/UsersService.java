@@ -79,13 +79,6 @@ public class UsersService {
             //TODO - 추후 Grade에 따른 분기 추가
         }
 
-
-        LocalDateTime yesterday = LocalDateTime.now().minusDays(1);
-        List<Diary> diaries = diaryRepository.findDiariesByCreatedDateAndUserId(yesterday, userId);
-        if (!diaries.isEmpty()) {
-            aiInfoRepository.findByCreatedAtBeforeAndUserId(userId, LocalDate.now());
-        }
-
         Optional<Persona> persona = personaRepository.findByPersonaCode(userData.getPersona());
         if (persona.isEmpty())
             throw new ResourceNotFoundException("[회원 조회 에러] 페르소나 정보가 없습니다", "RESOURCE_NOT_FOUND");

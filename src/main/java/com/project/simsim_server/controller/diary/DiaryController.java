@@ -1,6 +1,7 @@
 package com.project.simsim_server.controller.diary;
 
 import com.project.simsim_server.dto.diary.DiaryCountResponseDTO;
+import com.project.simsim_server.dto.diary.DiaryDailyResponseDTO;
 import com.project.simsim_server.dto.diary.DiaryRequestDTO;
 import com.project.simsim_server.dto.diary.DiaryResponseDTO;
 import com.project.simsim_server.service.diary.DiaryService;
@@ -31,7 +32,7 @@ public class DiaryController {
      * @return List<DiaryResponseDTO> / 데이터가 없는 경우 List의 길이가 0
      */
     @GetMapping("/{targetDate}")
-    public List<DiaryResponseDTO> findByCreatedDate(
+    public DiaryDailyResponseDTO findByCreatedDate(
             @PathVariable LocalDate targetDate) {
         String authentication = getUserIdFromAuthentication();
         Long userId = Long.parseLong(authentication);
