@@ -2,7 +2,7 @@ package com.project.simsim_server.controller.ai;
 
 import com.project.simsim_server.dto.ai.client.AILetterRequestDTO;
 import com.project.simsim_server.dto.ai.client.AILetterResponseDTO;
-import com.project.simsim_server.exception.ai.AIException;
+import com.project.simsim_server.dto.ai.client.DiarySummaryResponseDTO;
 import com.project.simsim_server.repository.diary.DiaryRepository;
 import com.project.simsim_server.service.ai.DailyAIReplyService;
 import com.project.simsim_server.service.diary.DiaryService;
@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.List;
 
-import static com.project.simsim_server.exception.ai.AIErrorCode.AILETTERS_NOT_FOUND;
 
 @Tag(name = "DailyAIReply", description = "AI 분석 및 답장 서비스")
 @RequiredArgsConstructor
@@ -33,11 +32,10 @@ public class DailyAIReplyController {
      * @param count
      * @return List<AILetterResponseDTO> 편지 목록
      */
-    @GetMapping
+    @GetMapping("/list")
     public List<AILetterResponseDTO> getAILetters(
             @RequestParam(required = false) LocalDate offset,
             @RequestParam("total") int count) {
-
         String authentication = getUserIdFromAuthentication();
         Long userId = Long.parseLong(authentication);
 
@@ -45,6 +43,34 @@ public class DailyAIReplyController {
             return dailyAIReplyService.findByCreatedDateAndUserIdOrderByCreatedDateDesc(userId, offset, count);
         }
         return dailyAIReplyService.findByCreatedDateAndUserIdOrderByCreatedDateDesc(userId, count);
+    }
+
+    @GetMapping
+    public AILetterResponseDTO getAILetter(@RequestParam("id") Long id) {
+        String authentication = getUserIdFromAuthentication();
+        Long userId = Long.parseLong(authentication);
+        return dailyAIReplyService.findByIdAndUserId(id, userId);
+    }
+
+    @GetMapping("/{year}/{month}")
+    public List<DiarySummaryResponseDTO> getSummaryAtMonth(
+            @PathVariable String year,
+            @PathVariable String month
+    ) {
+        String authentication = getUserIdFromAuthentication();
+        Long userId = Long.parseLong(authentication);
+        return dailyAIReplyService.findByMonthAndUserId(year, month, userId);
+    }
+
+    @GetMapping("/{year}/{month}/{day}")
+    public AILetterResponseDTO getSummaryAtMonth(
+            @PathVariable String year,
+            @PathVariable String month,
+            @PathVariable String day
+    ) {
+        String authentication = getUserIdFromAuthentication();
+        Long userId = Long.parseLong(authentication);
+        return dailyAIReplyService.findByDateAndUserId(year, month, day, userId);
     }
 
 
