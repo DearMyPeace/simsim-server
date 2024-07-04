@@ -223,8 +223,16 @@ public class DailyAIReplyService {
         LocalDate startDate = yearMonth.atDay(1);
         LocalDate endDate = yearMonth.atEndOfMonth();
 
+        log.warn("서머리 조회 시작 일자 ={}", startDate);
+        log.warn("서머리 조회 끝 일자 ={}", endDate);
+
         List<DailyAiInfo> results
                 = dailyAiInfoRepository.findAllSummaryByDate(startDate, endDate, userId);
+
+        for (DailyAiInfo result : results) {
+            log.warn(result.toString());
+        }
+
         return results.stream()
                 .map(DiarySummaryResponseDTO::new)
                 .toList();
