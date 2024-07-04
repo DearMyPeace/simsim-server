@@ -63,6 +63,7 @@ public class Users extends BaseTimeEntity {
 
     public Users update(String name) {
         this.name = name;
+        this.userStatus = "Y";
         return this;
     }
 

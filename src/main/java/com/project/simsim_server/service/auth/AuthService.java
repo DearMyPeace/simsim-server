@@ -78,8 +78,8 @@ public class AuthService {
              */
             Optional<Users> usersOptional = usersRepository.findByEmail(userEmail);
             if (usersOptional.isPresent() && usersOptional.get().getUserStatus().equals("N")) {
-                log.warn("탈퇴한 회원입니다.");
-                throw new UserNotFoundException("탈퇴한 회원입니다.", "USER_NOT_FOUND");
+                log.warn("탈퇴한 회원입니다. 다시 아이디를 복원합니다.");
+//                throw new UserNotFoundException("탈퇴한 회원입니다.", "USER_NOT_FOUND");
             }
 
             Users user = usersOptional.map((entity) -> entity.update(userName))
