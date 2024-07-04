@@ -38,4 +38,9 @@ public interface DailyAiInfoRepository extends JpaRepository<DailyAiInfo, Long> 
 
     @Query("SELECT dr FROM DailyAiInfo dr WHERE dr.userId = :userId AND dr.replyStatus = 'N' ORDER BY dr.targetDate DESC")
     List<DailyAiInfo> findByUserIdAndReplyStatus(Long userId);
+
+    @Query("SELECT dr FROM DailyAiInfo dr WHERE dr.userId = :userId AND dr.targetDate BETWEEN :startDate AND :endDate")
+    List<DailyAiInfo> findAllSummaryByDate(LocalDate startDate, LocalDate endDate, Long userId);
+
+    Optional<DailyAiInfo> findByAiIdAndUserId(Long id, Long userId);
 }

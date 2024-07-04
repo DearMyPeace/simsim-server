@@ -7,10 +7,10 @@ import com.project.simsim_server.domain.user.Grade;
 import com.project.simsim_server.domain.user.Users;
 import com.project.simsim_server.dto.ai.client.AILetterRequestDTO;
 import com.project.simsim_server.dto.ai.client.AILetterResponseDTO;
+import com.project.simsim_server.dto.ai.client.DiarySummaryResponseDTO;
 import com.project.simsim_server.dto.ai.fastapi.DailyAiRequestDTO;
 import com.project.simsim_server.dto.ai.fastapi.DailyAiResponseDTO;
 import com.project.simsim_server.dto.ai.fastapi.DiarySummaryDTO;
-import com.project.simsim_server.exception.UserNotFoundException;
 import com.project.simsim_server.exception.ai.AIException;
 import com.project.simsim_server.repository.ai.DailyAiInfoRepository;
 import com.project.simsim_server.repository.diary.DiaryRepository;
@@ -30,7 +30,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.chrono.ChronoLocalDate;
+import java.time.YearMonth;
 import java.util.*;
 
 import static com.project.simsim_server.exception.ai.AIErrorCode.*;
@@ -216,5 +216,31 @@ public class DailyAIReplyService {
 
         log.info("---[SimSimSchedule] 처리 완료 userId = {}", user.getUserId());
         return saveData;
+    }
+
+    public List<DiarySummaryResponseDTO> findByMonthAndUserId(String year, String month, Long userId) {
+        YearMonth yearMonth = YearMonth.of(Integer.parseInt(year), Integer.parseInt(month));
+        LocalDate startDate = yearMonth.atDay(1);
+        LocalDate endDate = yearMonth.atEndOfMonth();
+
+        List<DailyAiInfo> results
+                = dailyAiInfoRepository.findAllSummaryByDate(startDate, endDate, userId);
+        return results.stream()
+                .map(DiarySummaryResponseDTO::new)
+                .toList();
+    }
+
+    public AILetterResponseDTO findByDateAndUserId(String year, String month, String day, Long userId) {
+        LocalDate targetDate
+                = LocalDate.of(Integer.parseInt(year), Integer.parseInt(month), Integer.parseInt(day));
+
+        List<DailyAiInfo> results = dailyAiInfoRepository.findByCreatedAtBeforeAndUserId(userId, targetDate);
+        return new AILetterResponseDTO(results.getFirst());
+    }
+
+    public AILetterResponseDTO findByIdAndUserId(Long id, Long userId) {
+        return dailyAiInfoRepository.findByAiIdAndUserId(id, userId)
+                .map(AILetterResponseDTO::new)
+                .orElseThrow(() -> new AIException(AILETTERS_NOT_FOUND));
     }
 }
