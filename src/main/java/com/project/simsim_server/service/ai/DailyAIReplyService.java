@@ -122,20 +122,35 @@ public class DailyAIReplyService {
     @Transactional
     public void saveAuto() {
         // 모든 회원 조회
-        List<Users> userList = usersRepository.findAllAndUserStatus();
+//        List<Users> userList = usersRepository.findAllAndUserStatus();
+        Long testId = 5L;
+        Optional<Users> usersOptional = usersRepository.findById(testId);
+        Users user = usersOptional.get();
 
         // 전날 일기 목록 조회
-        LocalDate targetDate = LocalDate.now().minusDays(1);
-        LocalDateTime startDateTime = LocalDate.now().minusDays(1).atStartOfDay();
-        LocalDateTime endDateTime = LocalDate.now().minusDays(1).atTime(LocalTime.MAX);
+//        LocalDate targetDate = LocalDate.now().minusDays(1);
+//        LocalDateTime startDateTime = LocalDate.now().minusDays(1).atStartOfDay();
+//        LocalDateTime endDateTime = LocalDate.now().minusDays(1).atTime(LocalTime.MAX);
 
-        for (Users user : userList) {
-            try {
-                processUser(user, targetDate, startDateTime, endDateTime);
-            } catch (Exception e) {
-                log.error("---[SimSimSchedule] 에러 처리 userId = {}", user.getUserId(), e);
+//        for (Users user : userList) {
+//            try {
+//                processUser(user, targetDate, startDateTime, endDateTime);
+//            } catch (Exception e) {
+//                log.error("---[SimSimSchedule] 에러 처리 userId = {}", user.getUserId(), e);
+//            }
+//        }
+            LocalDate targetDate = LocalDate.of(2024, 6, 1);
+            LocalDateTime startDateTime = LocalDate.of(2024, 6, 1).atStartOfDay();
+            LocalDateTime endDateTime = YearMonth.of(2024, 6).atEndOfMonth().atTime(LocalTime.MAX);
+
+            for (int i = 1; i <= 30; i++){
+                try {
+                    processUser(user, targetDate, startDateTime, endDateTime);
+                    targetDate = targetDate.plusDays(1);
+                } catch (Exception e) {
+                    log.error("---[SimSimSchedule] 에러 처리 userId = {}", user.getUserId(), e);
+                }
             }
-        }
     }
 
 
