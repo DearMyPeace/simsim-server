@@ -140,10 +140,10 @@ public class DailyAIReplyService {
 //            }
 //        }
             LocalDate targetDate = LocalDate.of(2024, 6, 1);
-            LocalDateTime startDateTime = LocalDate.of(2024, 6, 1).atStartOfDay();
-            LocalDateTime endDateTime = YearMonth.of(2024, 6).atEndOfMonth().atTime(LocalTime.MAX);
 
             for (int i = 1; i <= 30; i++){
+                LocalDateTime startDateTime = targetDate.atStartOfDay();
+                LocalDateTime endDateTime = targetDate.atTime(LocalTime.MAX);
                 try {
                     processUser(user, targetDate, startDateTime, endDateTime);
                     targetDate = targetDate.plusDays(1);
