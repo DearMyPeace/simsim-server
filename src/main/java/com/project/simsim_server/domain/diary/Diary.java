@@ -8,6 +8,7 @@ import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
 @Getter
@@ -49,7 +50,7 @@ public class Diary {
         this.userId = userId;
         this.listKey = userId + "-" + createdDate.format(DateTimeFormatter.ofPattern("yyMMddHHmmss"));
         this.diaryDeleteYn = "N";
-        this.date = createdDate.toLocalDate();
+        this.date = toLocalDate(createdDate, ZoneId.of("Asia/Seoul"));
         this.createdDate = createdDate;
         this.modifiedDate = modifiedDate;
     }
@@ -62,6 +63,10 @@ public class Diary {
 
     public void delete() {
         this.diaryDeleteYn = "Y";
+    }
+
+    private LocalDate toLocalDate(LocalDateTime localDateTime, ZoneId zoneId) {
+        return localDateTime.atZone(zoneId).toLocalDate();
     }
 }
 
