@@ -55,7 +55,7 @@ public class DailyAiInfo extends BaseTimeEntity {
         this.replyContent = replyContent;
         this.analyzeEmotions = analyzeEmotions;
         this.analyzeFactors = analyzeFactors;
-        this.replyStatus = "N";
+        this.replyStatus = replyStatus;
     }
 
     public DailyAiInfo updateAiResult(String diarySummary, String replyContent) {
