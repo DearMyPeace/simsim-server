@@ -40,7 +40,7 @@ public class DailyAiInfo extends BaseTimeEntity {
     @Column(name = "ai_analyze_factors")
     private String analyzeFactors;
 
-    @Column(name = "ai_reply_status")
+    @Column(name = "ai_reply_status", nullable = false)
     @ColumnDefault("'N'")
     private String replyStatus;
 
