@@ -165,6 +165,8 @@ public class DailyAIReplyService {
         // 페르소나 정보
         String persona = user.getPersona();
 
+        log.warn("----[분석할 페르소나] {} : {}", user.getEmail(), user.getPersona());
+
         // 14일~2일전 일기 요약 정보
         LocalDate startDate = LocalDate.now().minusDays(14);
         LocalDate endDate = LocalDate.now().minusDays(2);
