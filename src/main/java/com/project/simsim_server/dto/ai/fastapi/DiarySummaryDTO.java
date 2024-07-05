@@ -10,14 +10,13 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 public class DiarySummaryDTO {
-
-    private LocalDate date;
+    private String date;
     private String content;
     private List<Integer> emotion;
 
     @Builder
     public DiarySummaryDTO(LocalDate date, String content, List<Integer> emotion) {
-        this.date = date;
+        this.date = date.toString();
         this.content = content;
         this.emotion = emotion;
     }

@@ -11,14 +11,14 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 public class DailyAiRequestDTO {
-    private LocalDate targetDate;
+    private String targetDate;
     private List<String> diarys;
     private String persona;
     private List<DiarySummaryDTO> summary;
 
     @Builder
     public DailyAiRequestDTO(List<String> diarys, LocalDate targetDate, String persona, List<DiarySummaryDTO> summary) {
-        this.targetDate = targetDate;
+        this.targetDate = targetDate.toString();
         this.diarys = diarys;
         this.persona = persona;
         this.summary = summary;

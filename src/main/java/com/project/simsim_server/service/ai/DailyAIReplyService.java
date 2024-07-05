@@ -172,20 +172,18 @@ public class DailyAIReplyService {
         LocalDate endDate = targetDate.minusDays(2);
         List<DailyAiInfo> summaryList = dailyAiInfoRepository.findAllByIdAndTargetDate(user.getUserId(), startDate, endDate);
 
-        List<String> diaries = new ArrayList<>();
-        for (Diary diary : targetDiaries) {
-            diaries.add(diary.getContent());
-        }
+        List<String> diaries = targetDiaries.stream()
+                .map(Diary::getContent)
+                .collect(Collectors.toList());
 
-        List<DiarySummaryDTO> summaries= new ArrayList<>();
-        // 감정 정보
-        for (DailyAiInfo info : summaryList) {
-            summaries.add(DiarySummaryDTO.builder()
-                    .date(info.getTargetDate())
-                    .content(info.getReplyContent())
-                    .emotion(convertStringToList(info.getDiarySummary()))
-                    .build());
-        }
+        //감정 정보
+        List<DiarySummaryDTO> summaries = summaryList.stream()
+                .map(info -> DiarySummaryDTO.builder()
+                        .date(info.getTargetDate())
+                        .content(info.getReplyContent())
+                        .emotion(convertStringToList(info.getDiarySummary()))
+                        .build())
+                .collect(Collectors.toList());
 
         DailyAiRequestDTO requestData = DailyAiRequestDTO.builder()
                 .targetDate(targetDate)
@@ -203,7 +201,8 @@ public class DailyAIReplyService {
         }
 
         // AI 요청
-        ResponseEntity<DailyAiResponseDTO> response = restTemplate.postForEntity(AI_URL, requestData, DailyAiResponseDTO.class);
+        ResponseEntity<DailyAiResponseDTO> response
+                = restTemplate.postForEntity(AI_URL, requestData, DailyAiResponseDTO.class);
 
         if (response.getStatusCode() != HttpStatus.OK) {
             log.error("---[SimSimSchedule] AI 응답 실패 userId = {}", user.getUserId());
