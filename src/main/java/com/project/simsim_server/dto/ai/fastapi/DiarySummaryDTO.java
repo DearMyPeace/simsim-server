@@ -13,10 +13,10 @@ public class DiarySummaryDTO {
 
     private LocalDate date;
     private String content;
-    private List<String> emotion;
+    private List<Integer> emotion;
 
     @Builder
-    public DiarySummaryDTO(LocalDate date, String content, List<String> emotion) {
+    public DiarySummaryDTO(LocalDate date, String content, List<Integer> emotion) {
         this.date = date;
         this.content = content;
         this.emotion = emotion;
