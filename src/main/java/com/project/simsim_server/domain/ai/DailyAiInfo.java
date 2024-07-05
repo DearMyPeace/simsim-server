@@ -44,11 +44,14 @@ public class DailyAiInfo extends BaseTimeEntity {
     @ColumnDefault("'N'")
     private String replyStatus;
 
+    @Column(name="ai_is_first", nullable = false)
+    @ColumnDefault("false")
+    private boolean isFirst;
 
     @Builder
     public DailyAiInfo(Long userId, LocalDate targetDate, String diarySummary,
             String replyContent, String analyzeEmotions, String analyzeFactors,
-            String replyStatus) {
+            String replyStatus, boolean isFirst) {
         this.userId = userId;
         this.targetDate = targetDate;
         this.diarySummary = diarySummary;
@@ -56,6 +59,7 @@ public class DailyAiInfo extends BaseTimeEntity {
         this.analyzeEmotions = analyzeEmotions;
         this.analyzeFactors = analyzeFactors;
         this.replyStatus = replyStatus;
+        this.isFirst = isFirst;
     }
 
     public DailyAiInfo updateAiResult(String diarySummary, String replyContent) {
