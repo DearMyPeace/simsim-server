@@ -12,7 +12,6 @@ import java.util.Optional;
 
 
 public interface DiaryRepository extends JpaRepository<Diary, Long> {
-    public List<Diary> findDiariesByCreatedDateAndUserId(LocalDateTime createdDate, Long userId);
 
     @Query("SELECT d FROM Diary d WHERE d.userId = :userId " +
             "AND d.diaryDeleteYn = 'N'" +
