@@ -8,6 +8,7 @@ import com.project.simsim_server.exception.ErrorResponse;
 import com.project.simsim_server.exception.UserNotFoundException;
 import com.project.simsim_server.exception.auth.OAuthException;
 import com.project.simsim_server.service.user.AuthService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.security.auth.message.AuthException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +24,7 @@ import static com.project.simsim_server.exception.auth.AuthErrorCode.REFRESH_TOK
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 
+@Tag(name = "Auth", description = "소셜 로그인/로그아웃/회원탈퇴 서비스")
 @Slf4j
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/auth")
