@@ -75,14 +75,14 @@ public class AuthService {
              * - 회원 정보가 없으면 새로 DB에 등록
              */
             Optional<Users> usersOptional = usersRepository.findByEmail(userEmail);
-            if (usersOptional.isPresent() && usersOptional.get().getUserStatus().equals("N")) {
-                log.warn("탈퇴한 회원입니다. 다시 아이디를 복원합니다.");
+            if (usersOptional.isPresent()) {
+                if (usersOptional.get().getProviderName() == Provider.GOOGLE) {
+                    log.warn("이미 가입한 이메일 주소 입니다.");
+                    throw new OAuthException(ALREADY_EXIST_ACCOUNT);
+                } else if (usersOptional.get().getUserStatus().equals("N")) {
+                    log.warn("탈퇴한 회원입니다. 다시 아이디를 복원합니다.");
 //                throw new UserNotFoundException("탈퇴한 회원입니다.", "USER_NOT_FOUND");
-            }
-
-            if (usersOptional.get().getProviderName() == Provider.APPLE) {
-                log.warn("이미 가입한 이메일 주소 입니다.");
-                throw new OAuthException(ALREADY_EXIST_ACCOUNT);
+                }
             }
 
             Users user = usersOptional.map((entity) -> entity.update(userName))
@@ -165,14 +165,14 @@ public class AuthService {
          */
         Optional<Users> usersOptional 
                 = usersRepository.findByEmail(userEmail);
-
-        if (usersOptional.get().getProviderName() == Provider.GOOGLE) {
-            log.warn("이미 가입한 이메일 주소 입니다.");
-            throw new OAuthException(ALREADY_EXIST_ACCOUNT);
-        }
-        if (usersOptional.isPresent() && usersOptional.get().getUserStatus().equals("N")) {
-            log.warn("탈퇴한 회원입니다.");
-            throw new UserNotFoundException("탈퇴한 회원입니다.", "USER_NOT_FOUND");
+        if (usersOptional.isPresent()) {
+            if (usersOptional.get().getProviderName() == Provider.GOOGLE) {
+                log.warn("이미 가입한 이메일 주소 입니다.");
+                throw new OAuthException(ALREADY_EXIST_ACCOUNT);
+            } else if (usersOptional.get().getUserStatus().equals("N")) {
+                log.warn("탈퇴한 회원입니다. 다시 아이디를 복원합니다.");
+//                throw new UserNotFoundException("탈퇴한 회원입니다.", "USER_NOT_FOUND");
+            }
         }
 
         Users user = usersOptional.orElse(Users.builder()
