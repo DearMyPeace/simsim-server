@@ -38,7 +38,8 @@ public class DiaryService {
                 .toList();
 
         List<DailyAiInfo> aireply = dailyAiInfoRepository.findByCreatedAtAndUserId(userId, targetDate);
-        if (!aireply.isEmpty()) {
+        if (aireply.size() == 1 && !aireply.getLast().getReplyStatus().equals("F")
+                || aireply.size() >= 2) {
             sendStatus = true;
         }
 
