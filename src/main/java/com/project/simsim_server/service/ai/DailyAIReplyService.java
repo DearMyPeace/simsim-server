@@ -231,6 +231,7 @@ public class DailyAIReplyService {
                 .replyContent(aiResponse.getReply())
                 .analyzeEmotions(emotions)
                 .replyStatus("N")
+                .isFirst(false)
                 .build());
 
         log.info("---[SimSimSchedule] 처리 완료 userId = {}", user.getUserId());
