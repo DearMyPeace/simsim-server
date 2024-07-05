@@ -1,4 +1,4 @@
-package com.project.simsim_server.service.auth;
+package com.project.simsim_server.service.user;
 
 import com.nimbusds.jose.JWKSet;
 import com.project.simsim_server.config.auth.dto.*;
@@ -78,6 +78,11 @@ public class AuthService {
             if (usersOptional.isPresent() && usersOptional.get().getUserStatus().equals("N")) {
                 log.warn("탈퇴한 회원입니다. 다시 아이디를 복원합니다.");
 //                throw new UserNotFoundException("탈퇴한 회원입니다.", "USER_NOT_FOUND");
+            }
+
+            if (usersOptional.get().getProviderName() == Provider.APPLE) {
+                log.warn("이미 가입한 이메일 주소 입니다.");
+                throw new OAuthException(ALREADY_EXIST_ACCOUNT);
             }
 
             Users user = usersOptional.map((entity) -> entity.update(userName))
@@ -160,6 +165,11 @@ public class AuthService {
          */
         Optional<Users> usersOptional 
                 = usersRepository.findByEmail(userEmail);
+
+        if (usersOptional.get().getProviderName() == Provider.GOOGLE) {
+            log.warn("이미 가입한 이메일 주소 입니다.");
+            throw new OAuthException(ALREADY_EXIST_ACCOUNT);
+        }
         if (usersOptional.isPresent() && usersOptional.get().getUserStatus().equals("N")) {
             log.warn("탈퇴한 회원입니다.");
             throw new UserNotFoundException("탈퇴한 회원입니다.", "USER_NOT_FOUND");

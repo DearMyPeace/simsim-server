@@ -7,7 +7,7 @@ import com.project.simsim_server.config.auth.dto.AccessTokenForFrontDTO;
 import com.project.simsim_server.exception.ErrorResponse;
 import com.project.simsim_server.exception.UserNotFoundException;
 import com.project.simsim_server.exception.auth.OAuthException;
-import com.project.simsim_server.service.auth.AuthService;
+import com.project.simsim_server.service.user.AuthService;
 import jakarta.security.auth.message.AuthException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
