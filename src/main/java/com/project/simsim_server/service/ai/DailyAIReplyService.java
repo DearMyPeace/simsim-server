@@ -99,9 +99,18 @@ public class DailyAIReplyService {
         }
 
         // 기존에 생성된 데이터가 있으면 반환
+        DailyAiInfo responseInfo = null;
         if (!aiInfo.isEmpty()) {
-            DailyAiInfo info = aiInfo.getFirst().updateReplyStatus("Y");
-            DailyAiInfo saveInfo = dailyAiInfoRepository.save(info);
+            if (aiInfo.size() >= 2) {
+                for (DailyAiInfo info : aiInfo) {
+                    if (!info.isFirst()) {
+                        responseInfo = info.updateReplyStatus("Y");
+                        break;
+                    }
+                }
+            }
+            assert responseInfo != null;
+            DailyAiInfo saveInfo = dailyAiInfoRepository.save(responseInfo);
             return new AILetterResponseDTO(saveInfo);
         }
 
@@ -261,7 +270,6 @@ public class DailyAIReplyService {
     public AILetterResponseDTO findByDateAndUserId(String year, String month, String day, Long userId) {
         LocalDate targetDate
                 = LocalDate.of(Integer.parseInt(year), Integer.parseInt(month), Integer.parseInt(day));
-
         List<DailyAiInfo> results = dailyAiInfoRepository.findByCreatedAtAndUserId(userId, targetDate);
         DailyAiInfo target = results.get(0).updateReplyStatus("Y");
         dailyAiInfoRepository.save(target);

@@ -22,9 +22,8 @@ import java.util.List;
 @RestController
 public class DailyAIReplyController {
 
-    private final DiaryService diaryService;
     private final DailyAIReplyService dailyAIReplyService;
-    private final DiaryRepository diaryRepository;
+
 
     /**
      * 원하는 일자, 원하는 갯수에 대해 AI 편지를 조회
