@@ -38,6 +38,10 @@ public class Users extends BaseTimeEntity {
     @ColumnDefault("0")
     private int pieceCnt;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "user_provider", nullable = false)
+    private Provider providerName;
+
     @Column(name = "user_persona", nullable = false)
     @ColumnDefault("'F'")
     private String persona;
@@ -50,13 +54,14 @@ public class Users extends BaseTimeEntity {
     private String userStatus;
 
     @Builder
-    public Users(String name, String email, Role role) {
+    public Users(String name, String email, Role role, Provider providerName) {
         byte[] bytes = name.getBytes(StandardCharsets.ISO_8859_1);
         this.name = new String(bytes, StandardCharsets.UTF_8);
         this.email = email;
         this.role = role;
         this.grade = Grade.GENERAL;
         this.pieceCnt = 0;
+        this.providerName = providerName;
         this.persona = "F";
         this.userStatus = "Y";
     }

@@ -1,6 +1,7 @@
 package com.project.simsim_server.dto.user;
 
 import com.project.simsim_server.domain.user.Grade;
+import com.project.simsim_server.domain.user.Provider;
 import com.project.simsim_server.domain.user.Role;
 import com.project.simsim_server.domain.user.Users;
 import lombok.Getter;
@@ -15,6 +16,7 @@ public class UserInfoResponseDTO {
     private Role role;
     private Grade grade;
     private int pieceCnt;
+    private Provider providerName;
     private String personaCode;
     private String personaName;
     private String bgImage;
@@ -28,6 +30,7 @@ public class UserInfoResponseDTO {
         this.role = userEntity.getRole();
         this.grade = userEntity.getGrade();
         this.pieceCnt = userEntity.getPieceCnt();
+        this.providerName = userEntity.getProviderName();
         this.personaCode = userEntity.getPersona();
         this.personaName = personaName;
         this.bgImage = userEntity.getBgImage();

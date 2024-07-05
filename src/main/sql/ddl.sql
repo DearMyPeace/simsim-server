@@ -6,6 +6,7 @@ create table users_tbl (
     user_role enum ('ADMIN','GUEST','USER') not null,
     user_grade tinyint default 0 not null,
     user_piece_cnt integer default 0 not null,
+    user_provider enum('GOOGLE', 'APPLE') not null,
     user_persona char(1) default 'F' not null,
     user_bg_image varchar(300),
     user_status char(1) default 'Y' not null,

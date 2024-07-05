@@ -5,6 +5,7 @@ import com.project.simsim_server.config.auth.dto.*;
 import com.project.simsim_server.config.auth.dto.JwtPayloadDTO;
 import com.project.simsim_server.config.auth.jwt.JwtUtils;
 import com.project.simsim_server.config.auth.dto.TokenDTO;
+import com.project.simsim_server.domain.user.Provider;
 import com.project.simsim_server.domain.user.Role;
 import com.project.simsim_server.exception.auth.OAuthException;
 import com.project.simsim_server.exception.UserNotFoundException;
@@ -84,6 +85,7 @@ public class AuthService {
                             .name(userName)
                             .email(userEmail)
                             .role(Role.USER)
+                            .providerName(Provider.GOOGLE)
                             .build());
 
             Users savedUser = usersRepository.save(user);
@@ -106,7 +108,7 @@ public class AuthService {
             if (!values.isEmpty()) {
                 redisService.deleteValues(jwtPayloadDTO.getUserEmail());
             }
-            redisService.setValues(jwtPayloadDTO.getUserEmail(), "Google " + refreshToken,
+            redisService.setValues(jwtPayloadDTO.getUserEmail(), refreshToken,
                     Duration.ofMillis(jwtUtils.getRefreshExpireTime()));
 
             return TokenDTO.builder()
@@ -167,6 +169,7 @@ public class AuthService {
                         .name(userName)
                         .email(userEmail)
                         .role(Role.USER)
+                        .providerName(Provider.APPLE)
                         .build());
 
         Users savedUser = usersRepository.save(user);
@@ -189,7 +192,7 @@ public class AuthService {
         if (!values.isEmpty()) {
             redisService.deleteValues(jwtPayloadDTO.getUserEmail());
         }
-        redisService.setValues(jwtPayloadDTO.getUserEmail(), "Apple " + refreshToken,
+        redisService.setValues(jwtPayloadDTO.getUserEmail(), refreshToken,
                 Duration.ofMillis(jwtUtils.getRefreshExpireTime()));
 
         return TokenDTO.builder()
