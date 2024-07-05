@@ -80,6 +80,11 @@ public class AuthService {
 //                throw new UserNotFoundException("탈퇴한 회원입니다.", "USER_NOT_FOUND");
             }
 
+            if (usersOptional.get().getProviderName() == Provider.APPLE) {
+                log.warn("이미 가입한 이메일 주소 입니다.");
+                throw new OAuthException(ALREADY_EXIST_ACCOUNT);
+            }
+
             Users user = usersOptional.map((entity) -> entity.update(userName))
                     .orElse(Users.builder()
                             .name(userName)
