@@ -35,8 +35,8 @@ public class Diary {
     @ColumnDefault("'N'")
     private String diaryDeleteYn;
 
-    @Column(name = "date", nullable = false)
-    private LocalDate date;
+    @Column(name = "marked_date", nullable = false)
+    private LocalDate markedDate;
 
     @Column(name = "created_date", nullable = false)
     private LocalDateTime createdDate;
@@ -50,7 +50,7 @@ public class Diary {
         this.userId = userId;
         this.listKey = userId + "-" + createdDate.format(DateTimeFormatter.ofPattern("yyMMddHHmmss"));
         this.diaryDeleteYn = "N";
-        this.date = toLocalDate(createdDate, ZoneId.of("Asia/Seoul"));
+        this.markedDate = toLocalDate(createdDate, ZoneId.of("Asia/Seoul"));
         this.createdDate = createdDate;
         this.modifiedDate = modifiedDate;
     }
