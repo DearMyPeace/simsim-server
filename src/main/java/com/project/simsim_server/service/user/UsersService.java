@@ -74,9 +74,11 @@ public class UsersService {
         Reply replyStatus = Reply.DEFAULT;
 
         List<DailyAiInfo> notReadAiReply = aiInfoRepository.findByUserIdAndReplyStatus(userId);
-        if (!notReadAiReply.isEmpty()) {
+        if (!notReadAiReply.isEmpty()) { // 읽지 않은 편지가 있는 경우
             replyStatus = Reply.RECEIVE;
             //TODO - 추후 Grade에 따른 분기 추가
+        } else if (!aiInfoRepository.findByUserId(userId).isEmpty()) { // 편지가 존재하고 다 이미 읽은 경우
+            replyStatus = Reply.CHECK;
         }
 
         Optional<Persona> persona = personaRepository.findByPersonaCode(userData.getPersona());
