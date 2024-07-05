@@ -5,10 +5,12 @@ import com.project.simsim_server.config.auth.dto.*;
 import com.project.simsim_server.config.auth.dto.JwtPayloadDTO;
 import com.project.simsim_server.config.auth.jwt.JwtUtils;
 import com.project.simsim_server.config.auth.dto.TokenDTO;
+import com.project.simsim_server.domain.ai.DailyAiInfo;
 import com.project.simsim_server.domain.user.Provider;
 import com.project.simsim_server.domain.user.Role;
 import com.project.simsim_server.exception.auth.OAuthException;
 import com.project.simsim_server.exception.UserNotFoundException;
+import com.project.simsim_server.repository.ai.DailyAiInfoRepository;
 import com.project.simsim_server.service.redis.RedisService;
 import com.project.simsim_server.domain.user.Users;
 import com.project.simsim_server.repository.user.UsersRepository;
@@ -30,10 +32,14 @@ import org.springframework.web.client.RestTemplate;
 import java.net.URL;
 import java.security.interfaces.RSAKey;
 import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.project.simsim_server.exception.auth.AuthErrorCode.*;
+import static org.springframework.data.jpa.domain.AbstractAuditable_.createdDate;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -43,6 +49,7 @@ public class AuthService {
 
     private final JwtUtils jwtUtils;
     private final UsersRepository usersRepository;
+    private final DailyAiInfoRepository dailyAiInfoRepository;
     private final RestTemplate restTemplate;
     private final RedisService redisService;
     private final String BEARER = "Bearer ";
@@ -60,66 +67,31 @@ public class AuthService {
      */
     @Transactional
     public TokenDTO loginGoogle(GoogleLoginRequestDTO tokenRequest) throws AuthException {
-
-        /**
-         * 구글 로그인 Access 토큰으로 회원 정보 가져오기
-         */
         try {
             GoogleUserInfoDTO userInfo = getGoogleUserInfo(tokenRequest.getAccess_token());
             String userEmail = userInfo.getEmail();
             String userName = userInfo.getName();
 
-            /**
-             * DB 회원 정보 유무 확인
-             * - 회원 정보가 있으면 이름만 변경
-             * - 회원 정보가 없으면 새로 DB에 등록
-             */
             Optional<Users> usersOptional = usersRepository.findByEmail(userEmail);
             if (usersOptional.isPresent()) {
-                if (usersOptional.get().getProviderName() == Provider.APPLE) {
+                Users existingUser = usersOptional.get();
+                if (existingUser.getProviderName() == Provider.APPLE) {
                     log.warn("이미 가입한 이메일 주소 입니다.");
                     throw new OAuthException(ALREADY_EXIST_ACCOUNT);
-                } else if (usersOptional.get().getUserStatus().equals("N")) {
+                } else if (existingUser.getUserStatus().equals("N")) {
                     log.warn("탈퇴한 회원입니다. 다시 아이디를 복원합니다.");
-//                throw new UserNotFoundException("탈퇴한 회원입니다.", "USER_NOT_FOUND");
                 }
+                existingUser.update(userName);
+                return getTokenDTO(usersRepository.save(existingUser));
+            } else {
+                Users newUser = Users.builder()
+                        .name(userName)
+                        .email(userEmail)
+                        .role(Role.USER)
+                        .providerName(Provider.GOOGLE)
+                        .build();
+                return getTokenDTO(joinUser(newUser));
             }
-
-            Users user = usersOptional.map((entity) -> entity.update(userName))
-                    .orElse(Users.builder()
-                            .name(userName)
-                            .email(userEmail)
-                            .role(Role.USER)
-                            .providerName(Provider.GOOGLE)
-                            .build());
-
-            Users savedUser = usersRepository.save(user);
-
-            /**
-             * DB에 저장된 회원정보로 JWT 토큰 발급
-             */
-            JwtPayloadDTO jwtPayloadDTO
-                    = JwtPayloadDTO.fromUser(savedUser);
-
-            String accessToken = BEARER + jwtUtils.generateAccessToken(jwtPayloadDTO);
-            String refreshToken = jwtUtils.generateRefreshToken(jwtPayloadDTO);
-            log.info("access token = {}", accessToken);
-            saveAuthentication(jwtPayloadDTO);
-
-            /**
-             * Redis에 Refresh 토큰 저장
-             */
-            String values = redisService.getValues(jwtPayloadDTO.getUserEmail());
-            if (!values.isEmpty()) {
-                redisService.deleteValues(jwtPayloadDTO.getUserEmail());
-            }
-            redisService.setValues(jwtPayloadDTO.getUserEmail(), refreshToken,
-                    Duration.ofMillis(jwtUtils.getRefreshExpireTime()));
-
-            return TokenDTO.builder()
-                    .accessToken(accessToken)
-                    .refreshToken(refreshToken)
-                    .build();
         } catch (UserNotFoundException e) {
             throw e;
         } catch (Exception e) {
@@ -135,69 +107,61 @@ public class AuthService {
                 .getBody();
     }
 
+
+
+    /**
+     * 애플 소셜 로그인을 통한 회원 가입 및 로그인
+     * @param tokenRequest
+     * @return
+     * @throws Exception
+     */
     @Transactional
     public TokenDTO loginApple(AppleLoginRequestDTO tokenRequest) throws Exception {
-        /**
-         * 애플 유효성 검사
-         */
-        AppleUserInfoDTO userInfoDTO
-                = getAppleUserInfo(tokenRequest.getAuthorization().getId_token());
+        AppleUserInfoDTO userInfoDTO = getAppleUserInfo(tokenRequest.getAuthorization().getId_token());
 
         log.warn("애플 페이로드 디코딩 : {}", userInfoDTO);
 
-        String userEmail = null;
-        String userName = null;
+        final String userEmail;
+        final String userName;
         if (tokenRequest.getUser() == null || tokenRequest.getUser().getEmail() == null) {
             userEmail = userInfoDTO.getEmail();
             userName = String.valueOf(userInfoDTO.getName());
         } else {
-            userName = tokenRequest.getUser().getName().getFirstName()
-                + tokenRequest.getUser().getName().getLastName();
+            userName = tokenRequest.getUser().getName().getFirstName() + tokenRequest.getUser().getName().getLastName();
             userEmail = tokenRequest.getUser().getEmail();
         }
 
         log.warn("애플 이름 : {}, 이메일: {}", userName, userEmail);
 
-        /**
-         * DB 회원 정보 유무 확인
-         * - 회원 정보가 있으면 이름만 변경
-         * - 회원 정보가 없으면 새로 DB에 등록
-         */
-        Optional<Users> usersOptional 
-                = usersRepository.findByEmail(userEmail);
+        Optional<Users> usersOptional = usersRepository.findByEmail(userEmail);
         if (usersOptional.isPresent()) {
-            if (usersOptional.get().getProviderName() == Provider.GOOGLE) {
+            Users existingUser = usersOptional.get();
+            if (existingUser.getProviderName() == Provider.GOOGLE) {
                 log.warn("이미 가입한 이메일 주소 입니다.");
                 throw new OAuthException(ALREADY_EXIST_ACCOUNT);
-            } else if (usersOptional.get().getUserStatus().equals("N")) {
+            } else if (existingUser.getUserStatus().equals("N")) {
                 log.warn("탈퇴한 회원입니다. 다시 아이디를 복원합니다.");
-//                throw new UserNotFoundException("탈퇴한 회원입니다.", "USER_NOT_FOUND");
             }
+            return getTokenDTO(existingUser);
+        } else {
+            Users newUser = Users.builder()
+                    .name(userName)
+                    .email(userEmail)
+                    .role(Role.USER)
+                    .providerName(Provider.APPLE)
+                    .build();
+            return getTokenDTO(joinUser(newUser));
         }
+    }
 
-        Users user = usersOptional.orElse(Users.builder()
-                        .name(userName)
-                        .email(userEmail)
-                        .role(Role.USER)
-                        .providerName(Provider.APPLE)
-                        .build());
-
-        Users savedUser = usersRepository.save(user);
-
-        /**
-         * DB에 저장된 회원정보로 JWT 토큰 발급
-         */
-        JwtPayloadDTO jwtPayloadDTO
-                = JwtPayloadDTO.fromUser(savedUser);
+    private TokenDTO getTokenDTO(Users savedUser) {
+        JwtPayloadDTO jwtPayloadDTO = JwtPayloadDTO.fromUser(savedUser);
 
         String accessToken = BEARER + jwtUtils.generateAccessToken(jwtPayloadDTO);
         String refreshToken = jwtUtils.generateRefreshToken(jwtPayloadDTO);
-        log.info("access token = {}", accessToken);
+        log.info("로그인 액세스 토큰 = {}", accessToken);
         saveAuthentication(jwtPayloadDTO);
 
-        /**
-         * Redis에 Refresh 토큰 저장
-         */
         String values = redisService.getValues(jwtPayloadDTO.getUserEmail());
         if (!values.isEmpty()) {
             redisService.deleteValues(jwtPayloadDTO.getUserEmail());
@@ -209,6 +173,19 @@ public class AuthService {
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .build();
+    }
+
+    private Users joinUser(Users user) {
+        Users savedUser = usersRepository.save(user);
+
+        DailyAiInfo sampleLetter = DailyAiInfo.builder()
+                .userId(savedUser.getUserId())
+                .targetDate(toLocalDate(savedUser.getCreatedDate(), ZoneId.of("Asia/Seoul")))
+                .diarySummary("일기 작성 및 AI 편지 수령 방법 안내")
+                .replyContent("[답장 예시]")
+                .build();
+        dailyAiInfoRepository.save(sampleLetter);
+        return savedUser;
     }
 
     private List<RSAKey> getApplePublicKeys() throws Exception {
@@ -248,6 +225,7 @@ public class AuthService {
     }
 
 
+
     /**
      * 회원 탈퇴
      * @param accessToken
@@ -274,6 +252,7 @@ public class AuthService {
 
         log.info(principal + " : " + "delete" + "(" + new Date() + ")");
     }
+
 
 
     /**
@@ -354,5 +333,9 @@ public class AuthService {
      */
     public String getPrincipal(String requestAccessToken) {
         return jwtUtils.getAuthentication(requestAccessToken).getName();
+    }
+
+    private LocalDate toLocalDate(LocalDateTime localDateTime, ZoneId zoneId) {
+        return localDateTime.atZone(zoneId).toLocalDate();
     }
 }
