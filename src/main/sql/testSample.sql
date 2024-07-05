@@ -1,35 +1,16 @@
-INSERT INTO daily_ai_response_tbl (user_id, ai_target_date, ai_diary_summary, ai_reply_content, ai_analyze_emotions, ai_analyze_factors, created_date, modified_date)
+INSERT INTO diary_tbl (user_id, diary_content, diary_list_key, diary_delete_yn, marked_date, created_date, modified_date)
 VALUES
-    (1, '2024-04-25 00:00:00', 'Today was great!', 'Today was great because I went hiking and enjoyed the outdoors.', NULL, NULL, NOW(), NOW()),
-    (1, '2024-05-21 00:00:00', 'Challenging day at work', 'Work was tough today, but I managed to get through it.', NULL, NULL, NOW(), NOW()),
-    (1, '2024-06-01 00:00:00', 'Today was great!', 'Today was great because I went hiking and enjoyed the outdoors.', NULL, NULL, NOW(), NOW()),
-    (1, '2024-06-02 00:00:00', 'Challenging day at work', 'Work was tough today, but I managed to get through it.', NULL, NULL, NOW(), NOW()),
-    (1, '2024-06-03 00:00:00', 'Today was great!', 'Today was great because I went hiking and enjoyed the outdoors.', NULL, NULL, NOW(), NOW()),
-    (1, '2024-06-04 00:00:00', 'Challenging day at work', 'Work was tough today, but I managed to get through it.', NULL, NULL, NOW(), NOW()),
-    (1, '2024-06-10 00:00:00', 'Today was great!', 'Today was great because I went hiking and enjoyed the outdoors.', NULL, NULL, NOW(), NOW()),
-    (1, '2024-06-11 00:00:00', 'Challenging day at work', 'Work was tough today, but I managed to get through it.', NULL, NULL, NOW(), NOW()),
-    (1, '2024-06-15 00:00:00', 'Today was great!', 'Today was great because I went hiking and enjoyed the outdoors.', NULL, NULL, NOW(), NOW()),
-    (1, '2024-06-16 00:00:00', 'Challenging day at work', 'Work was tough today, but I managed to get through it.', NULL, NULL, NOW(), NOW()),
-    (1, '2024-06-17 00:00:00', 'Today was great!', 'Today was great because I went hiking and enjoyed the outdoors.', NULL, NULL, NOW(), NOW()),
-    (1, '2024-06-18 00:00:00', 'Challenging day at work', 'Work was tough today, but I managed to get through it.', NULL, NULL, NOW(), NOW()),
-    (1, '2024-06-19 00:00:00', 'Today was great!', 'Today was great because I went hiking and enjoyed the outdoors.', NULL, NULL, NOW(), NOW()),
-    (1, '2024-06-20 00:00:00', 'Challenging day at work', 'Work was tough today, but I managed to get through it.', NULL, NULL, NOW(), NOW()),
-    (1, '2024-06-21 00:00:00', 'Today was great!', 'Today was great because I went hiking and enjoyed the outdoors.', NULL, NULL, NOW(), NOW()),
-    (1, '2024-06-22 00:00:00', 'Challenging day at work', 'Work was tough today, but I managed to get through it.', NULL, NULL, NOW(), NOW());
-
-INSERT INTO diary_tbl (user_id, diary_content, diary_list_key, created_date, modified_date)
-VALUES
-    (1, 'Hello World 1', 'list_key_1', '2024-06-01', NOW(6)),
-    (1, 'Hello World 2', 'list_key_2', '2024-06-01', NOW(6)),
-    (1, 'Hello World 3', 'list_key_3', '2024-06-01', NOW(6)),
-    (1, 'Hello World 4', 'list_key_4', '2024-06-11', NOW(6)),
-    (1, 'Hello World 5', 'list_key_5', '2024-06-13', NOW(6)),
-    (1, 'Hello World 6', 'list_key_6', '2024-06-18', NOW(6)),
-    (1, 'Hello World 7', 'list_key_7', '2024-06-20', NOW(6)),
-    (1, 'Hello World 8', 'list_key_8', '2024-06-21', NOW(6)),
-    (1, 'Hello World 9', 'list_key_9', '2024-06-22', NOW(6)),
-    (1, 'Hello World 10', 'list_key_10', '2024-06-22', NOW(6));
-
+    (5, "과자가 너무 맛있다!!근데 요새 살이 찌는것같다…슬슬 바지가 잘 안 맞는듯", "0", "N", "2024-06-01", "2024-06-01 21:20:00", "2024-06-01 21:20:00"),
+    (5, "남자친구가 신상과자를 사왔다! 초코과자 최고! 안에 초코크림이 들어있어서 더더더 맛있다.", "0", "N", "2024-06-02", "2024-06-02 10:52:00", "2024-06-02 12:03:00"),
+    (5, "현수가 태어났다 나의 첫 조카….! 발이 어쩜 그렇게 작은지 꼬물꼬물 너무 귀엽다", "0", "N", "2024-06-05", "2024-06-05 14:28:00", "2024-06-05 14:28:00"),
+    (5, "현수 우는 모습을 보고있었는데 이모가 나가라고 화내셨다. 내가 울린거 아닌데…", "0", "N", "2024-06-05", "2024-06-05 21:13:00", "2024-06-05 21:13:00"),
+    (5, "날씨가 너무 좋다 놀러가고 싶", "0", "N", "2024-06-06", "2024-06-06 21:20:00", "2024-06-06 21:20:00"),
+    (5, "퇴근하는길에 딸기 세일하길래 두팩 구매했다 내일은 딸기파티닷", "0", "N", "2024-06-09", "2024-06-09 18:14:00", "2024-06-09 18:14:00"),
+    (5, "딸기 알러지가 갑자기 생겼다…… 말도안돼…", "0", "N", "2024-06-10", "2024-06-10 07:52:00", "2024-06-10 07:52:00"),
+    (5, "회사에서 발표를 맡았다. 너무 부담되고 긴장된다…. 그래도 과장님이 나를 좀 인정해준거겠지?", "0", "N", "2024-06-15", "2024-06-15 14:24:00", "2024-06-15 14:24:00"),
+    (5, "배고프다…. 배고파….", "0", "N", "2024-06-16", "2024-06-16 16:00:00", "2024-06-16 16:00:00"),
+    (5, "퇴근버스에 누가 치킨을 가지고 타는거야…… 나 한개만 주세요", "0", "N", "2024-06-16", "2024-06-16 17:35:00", "2024-06-16 17:35:00"),
+    (5, "남자친구가 딸기를 사줬다.... 내가 말 안 했었나?", "0", "N", "2024-06-20", "2024-06-20 10:29:00", "2024-06-20 10:29:00");
 
 
 INSERT INTO simsim.daily_ai_response_tbl

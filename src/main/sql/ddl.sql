@@ -21,7 +21,7 @@ CREATE TABLE diary_tbl (
     diary_content VARCHAR(500),
     diary_list_key VARCHAR(30) NOT NULL,
     diary_delete_yn CHAR(1) DEFAULT 'N' NOT NULL,
-    date DATE NOT NULL,
+    marked_date DATE NOT NULL,
     created_date DATETIME(6) NOT NULL,
     modified_date DATETIME(6) NOT NULL,
     PRIMARY KEY (diary_id)

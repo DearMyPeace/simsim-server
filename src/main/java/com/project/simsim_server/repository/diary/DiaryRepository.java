@@ -1,7 +1,6 @@
 package com.project.simsim_server.repository.diary;
 
 import com.project.simsim_server.domain.diary.Diary;
-import com.project.simsim_server.dto.diary.DiaryResponseDTO;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -23,11 +22,11 @@ public interface DiaryRepository extends JpaRepository<Diary, Long> {
             @Param("endDate") LocalDateTime endDate,
             @Param("userId") Long userId);
 
-    @Query("SELECT d.date, COUNT(*) FROM Diary d " +
+    @Query("SELECT d.markedDate, COUNT(*) FROM Diary d " +
             "WHERE d.userId = :userId " +
             "AND d.diaryDeleteYn = 'N' " +
-            "AND d.date BETWEEN :startDate AND :endDate " +
-            "GROUP BY d.date")
+            "AND d.markedDate BETWEEN :startDate AND :endDate " +
+            "GROUP BY d.markedDate")
     List<Object[]> countDiariesByDate(
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate,
@@ -40,6 +39,6 @@ public interface DiaryRepository extends JpaRepository<Diary, Long> {
 
     @Query("SELECT d FROM Diary d WHERE d.userId = :userId " +
             "AND d.diaryDeleteYn = 'N'" +
-            "AND d.date = :targetDate")
+            "AND d.markedDate = :targetDate")
     List<Diary> findByCreatedAtAndUserId(Long userId, LocalDate targetDate);
 }
