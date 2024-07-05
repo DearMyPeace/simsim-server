@@ -6,6 +6,7 @@ import com.project.simsim_server.config.auth.dto.TokenDTO;
 import com.project.simsim_server.config.auth.dto.AccessTokenForFrontDTO;
 import com.project.simsim_server.exception.ErrorResponse;
 import com.project.simsim_server.exception.UserNotFoundException;
+import com.project.simsim_server.exception.auth.OAuthException;
 import com.project.simsim_server.service.auth.AuthService;
 import jakarta.security.auth.message.AuthException;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import static com.project.simsim_server.exception.auth.AuthErrorCode.REFRESH_TOKEN_NOT_EXIST;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 
@@ -130,7 +132,12 @@ public class AuthController {
 
     @PostMapping("/reissue")
     public ResponseEntity reissueToken(
-            @CookieValue(name = "refresh") String requestRefreshToken) {
+            @CookieValue(name = "refresh", required = false) String requestRefreshToken) {
+
+        if (requestRefreshToken.isEmpty()) {
+            log.warn("---[SimSimLog] 리프레시 토큰이 존재하지 않아 로그아웃 합니다. ----");
+            throw new OAuthException(REFRESH_TOKEN_NOT_EXIST);
+        }
 
         log.warn("---[SimSimLog] RefreshToken = {}", requestRefreshToken);
 

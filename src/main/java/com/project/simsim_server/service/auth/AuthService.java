@@ -1,8 +1,6 @@
 package com.project.simsim_server.service.auth;
 
 import com.nimbusds.jose.JWKSet;
-import com.nimbusds.jose.crypto.RSASSAVerifier;
-import com.nimbusds.jwt.SignedJWT;
 import com.project.simsim_server.config.auth.dto.*;
 import com.project.simsim_server.config.auth.dto.JwtPayloadDTO;
 import com.project.simsim_server.config.auth.jwt.JwtUtils;
@@ -30,7 +28,6 @@ import org.springframework.web.client.RestTemplate;
 
 import java.net.URL;
 import java.security.interfaces.RSAKey;
-import java.security.interfaces.RSAPublicKey;
 import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -105,6 +102,10 @@ public class AuthService {
             /**
              * Redis에 Refresh 토큰 저장
              */
+            String values = redisService.getValues(jwtPayloadDTO.getUserEmail());
+            if (!values.isEmpty()) {
+                redisService.deleteValues(jwtPayloadDTO.getUserEmail());
+            }
             redisService.setValues(jwtPayloadDTO.getUserEmail(), "Google " + refreshToken,
                     Duration.ofMillis(jwtUtils.getRefreshExpireTime()));
 
@@ -184,6 +185,10 @@ public class AuthService {
         /**
          * Redis에 Refresh 토큰 저장
          */
+        String values = redisService.getValues(jwtPayloadDTO.getUserEmail());
+        if (!values.isEmpty()) {
+            redisService.deleteValues(jwtPayloadDTO.getUserEmail());
+        }
         redisService.setValues(jwtPayloadDTO.getUserEmail(), "Apple " + refreshToken,
                 Duration.ofMillis(jwtUtils.getRefreshExpireTime()));
 
@@ -202,22 +207,10 @@ public class AuthService {
                 .collect(Collectors.toList());
     }
 
-    private SignedJWT verifyAndDecode(String idToken) throws Exception {
-        SignedJWT signedJWT = SignedJWT.parse(idToken);
-
-        List<RSAKey> applePublicKeys = getApplePublicKeys();
-        for (RSAKey key : applePublicKeys) {
-            if (signedJWT.verify(new RSASSAVerifier((RSAPublicKey) key))) {
-                return signedJWT;
-            }
-        }
-
-        throw new Exception("JWT verification failed");
-    }
-
     private AppleUserInfoDTO getAppleUserInfo(String idToken) throws Exception {
         return jwtUtils.decodePayload(idToken, AppleUserInfoDTO.class);
     }
+
 
 
     /**
