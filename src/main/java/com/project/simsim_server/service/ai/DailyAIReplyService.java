@@ -10,6 +10,7 @@ import com.project.simsim_server.dto.ai.client.AILetterResponseDTO;
 import com.project.simsim_server.dto.ai.client.DiarySummaryResponseDTO;
 import com.project.simsim_server.dto.ai.fastapi.DailyAiRequestDTO;
 import com.project.simsim_server.dto.ai.fastapi.DailyAiResponseDTO;
+import com.project.simsim_server.dto.ai.fastapi.DiaryContentDTO;
 import com.project.simsim_server.dto.ai.fastapi.DiarySummaryDTO;
 import com.project.simsim_server.exception.ai.AIException;
 import com.project.simsim_server.repository.ai.DailyAiInfoRepository;
@@ -172,9 +173,12 @@ public class DailyAIReplyService {
         LocalDate endDate = targetDate.minusDays(2);
         List<DailyAiInfo> summaryList = dailyAiInfoRepository.findAllByIdAndTargetDate(user.getUserId(), startDate, endDate);
 
-        List<String> diaries = new ArrayList<>();
+        List<DiaryContentDTO> diaries = new ArrayList<>();
         for (Diary diary : targetDiaries) {
-            diaries.add(diary.getContent());
+            diaries.add(DiaryContentDTO.builder()
+                    .time(diary.getCreatedDate())
+                    .content(diary.getContent())
+                    .build());
         }
 
         List<DiarySummaryDTO> summaries= new ArrayList<>();
@@ -188,7 +192,6 @@ public class DailyAIReplyService {
         }
 
         DailyAiRequestDTO requestData = DailyAiRequestDTO.builder()
-                .targetDate(targetDate)
                 .persona(persona)
                 .diarys(diaries)
                 .summary(summaries)
