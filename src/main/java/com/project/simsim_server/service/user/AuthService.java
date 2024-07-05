@@ -183,6 +183,7 @@ public class AuthService {
                 .targetDate(toLocalDate(savedUser.getCreatedDate(), ZoneId.of("Asia/Seoul")))
                 .diarySummary("일기 작성 및 AI 편지 수령 방법 안내")
                 .replyContent("[답장 예시]")
+                .replyStatus("N")
                 .build();
         dailyAiInfoRepository.save(sampleLetter);
         return savedUser;
