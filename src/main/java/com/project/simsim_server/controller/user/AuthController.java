@@ -134,7 +134,7 @@ public class AuthController {
     public ResponseEntity reissueToken(
             @CookieValue(name = "refresh", required = false) String requestRefreshToken) {
 
-        if (requestRefreshToken.isEmpty()) {
+        if (requestRefreshToken == null || requestRefreshToken.isEmpty()) {
             log.warn("---[SimSimLog] 리프레시 토큰이 존재하지 않아 로그아웃 합니다. ----");
             throw new OAuthException(REFRESH_TOKEN_NOT_EXIST);
         }
