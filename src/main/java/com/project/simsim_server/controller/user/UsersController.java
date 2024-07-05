@@ -3,6 +3,7 @@ package com.project.simsim_server.controller.user;
 import com.project.simsim_server.dto.user.PersonaResponseDTO;
 import com.project.simsim_server.dto.user.UserInfoResponseDTO;
 import com.project.simsim_server.service.user.UsersService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -10,6 +11,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+@Tag(name = "User", description = "회원정보 서비스")
 @Slf4j
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/user")

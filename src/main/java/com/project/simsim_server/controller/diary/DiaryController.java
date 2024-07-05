@@ -5,6 +5,7 @@ import com.project.simsim_server.dto.diary.DiaryDailyResponseDTO;
 import com.project.simsim_server.dto.diary.DiaryRequestDTO;
 import com.project.simsim_server.dto.diary.DiaryResponseDTO;
 import com.project.simsim_server.service.diary.DiaryService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -18,7 +19,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
 
-//@CrossOrigin(origins = "*")
+@Tag(name = "Diary", description = "일기 서비스")
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/diary")
 @RestController

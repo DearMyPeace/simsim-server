@@ -2,6 +2,7 @@ package com.project.simsim_server.controller.user;
 
 import com.project.simsim_server.dto.user.PersonaResponseDTO;
 import com.project.simsim_server.service.user.PersonaService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -12,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-//@CrossOrigin(origins = "*")
+@Tag(name = "Persona", description = "[관리자] 페르소나 서비스")
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/persona")
 @RestController
