@@ -32,6 +32,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.YearMonth;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.project.simsim_server.exception.ai.AIErrorCode.*;
 
@@ -164,12 +165,11 @@ public class DailyAIReplyService {
 
         // 페르소나 정보
         String persona = user.getPersona();
-
         log.warn("----[분석할 페르소나] {} : {}", user.getEmail(), user.getPersona());
 
         // 14일~2일전 일기 요약 정보
-        LocalDate startDate = LocalDate.now().minusDays(14);
-        LocalDate endDate = LocalDate.now().minusDays(2);
+        LocalDate startDate = targetDate.minusDays(14);
+        LocalDate endDate = targetDate.minusDays(2);
         List<DailyAiInfo> summaryList = dailyAiInfoRepository.findAllByIdAndTargetDate(user.getUserId(), startDate, endDate);
 
         List<String> diaries = new ArrayList<>();
@@ -177,14 +177,13 @@ public class DailyAIReplyService {
             diaries.add(diary.getContent());
         }
 
+        List<DiarySummaryDTO> summaries= new ArrayList<>();
         // 감정 정보
-        String delimiter = ",";
-        List<DiarySummaryDTO> summaries = new ArrayList<>();
-        for (DailyAiInfo summary : summaryList) {
+        for (DailyAiInfo info : summaryList) {
             summaries.add(DiarySummaryDTO.builder()
-                    .date(summary.getTargetDate())
-                    .content(summary.getDiarySummary())
-                    .emotion(Arrays.asList(summary.getAnalyzeEmotions().split(delimiter)))
+                    .date(info.getTargetDate())
+                    .content(info.getReplyContent())
+                    .emotion(convertStringToList(info.getDiarySummary()))
                     .build());
         }
 
@@ -273,5 +272,11 @@ public class DailyAIReplyService {
                     return new AILetterResponseDTO(entitiy);
                 })
                 .orElseThrow(() -> new AIException(AILETTERS_NOT_FOUND));
+    }
+
+    public static List<Integer> convertStringToList(String str) {
+        return Arrays.stream(str.replaceAll("\\[|\\]", "").split(",\\s*"))
+                .map(Integer::parseInt)
+                .collect(Collectors.toList());
     }
 }

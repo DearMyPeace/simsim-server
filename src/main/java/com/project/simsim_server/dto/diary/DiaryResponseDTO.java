@@ -4,6 +4,7 @@ import com.project.simsim_server.domain.diary.Diary;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -17,6 +18,7 @@ public class DiaryResponseDTO {
     private Long userId;
     private String content;
     private String deleteYn;
+    private LocalDate markedDate;
     private String createdDate;
     private String modifiedDate;
 
@@ -25,6 +27,7 @@ public class DiaryResponseDTO {
         this.userId = diaryEntity.getUserId();
         this.content = diaryEntity.getContent();
         this.deleteYn = diaryEntity.getDiaryDeleteYn();
+        this.markedDate = diaryEntity.getMarkedDate();
         this.createdDate = convertToUTC(diaryEntity.getCreatedDate());
         this.modifiedDate = convertToUTC(diaryEntity.getModifiedDate());
     }
