@@ -76,7 +76,7 @@ public class AuthService {
              */
             Optional<Users> usersOptional = usersRepository.findByEmail(userEmail);
             if (usersOptional.isPresent()) {
-                if (usersOptional.get().getProviderName() == Provider.GOOGLE) {
+                if (usersOptional.get().getProviderName() == Provider.APPLE) {
                     log.warn("이미 가입한 이메일 주소 입니다.");
                     throw new OAuthException(ALREADY_EXIST_ACCOUNT);
                 } else if (usersOptional.get().getUserStatus().equals("N")) {
