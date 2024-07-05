@@ -98,7 +98,7 @@ public class DailyAIReplyService {
             throw new AIException(NOT_MEET_USER_GRADE);
         }
 
-        // 기존에 생성된 데이터가 있으면 반환
+        // 기존에 생성된 데이터가 있으면 반환(안내 편지는 제외 시킴)
         DailyAiInfo responseInfo = null;
         if (!aiInfo.isEmpty()) {
             if (aiInfo.size() >= 2) {
@@ -108,8 +108,9 @@ public class DailyAIReplyService {
                         break;
                     }
                 }
+            } else {
+                responseInfo = aiInfo.getFirst();
             }
-            assert responseInfo != null;
             DailyAiInfo saveInfo = dailyAiInfoRepository.save(responseInfo);
             return new AILetterResponseDTO(saveInfo);
         }
