@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,4 +42,6 @@ public interface DailyAiInfoRepository extends JpaRepository<DailyAiInfo, Long> 
     List<DailyAiInfo> findAllSummaryByDate(LocalDate startDate, LocalDate endDate, Long userId);
 
     Optional<DailyAiInfo> findByAiIdAndUserId(Long id, Long userId);
+
+    List<DailyAiInfo> findByUserId(Long userId);
 }

@@ -91,7 +91,7 @@ public class DailyAIReplyService {
         List<DailyAiInfo> aiInfo =
                 dailyAiInfoRepository.findByCreatedAtAndUserId(userId, requestDTO.getTargetDate());
 
-        // 일반 등급이면서 분석 대상 날짜가 동일하면 예외 처리
+        // 일반 등급이면서 분석 대상 날짜가 동일하면 예외 처리 //TODO - 동일 날짜가 아닌 12시간 이후로 수정 예정
         if (user.getGrade() == Grade.GENERAL
                 && !requestDTO.getTargetDate().atStartOfDay()
                 .isBefore(LocalDateTime.of(LocalDate.now(), LocalTime.NOON))) {
@@ -99,20 +99,13 @@ public class DailyAIReplyService {
         }
 
         // 기존에 생성된 데이터가 있으면 반환(안내 편지는 제외 시킴)
-        DailyAiInfo responseInfo = null;
         if (!aiInfo.isEmpty()) {
-            if (aiInfo.size() >= 2) {
-                for (DailyAiInfo info : aiInfo) {
-                    if (!info.isFirst()) {
-                        responseInfo = info.updateReplyStatus("Y");
-                        break;
-                    }
-                }
-            } else {
-                responseInfo = aiInfo.getFirst();
+            DailyAiInfo responseInfo = aiInfo.getFirst();
+            if (!responseInfo.isFirst()) {
+                aiInfo.getFirst().updateReplyStatus("Y");
+                DailyAiInfo saveInfo = dailyAiInfoRepository.save(responseInfo);
+                return new AILetterResponseDTO(saveInfo);
             }
-            DailyAiInfo saveInfo = dailyAiInfoRepository.save(responseInfo);
-            return new AILetterResponseDTO(saveInfo);
         }
 
         // 기존에 생성된 데이터가 없으면 생성
