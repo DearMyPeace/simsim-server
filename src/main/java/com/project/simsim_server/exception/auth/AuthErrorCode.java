@@ -11,6 +11,7 @@ public enum AuthErrorCode implements ErrorType {
     REFRESH_TOKEN_EXPIRED("리프레시 토큰의 기한이 만료되었습니다.", 401),
     REFRESH_TOKEN_NOT_SAME("접근할 수 없습니다.", 403),
     LOGIN_FAILED("로그인 실패", 500),
+    ALREADY_EXIST_ACCOUNT("이미 가입한 이메일 주소입니다.", 400),
     INVALID_JWT_SIGNATURE("서명이 유효하지 않습니다.", 403);
 
     private final String message;
