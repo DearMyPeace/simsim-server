@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.List;
 
-import static com.project.simsim_server.exception.dairy.DiaryErrorCode.LIMIT_EXCEEDED;
+import static com.project.simsim_server.exception.dairy.DiaryErrorCode.*;
 
 @RequiredArgsConstructor
 @Service
@@ -49,6 +49,7 @@ public class DiaryService {
                 .build();
     }
 
+    
     public List<DiaryCountResponseDTO> countDiariesByDate(String year, String month, Long userId) {
         YearMonth yearMonth = YearMonth.of(Integer.parseInt(year), Integer.parseInt(month));
         LocalDate startDate = yearMonth.atDay(1);
@@ -62,7 +63,11 @@ public class DiaryService {
     }
 
 
+    @Transactional
     public DiaryResponseDTO save(DiaryRequestDTO diaryRequestDTO, Long userId) {
+//        if (diaryRequestDTO.getCreatedDate().toLocalDate().isAfter(LocalDate.now())) {
+//            throw new DiaryException(INVALID_DATE);
+//        }
 
         List<Diary> todayDiaries
                 = diaryRepository.findByCreatedAtAndUserId(userId, diaryRequestDTO.getCreatedDate().toLocalDate());
@@ -73,23 +78,19 @@ public class DiaryService {
         return new DiaryResponseDTO(diaryRepository.save(diaryRequestDTO.toEntity()));
     }
 
+
     @Transactional
     public DiaryResponseDTO update(Long diaryId, DiaryRequestDTO diaryRequestDTO, Long userId) {
+//        if (diaryRequestDTO.getModifiedDate().toLocalDate().isAfter(LocalDateTime.now())) {
+//            throw new DiaryException(INVALID_DATE);
+//        }
         Diary result = diaryRepository.findByIdAndUserId(diaryId, userId)
-                .orElseThrow(() ->
-                        new IllegalArgumentException("해당 일기가 존재하지 않습니다. 일기번호 : " + diaryId));
+                .orElseThrow(() -> new DiaryException(DIARY_NOT_FOUND));
 
-        if (diaryRequestDTO.getCreatedDate() == null) {
-            throw new IllegalArgumentException("일기 등록 일자를 입력해 주세요.");
-        } else if (diaryRequestDTO.getModifiedDate() == null) {
-            throw new IllegalArgumentException("일기 수정 일자를 입력해 주세요.");
-        } else if (diaryRequestDTO.getCreatedDate().isAfter(LocalDateTime.now())
-                || diaryRequestDTO.getModifiedDate().isAfter(LocalDateTime.now())) {
-            throw new IllegalArgumentException("유효하지 않은 날짜입니다.");
-        }
         Diary updateDiary = result.update(diaryRequestDTO.getContent(), diaryRequestDTO.getModifiedDate());
         return new DiaryResponseDTO(updateDiary);
     }
+
 
     @Transactional
     public void delete(Long diaryId, Long userId) {

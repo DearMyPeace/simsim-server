@@ -63,6 +63,7 @@ public class Diary {
 
     public void delete() {
         this.diaryDeleteYn = "Y";
+        this.modifiedDate = LocalDateTime.now();
     }
 
     private LocalDate toLocalDate(LocalDateTime localDateTime, ZoneId zoneId) {
