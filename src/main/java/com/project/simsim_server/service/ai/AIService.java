@@ -5,10 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.simsim_server.domain.ai.DailyAiInfo;
 import com.project.simsim_server.domain.diary.Diary;
 import com.project.simsim_server.domain.user.Users;
-import com.project.simsim_server.dto.ai.fastapi.DailyAiEmotionResponseDTO;
-import com.project.simsim_server.dto.ai.fastapi.DailyAiLetterRequestDTO;
-import com.project.simsim_server.dto.ai.fastapi.DiaryContentDTO;
-import com.project.simsim_server.dto.ai.fastapi.DiarySummaryDTO;
+import com.project.simsim_server.dto.ai.fastapi.*;
 import com.project.simsim_server.exception.ai.AIException;
 import com.project.simsim_server.repository.ai.DailyAiInfoRepository;
 import com.project.simsim_server.repository.diary.DiaryRepository;
@@ -103,20 +100,20 @@ public class AIService {
      * @return
      */
     public String requestLetter(Users user, DailyAiLetterRequestDTO requestData) {
-        ResponseEntity<String> response
-                = restTemplate.postForEntity(AI_LETTER_URL, requestData, String.class);
+        ResponseEntity<DailyLetterSummaryResponseDTO> response
+                = restTemplate.postForEntity(AI_LETTER_URL, requestData, DailyLetterSummaryResponseDTO.class);
         if (response.getStatusCode() != HttpStatus.OK) {
             log.error("---[SimSimSchedule] requestLetter AI 응답 실패 userId = {}", user.getUserId());
             return null;
         }
 
         log.warn("---[SimSimSchedule] requestLetter AI 응답 내용 {},  userId = {}", response.getBody(), user.getUserId());
-        String letter = response.getBody();
-        if (letter == null || letter.isEmpty()) {
+        DailyLetterSummaryResponseDTO letter = response.getBody();
+        if (letter == null || letter.getResult().isEmpty()) {
             log.error("---[SimSimSchedule] requestLetter AI 응답 내용 없음 userId = {}", user.getUserId());
             return null;
         }
-        return letter;
+        return letter.getResult();
     }
 
 
@@ -126,20 +123,20 @@ public class AIService {
      * @return
      */
     public String requestDiarySummary(Users user, DailyAiLetterRequestDTO requestData) {
-        ResponseEntity<String> response
-                = restTemplate.postForEntity(AI_SUMMARY_URL, requestData, String.class);
+        ResponseEntity<DailyLetterSummaryResponseDTO> response
+                = restTemplate.postForEntity(AI_SUMMARY_URL, requestData, DailyLetterSummaryResponseDTO.class);
         if (response.getStatusCode() != HttpStatus.OK) {
             log.error("---[SimSimSchedule] requestDiarySummary AI 응답 실패 userId = {}", user.getUserId());
             return null;
         }
 
         log.warn("---[SimSimSchedule] requestDiarySummary AI 응답 내용 {},  userId = {}", response.getBody(), user.getUserId());
-        String summary = response.getBody();
-        if (summary == null || summary.isEmpty()) {
+        DailyLetterSummaryResponseDTO summary = response.getBody();
+        if (summary == null || summary.getResult().isEmpty()) {
             log.error("---[SimSimSchedule] requestDiarySummary AI 응답 내용 없음 userId = {}", user.getUserId());
             return null;
         }
-        return summary;
+        return summary.getResult();
     }
 
 
