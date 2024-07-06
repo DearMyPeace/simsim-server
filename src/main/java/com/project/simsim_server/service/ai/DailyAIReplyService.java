@@ -167,7 +167,6 @@ public class DailyAIReplyService {
             DailyAiInfo result = iterator.next();
             if (results.size() > 1) {
                 if (result.isFirst()) {
-                    log.warn("---[]");
                     log.warn("---[SimSimInfo] 이건 안내이므로 replyStatus를 F 처리합니다 ");
                     DailyAiInfo dailyAiInfo = result.updateReplyStatus("F");
                     dailyAiInfoRepository.save(dailyAiInfo);
