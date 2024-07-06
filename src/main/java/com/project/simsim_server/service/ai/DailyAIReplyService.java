@@ -252,7 +252,6 @@ public class DailyAIReplyService {
         YearMonth yearMonth = YearMonth.of(Integer.parseInt(year), Integer.parseInt(month));
         LocalDate startDate = yearMonth.atDay(1);
         LocalDate endDate = yearMonth.atEndOfMonth();
-        boolean isFisrtOnly = true;
 
         log.warn("서머리 조회 시작 일자 ={}", startDate);
         log.warn("서머리 조회 끝 일자 ={}", endDate);
@@ -260,12 +259,15 @@ public class DailyAIReplyService {
         List<DailyAiInfo> results
                 = dailyAiInfoRepository.findAllSummaryByDate(startDate, endDate, userId);
 
-        for (DailyAiInfo result : results) {
+        Iterator<DailyAiInfo> iterator = results.iterator();
+        while (iterator.hasNext()) {
+            DailyAiInfo result = iterator.next();
             if (results.size() > 1) {
                 if (result.isFirst()) {
+                    log.warn("---[SimSimInfo] 이건 안내이므로 replyStatus를 F 처리합니다 ");
                     DailyAiInfo dailyAiInfo = result.updateReplyStatus("F");
                     dailyAiInfoRepository.save(dailyAiInfo);
-                    results.remove(result);
+                    iterator.remove();
                 }
             }
             log.warn(result.toString());
