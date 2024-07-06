@@ -34,8 +34,26 @@ public class DailyAiInfo extends BaseTimeEntity {
     @Column(name = "ai_reply_content")
     private String replyContent;
 
-    @Column(name = "ai_analyze_emotions")
-    private String analyzeEmotions;
+    @Column(name = "ai_analyze_positive")
+    private String analyzePositive;
+
+    @Column(name = "ai_analyze_positive_total")
+    @ColumnDefault("0")
+    private int analyzePositiveTotal;
+
+    @Column(name = "ai_analyze_neutral")
+    private String analyzeNeutral;
+
+    @Column(name = "ai_analyze_neutral_total")
+    @ColumnDefault("0")
+    private int analyzeNeutralTotal;
+
+    @Column(name = "ai_analyze_negative")
+    private String analyzeNegative;
+
+    @Column(name = "ai_analyze_negative_total")
+    @ColumnDefault("0")
+    private int analyzeNegativeTotal;
 
     @Column(name = "ai_analyze_factors")
     private String analyzeFactors;
@@ -50,13 +68,19 @@ public class DailyAiInfo extends BaseTimeEntity {
 
     @Builder
     public DailyAiInfo(Long userId, LocalDate targetDate, String diarySummary,
-            String replyContent, String analyzeEmotions, String analyzeFactors,
-            String replyStatus, boolean isFirst) {
+            String replyContent, String analyzePositive, String analyzeNeutral, String analyzeNegative,
+            int analyzePositiveTotal, int analyzeNeutralTotal, int analyzeNegativeTotal,
+            String analyzeFactors, String replyStatus, boolean isFirst) {
         this.userId = userId;
         this.targetDate = targetDate;
         this.diarySummary = diarySummary;
         this.replyContent = replyContent;
-        this.analyzeEmotions = analyzeEmotions;
+        this.analyzePositive = analyzePositive;
+        this.analyzePositiveTotal = analyzePositiveTotal;
+        this.analyzeNeutral = analyzeNeutral;
+        this.analyzeNeutralTotal = analyzeNeutralTotal;
+        this.analyzeNegative = analyzeNegative;
+        this.analyzeNegativeTotal = analyzeNegativeTotal;
         this.analyzeFactors = analyzeFactors;
         this.replyStatus = replyStatus;
         this.isFirst = isFirst;

@@ -35,7 +35,12 @@ create table daily_ai_response_tbl (
     ai_target_date date not null,                     # 조회 이벤트 발생 일자
     ai_diary_summary varchar(1024),
     ai_reply_content varchar(1024),
-    ai_analyze_emotions varchar(20),
+    ai_analyze_positive varchar(20),
+    ai_analyze_positive_total int,
+    ai_analyze_neutral varchar(20),
+    ai_analyze_neutral_total int,
+    ai_analyze_negative varchar(20),
+    ai_analyze_negative_total int,
     ai_analyze_factors varchar(300),
     ai_reply_status char(1) default 'N' not null ,
     ai_is_first boolean default false not null,
