@@ -98,9 +98,9 @@ public class DailyAIReplyService {
     public AILetterResponseDTO save(AILetterRequestDTO requestDTO, Long userId) {
 
         // 유효하지 않은 일자 예외처리
-        if (requestDTO.getTargetDate().isAfter(LocalDate.now())) {
-            throw new AIException(AI_NOT_INVALID_DATE);
-        }
+//        if (requestDTO.getTargetDate().isAfter(LocalDate.now())) {
+//            throw new AIException(AI_NOT_INVALID_DATE);
+//        }
         Users user = usersRepository.findByIdAndUserStatus(userId)
                 .orElseThrow(() -> new AIException(AI_MAIL_FAIL));
 

@@ -123,12 +123,11 @@ public class AIService {
     /**
      * 3. 일기 요약 API 호출
      * @param user
-     * @param diaries
      * @return
      */
-    public String requestDiarySummary(Users user, List<DiaryContentDTO> diaries) {
+    public String requestDiarySummary(Users user, DailyAiLetterRequestDTO requestData) {
         ResponseEntity<String> response
-                = restTemplate.postForEntity(AI_SUMMARY_URL, diaries, String.class);
+                = restTemplate.postForEntity(AI_SUMMARY_URL, requestData, String.class);
         if (response.getStatusCode() != HttpStatus.OK) {
             log.error("---[SimSimSchedule] requestDiarySummary AI 응답 실패 userId = {}", user.getUserId());
             return null;
@@ -147,12 +146,11 @@ public class AIService {
     /**
      * 4. 감정 분석 API 호출
      * @param user
-     * @param diaries
      * @return
      */
-    public DailyAiEmotionResponseDTO requestEmotion(Users user, List<DiaryContentDTO> diaries) {
+    public DailyAiEmotionResponseDTO requestEmotion(Users user, DailyAiLetterRequestDTO requestData) {
         ResponseEntity<DailyAiEmotionResponseDTO> response
-                = restTemplate.postForEntity(AI_EMOTION_URL, diaries, DailyAiEmotionResponseDTO.class);
+                = restTemplate.postForEntity(AI_EMOTION_URL, requestData, DailyAiEmotionResponseDTO.class);
         if (response.getStatusCode() != HttpStatus.OK) {
             log.error("---[SimSimSchedule] requestEmotion AI 응답 실패 userId = {}", user.getUserId());
             return null;
@@ -190,8 +188,8 @@ public class AIService {
 
         // AI 요청
         String letter = requestLetter(user, requestData); // AI_LETTER_URL 호출
-        DailyAiEmotionResponseDTO emotions = requestEmotion(user, requestData.getDiaries()); //AI_EMONTION_URL 호출
-        String summary = requestDiarySummary(user, requestData.getDiaries()); // AI_SUMMARY_URL 호출
+        DailyAiEmotionResponseDTO emotions = requestEmotion(user, requestData); //AI_EMONTION_URL 호출
+        String summary = requestDiarySummary(user, requestData); // AI_SUMMARY_URL 호출
         if (letter == null || emotions == null || summary == null) {
             throw new AIException(AIRESPONE_NOT_FOUND);
         }
