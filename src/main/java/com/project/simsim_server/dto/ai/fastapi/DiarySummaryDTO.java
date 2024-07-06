@@ -12,12 +12,17 @@ import java.util.List;
 public class DiarySummaryDTO {
     private String date;
     private String content;
-    private List<Integer> emotion;
+    private List<Integer> positive;
+    private List<Integer> neutral;
+    private List<Integer> negative;
 
     @Builder
-    public DiarySummaryDTO(LocalDate date, String content, List<Integer> emotion) {
+    public DiarySummaryDTO(LocalDate date, String content, List<Integer> positive,
+        List<Integer> neutral, List<Integer> negative) {
         this.date = date.toString();
         this.content = content;
-        this.emotion = emotion;
+        this.positive = positive;
+        this.neutral = neutral;
+        this.negative = negative;
     }
 }
