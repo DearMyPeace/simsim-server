@@ -1,4 +1,4 @@
-package com.project.simsim_server.config.redis;
+package com.project.simsim_server.config.auth.dto;
 
 import jakarta.persistence.Id;
 import lombok.*;

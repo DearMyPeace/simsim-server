@@ -1,12 +1,15 @@
 package com.project.simsim_server.controller.ai;
 
-import com.project.simsim_server.config.auth.jwt.AuthenticationService;
 import com.project.simsim_server.dto.ai.client.AILetterRequestDTO;
 import com.project.simsim_server.dto.ai.client.AILetterResponseDTO;
 import com.project.simsim_server.dto.ai.client.DiarySummaryResponseDTO;
+import com.project.simsim_server.repository.diary.DiaryRepository;
 import com.project.simsim_server.service.ai.DailyAIReplyService;
+import com.project.simsim_server.service.diary.DiaryService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -20,7 +23,7 @@ import java.util.List;
 public class DailyAIReplyController {
 
     private final DailyAIReplyService dailyAIReplyService;
-    private final AuthenticationService authenticationService;
+
 
     /**
      * 원하는 일자, 원하는 갯수에 대해 AI 편지를 조회
@@ -32,52 +35,60 @@ public class DailyAIReplyController {
     public List<AILetterResponseDTO> getAILetters(
             @RequestParam(required = false) LocalDate offset,
             @RequestParam("total") int count) {
-        Long userId = authenticationService.getUserIdFromAuthentication();
+        String authentication = getUserIdFromAuthentication();
+        Long userId = Long.parseLong(authentication);
+
         if (offset != null) {
             return dailyAIReplyService.findByCreatedDateAndUserIdOrderByCreatedDateDesc(userId, offset, count);
         }
         return dailyAIReplyService.findByCreatedDateAndUserIdOrderByCreatedDateDesc(userId, count);
     }
 
-
-
-    /**
-     * id로 일기 조회
-     * @param id
-     * @return
-     */
     @GetMapping
     public AILetterResponseDTO getAILetter(@RequestParam("id") Long id) {
-        Long userId = authenticationService.getUserIdFromAuthentication();
+        String authentication = getUserIdFromAuthentication();
+        Long userId = Long.parseLong(authentication);
         return dailyAIReplyService.findByIdAndUserId(id, userId);
     }
 
-
-    /**
-     * 월별 일기 조회
-     * @param year
-     * @param month
-     * @return
-     */
     @GetMapping("/{year}/{month}")
     public List<DiarySummaryResponseDTO> getSummaryAtMonth(
             @PathVariable String year,
             @PathVariable String month
     ) {
-        Long userId = authenticationService.getUserIdFromAuthentication();
+        String authentication = getUserIdFromAuthentication();
+        Long userId = Long.parseLong(authentication);
         return dailyAIReplyService.findByMonthAndUserId(year, month, userId);
+    }
+
+    @GetMapping("/{year}/{month}/{day}")
+    public AILetterResponseDTO getSummaryAtMonth(
+            @PathVariable String year,
+            @PathVariable String month,
+            @PathVariable String day
+    ) {
+        String authentication = getUserIdFromAuthentication();
+        Long userId = Long.parseLong(authentication);
+        return dailyAIReplyService.findByDateAndUserId(year, month, day, userId);
     }
 
 
     /**
-     * 유저가 편지 송신 버튼을 클릭하면 편지 생성
+     * 유저가 편지 조회 버튼을 클릭하면 편지 생성과 동시에 조회하는 API
      * @param requestDTO
      * @return AILetterResponseDTO 요약내용, 편지 등
      */
     @PostMapping("/save")
     public AILetterResponseDTO save(@RequestBody AILetterRequestDTO requestDTO) {
-        Long userId = authenticationService.getUserIdFromAuthentication();
+        String authentication = getUserIdFromAuthentication();
+        Long userId = Long.parseLong(authentication);
         return dailyAIReplyService.save(requestDTO, userId);
     }
 
+
+    private String getUserIdFromAuthentication() {
+        UsernamePasswordAuthenticationToken authentication =
+                (UsernamePasswordAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
+        return authentication.getName();
+    }
 }

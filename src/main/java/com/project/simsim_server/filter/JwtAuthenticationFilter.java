@@ -1,11 +1,10 @@
 package com.project.simsim_server.filter;
 
-import com.project.simsim_server.config.auth.jwt.AuthenticationService;
 import com.project.simsim_server.config.auth.jwt.CustomUserDetails;
 import com.project.simsim_server.config.auth.jwt.CustomUserDetailsService;
 import com.project.simsim_server.config.auth.jwt.JwtUtils;
 import com.project.simsim_server.exception.auth.OAuthException;
-import com.project.simsim_server.config.redis.RedisService;
+import com.project.simsim_server.service.redis.RedisService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,9 +28,8 @@ import static com.project.simsim_server.exception.auth.AuthErrorCode.*;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtils jwtUtils;
-    private final RedisService redisService;
     private final CustomUserDetailsService customUserDetailsService;
-    private final AuthenticationService authenticationService;
+    private final RedisService redisService;
 
     private static final String[] AUTHENTICATION_NOT_REQUIRED
             = new String[] {"/swagger-ui","/v3/api-docs", "/api/v1/auth/apple", "/api/v1/auth/google", "/api/v1/auth/reissue"};
@@ -71,7 +69,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     }
 
                     CustomUserDetails userDetails = (CustomUserDetails) customUserDetailsService.loadUserByUsername(userId);
-                    authenticationService.setAuthentication(userDetails);
+                    setAuthentication(userDetails);
                 }
             } else {
                 log.info("---- [SimSimFilter] JwtAuthenticationFilter : 액세스 토큰이 유효하지 않습니다.");
@@ -87,8 +85,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
+    private void setAuthentication(CustomUserDetails userDetails) {
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        log.warn("---- [SimSimFilter] JwtAuthenticationFilter : 생성한 인증 객체 ={}", SecurityContextHolder.getContext().getAuthentication().getName());
+    }
+
     @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) {
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         log.info("---- [SimSimFilter] JwtAuthenticationFilter : should not filter = {}", request.getRequestURI());
         boolean result = StringUtils.startsWithAny(request.getRequestURI(), AUTHENTICATION_NOT_REQUIRED);
         log.info("---- [SimSimFilter] JwtAuthenticationFilter : should not filter = {}", result);

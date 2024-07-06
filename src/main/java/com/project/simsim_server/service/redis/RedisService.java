@@ -1,4 +1,4 @@
-package com.project.simsim_server.config.redis;
+package com.project.simsim_server.service.redis;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;

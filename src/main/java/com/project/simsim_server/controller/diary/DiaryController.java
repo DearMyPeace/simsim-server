@@ -1,6 +1,5 @@
 package com.project.simsim_server.controller.diary;
 
-import com.project.simsim_server.config.auth.jwt.AuthenticationService;
 import com.project.simsim_server.dto.diary.DiaryCountResponseDTO;
 import com.project.simsim_server.dto.diary.DiaryDailyResponseDTO;
 import com.project.simsim_server.dto.diary.DiaryRequestDTO;
@@ -27,7 +26,6 @@ import java.util.List;
 public class DiaryController {
 
     private final DiaryService diaryService;
-    private final AuthenticationService authenticationService;
 
     /**
      * 유저가 선택한 일자의 일기 내용 전체를 조회
@@ -37,7 +35,8 @@ public class DiaryController {
     @GetMapping("/{targetDate}")
     public DiaryDailyResponseDTO findByCreatedDate(
             @PathVariable LocalDate targetDate) {
-        Long userId = authenticationService.getUserIdFromAuthentication();
+        String authentication = getUserIdFromAuthentication();
+        Long userId = Long.parseLong(authentication);
         return diaryService.findByCreatedDate(targetDate, userId);
     }
 
@@ -53,7 +52,8 @@ public class DiaryController {
             @PathVariable String year,
             @PathVariable String month
     ) {
-        Long userId = authenticationService.getUserIdFromAuthentication();
+        String authentication = getUserIdFromAuthentication();
+        Long userId = Long.parseLong(authentication);
         return diaryService.countDiariesByDate(year, month, userId);
     }
 
@@ -67,9 +67,11 @@ public class DiaryController {
     public DiaryResponseDTO saveDiary(
             @RequestBody DiaryRequestDTO diaryRequestDTO
     ) {
-        Long userId = authenticationService.getUserIdFromAuthentication();
+        String authentication = getUserIdFromAuthentication();
+        Long userId = Long.parseLong(authentication);
         return diaryService.save(diaryRequestDTO, userId);
     }
+
 
 
     /**
@@ -84,7 +86,8 @@ public class DiaryController {
             @RequestBody DiaryRequestDTO diaryRequestDTO
     ) {
         try {
-            Long userId = authenticationService.getUserIdFromAuthentication();
+            String authentication = getUserIdFromAuthentication();
+            Long userId = Long.parseLong(authentication);
             return diaryService.update(diaryId, diaryRequestDTO, userId);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
@@ -98,8 +101,13 @@ public class DiaryController {
      */
     @DeleteMapping("/{diaryId}")
     public void deleteDiary(@PathVariable Long diaryId) {
-        Long userId = authenticationService.getUserIdFromAuthentication();
+        String authentication = getUserIdFromAuthentication();
+        Long userId = Long.parseLong(authentication);
         diaryService.delete(diaryId, userId);
     }
-}
 
+    private String getUserIdFromAuthentication() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication.getName();
+    }
+}

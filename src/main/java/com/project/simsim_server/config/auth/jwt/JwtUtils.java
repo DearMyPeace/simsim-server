@@ -4,9 +4,10 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.project.simsim_server.config.auth.dto.JwtPayloadDTO;
 import com.project.simsim_server.exception.auth.OAuthException;
 import com.project.simsim_server.repository.diary.DiaryRepository;
-import com.project.simsim_server.config.redis.RedisService;
+import com.project.simsim_server.service.redis.RedisService;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
@@ -21,7 +22,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
 
@@ -49,6 +49,7 @@ public class JwtUtils {
     private String key;
 
     private SecretKey secretKey;
+    private CustomUserDetailsService customUserDetailsService;
     private static final String BEARER = "Bearer ";
     private static final String ACCESS_TOKEN_HEADER = "Authorization";
     private static final String REFRESH_TOKEN_HEADER = "refresh";
@@ -69,53 +70,53 @@ public class JwtUtils {
      * @param token JWT
      * @return UserTokenInfo JWT 안에 저장된 로그인한 회원 정보
      */
-    public JwtPayload getUserInfo(String token) {
+    public JwtPayloadDTO getUserInfo(String token) {
         Claims claims = Jwts.parser()
                 .verifyWith(secretKey)
                 .build()
                 .parseSignedClaims(token).getPayload();
 
-        return JwtPayload.fromClaims(claims);
+        return JwtPayloadDTO.fromClaims(claims);
     }
 
 
     /**
      * AccessToken 생성
-     * @param jwtPayload
+     * @param jwtPayloadDTO
      * @return AccessToken 반환
      */
-    public String generateAccessToken(JwtPayload jwtPayload) {
-        return generateToken(jwtPayload, accessExpireTime);
+    public String generateAccessToken(JwtPayloadDTO jwtPayloadDTO) {
+        return generateToken(jwtPayloadDTO, accessExpireTime);
     }
 
 
     /**
      * RefreshToken 생성
-     * @param jwtPayload
+     * @param jwtPayloadDTO
      * @return RefreshToken 반환
      */
-    public String generateRefreshToken(JwtPayload jwtPayload) {
-        return generateToken(jwtPayload, refreshExpireTime);
+    public String generateRefreshToken(JwtPayloadDTO jwtPayloadDTO) {
+        return generateToken(jwtPayloadDTO, refreshExpireTime);
     }
 
 
     /**
      * AccessToken 및 RefreshToken 생성
-     * @param jwtPayload
+     * @param jwtPayloadDTO
      * @param expireTime
      * @return 토큰 반환
      */
-    public String generateToken(JwtPayload jwtPayload, Long expireTime) {
+    public String generateToken(JwtPayloadDTO jwtPayloadDTO, Long expireTime) {
         Date now = new Date();
         Date expireDate = new Date(now.getTime() + expireTime);
 
         log.warn("토큰 유효시간 확인 : {}", expireDate);
 
         return Jwts.builder()
-                .subject(jwtPayload.getUserEmail())
-                .claim("id", jwtPayload.getUserId())
-                .claim("email", jwtPayload.getUserEmail())
-                .claim("role", jwtPayload.getUserRole().getKey())
+                .subject(jwtPayloadDTO.getUserEmail())
+                .claim("id", jwtPayloadDTO.getUserId())
+                .claim("email", jwtPayloadDTO.getUserEmail())
+                .claim("role", jwtPayloadDTO.getUserRole().getKey())
                 .issuedAt(now)
                 .expiration(expireDate)
                 .signWith(secretKey, Jwts.SIG.HS512)
@@ -129,6 +130,16 @@ public class JwtUtils {
                 .map(at -> at.replace(BEARER, ""));
     }
 
+
+    public Optional<String> extractRefreshToken(HttpServletRequest request) {
+        return Optional.ofNullable(request.getHeader(REFRESH_TOKEN_HEADER));
+    }
+
+
+    private List<SimpleGrantedAuthority> getAuthorities(Claims claims) {
+        return Collections.singletonList(new SimpleGrantedAuthority(
+                claims.get("role").toString()));
+    }
 
 
     /**
@@ -152,6 +163,20 @@ public class JwtUtils {
         }
     }
 
+    public Authentication getAuthentication(String token) {
+        Claims claims = parseClaims(token);
+        List<SimpleGrantedAuthority> authorities = getAuthorities(claims);
+        User principal = new User(claims.getSubject(), "", authorities);
+        return new UsernamePasswordAuthenticationToken(principal, token, authorities);
+    }
+
+
+    public String getAuthorities(Authentication authentication) {
+        return authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.joining(","));
+    }
+
     public String getEmail(String accessToken) {
         Claims claims = parseClaims(accessToken);
         return claims.get("email", String.class);
@@ -165,8 +190,6 @@ public class JwtUtils {
     }
 
 
-
-
     public boolean isTokenExpired(String token) {
         DecodedJWT jwt = JWT.decode(token);
         Date expDate = jwt.getExpiresAt();
@@ -175,7 +198,7 @@ public class JwtUtils {
         return now.after(expDate);
     }
 
-    public Claims parseClaims(String token) {
+    private Claims parseClaims(String token) {
         try {
             return Jwts.parser().verifyWith(secretKey).build()
                     .parseSignedClaims(token).getPayload();
