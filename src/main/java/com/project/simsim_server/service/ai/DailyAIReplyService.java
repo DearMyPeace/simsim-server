@@ -101,7 +101,14 @@ public class DailyAIReplyService {
         // 기존에 생성된 데이터가 있으면 반환(안내 편지는 제외 시킴)
         if (!aiInfo.isEmpty()) {
             DailyAiInfo responseInfo = aiInfo.getFirst();
+
+            log.warn("기존 AI 데이터 ={}", responseInfo.toString());
+
+
             if (!responseInfo.isFirst()) {
+
+                log.warn("기존 AI 데이터 안내문 여부 ={}", responseInfo.isFirst());
+                
                 aiInfo.getFirst().updateReplyStatus("Y");
                 DailyAiInfo saveInfo = dailyAiInfoRepository.save(responseInfo);
                 return new AILetterResponseDTO(saveInfo);
