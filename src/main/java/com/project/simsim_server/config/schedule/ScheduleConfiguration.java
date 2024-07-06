@@ -8,19 +8,19 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-//@Slf4j
-//@RequiredArgsConstructor
-//@EnableAsync
-//@Component
-//public class ScheduleConfiguration {
-//
-//    private final AIBatchService aiBatchService;
+@Slf4j
+@RequiredArgsConstructor
+@EnableAsync
+@Component
+public class ScheduleConfiguration {
+
+//    private final DailyAIReplyService dailyAIReplyService;
 //
 //    @Async
 //    @Scheduled(cron = "0 48 19 * * ?", zone = "Asia/Seoul")
 //    public void generateDailyAIReply() {
 //        log.info("---[SimSimSchedul] 스케줄링 작업 시작");
-//        aiBatchService.saveAuto();
+//        dailyAIReplyService.saveAuto();
 //        log.info("---[SimSimSchedul] 스케줄링 작업 종료");
 //    }
-//}
+}
