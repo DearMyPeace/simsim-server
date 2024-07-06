@@ -87,9 +87,6 @@ public class DailyAIReplyService {
         Users user = usersRepository.findByIdAndUserStatus(userId)
                 .orElseThrow(() -> new AIException(AI_MAIL_FAIL));
 
-        // 해당 유저의 해당 일자 AI 답장 정보 조회
-        List<DailyAiInfo> aiInfo =
-                dailyAiInfoRepository.findByCreatedAtAndUserId(userId, requestDTO.getTargetDate());
 
         // 일반 등급이면서 분석 대상 날짜가 동일하면 예외 처리 //TODO - 동일 날짜가 아닌 12시간 이후로 수정 예정
         if (user.getGrade() == Grade.GENERAL
@@ -98,17 +95,20 @@ public class DailyAIReplyService {
             throw new AIException(NOT_MEET_USER_GRADE);
         }
 
+        // 해당 유저의 해당 일자 AI 답장 정보 조회
+        List<DailyAiInfo> aiInfo =
+                dailyAiInfoRepository.findByCreatedAtAndUserId(userId, requestDTO.getTargetDate());
+
         // 기존에 생성된 데이터가 있으면 반환(안내 편지는 제외 시킴)
         if (!aiInfo.isEmpty()) {
             DailyAiInfo responseInfo = aiInfo.getFirst();
 
             log.warn("기존 AI 데이터 ={}", responseInfo.toString());
 
-
             if (!responseInfo.isFirst()) {
 
                 log.warn("기존 AI 데이터 안내문 여부 ={}", responseInfo.isFirst());
-                
+
                 aiInfo.getFirst().updateReplyStatus("Y");
                 DailyAiInfo saveInfo = dailyAiInfoRepository.save(responseInfo);
                 return new AILetterResponseDTO(saveInfo);
@@ -252,6 +252,7 @@ public class DailyAIReplyService {
         YearMonth yearMonth = YearMonth.of(Integer.parseInt(year), Integer.parseInt(month));
         LocalDate startDate = yearMonth.atDay(1);
         LocalDate endDate = yearMonth.atEndOfMonth();
+        boolean isFisrtOnly = true;
 
         log.warn("서머리 조회 시작 일자 ={}", startDate);
         log.warn("서머리 조회 끝 일자 ={}", endDate);
@@ -260,6 +261,13 @@ public class DailyAIReplyService {
                 = dailyAiInfoRepository.findAllSummaryByDate(startDate, endDate, userId);
 
         for (DailyAiInfo result : results) {
+            if (results.size() > 1) {
+                if (result.isFirst()) {
+                    DailyAiInfo dailyAiInfo = result.updateReplyStatus("F");
+                    dailyAiInfoRepository.save(dailyAiInfo);
+                    results.remove(result);
+                }
+            }
             log.warn(result.toString());
         }
 
