@@ -2,16 +2,17 @@ package com.project.simsim_server.service.user;
 
 import com.nimbusds.jose.JWKSet;
 import com.project.simsim_server.config.auth.dto.*;
-import com.project.simsim_server.config.auth.dto.JwtPayloadDTO;
+import com.project.simsim_server.config.auth.jwt.AuthenticationService;
+import com.project.simsim_server.config.auth.jwt.JwtPayload;
 import com.project.simsim_server.config.auth.jwt.JwtUtils;
-import com.project.simsim_server.config.auth.dto.TokenDTO;
+import com.project.simsim_server.config.redis.TokenDTO;
 import com.project.simsim_server.domain.ai.DailyAiInfo;
 import com.project.simsim_server.domain.user.Provider;
 import com.project.simsim_server.domain.user.Role;
 import com.project.simsim_server.exception.auth.OAuthException;
-import com.project.simsim_server.exception.UserNotFoundException;
+import com.project.simsim_server.exception.user.UsersException;
 import com.project.simsim_server.repository.ai.DailyAiInfoRepository;
-import com.project.simsim_server.service.redis.RedisService;
+import com.project.simsim_server.config.redis.RedisService;
 import com.project.simsim_server.domain.user.Users;
 import com.project.simsim_server.repository.user.UsersRepository;
 import jakarta.security.auth.message.AuthException;
@@ -39,7 +40,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.project.simsim_server.exception.auth.AuthErrorCode.*;
-import static org.springframework.data.jpa.domain.AbstractAuditable_.createdDate;
+import static com.project.simsim_server.exception.user.UsersErrorCode.CANCLE_ACCOUNT;
+import static com.project.simsim_server.exception.user.UsersErrorCode.USER_NOT_FOUND;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -48,6 +50,7 @@ import static org.springframework.data.jpa.domain.AbstractAuditable_.createdDate
 public class AuthService {
 
     private final JwtUtils jwtUtils;
+    private final AuthenticationService authenticationService;
     private final UsersRepository usersRepository;
     private final DailyAiInfoRepository dailyAiInfoRepository;
     private final RestTemplate restTemplate;
@@ -61,41 +64,33 @@ public class AuthService {
 
     /**
      * Google 소셜 로그인을 통한 회원 가입 및 로그인
-     * @param tokenRequest
-     * @return
-     * @throws AuthException
      */
     @Transactional
     public TokenDTO loginGoogle(GoogleLoginRequestDTO tokenRequest) throws AuthException {
-        try {
-            GoogleUserInfoDTO userInfo = getGoogleUserInfo(tokenRequest.getAccess_token());
-            String userEmail = userInfo.getEmail();
-            String userName = userInfo.getName();
+        GoogleUserInfoDTO userInfo = getGoogleUserInfo(tokenRequest.getAccess_token());
+        String userEmail = userInfo.getEmail();
+        String userName = userInfo.getName();
 
-            Optional<Users> usersOptional = usersRepository.findByEmail(userEmail);
-            if (usersOptional.isPresent()) {
-                Users existingUser = usersOptional.get();
-                if (existingUser.getProviderName() == Provider.APPLE) {
-                    log.warn("이미 가입한 이메일 주소 입니다.");
-                    throw new OAuthException(ALREADY_EXIST_ACCOUNT);
-                } else if (existingUser.getUserStatus().equals("N")) {
-                    log.warn("탈퇴한 회원입니다. 다시 아이디를 복원합니다.");
-                }
-                existingUser.update(userName);
-                return getTokenDTO(usersRepository.save(existingUser));
-            } else {
-                Users newUser = Users.builder()
-                        .name(userName)
-                        .email(userEmail)
-                        .role(Role.USER)
-                        .providerName(Provider.GOOGLE)
-                        .build();
-                return getTokenDTO(joinUser(newUser));
+        Optional<Users> usersOptional = usersRepository.findByEmail(userEmail);
+        if (usersOptional.isPresent()) {
+            Users existingUser = usersOptional.get();
+            if (existingUser.getProviderName() == Provider.APPLE) {
+                log.warn("이미 가입한 이메일 주소 입니다.");
+                throw new OAuthException(ALREADY_EXIST_ACCOUNT);
+            } else if (existingUser.getUserStatus().equals("N")) {
+                log.warn("탈퇴한 회원입니다. 다시 아이디를 복원합니다.");
+//                    throw new UsersException(CANCLE_ACCOUNT);
             }
-        } catch (UserNotFoundException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new OAuthException(LOGIN_FAILED);
+            existingUser.update(userName);
+            return getTokenDTO(usersRepository.save(existingUser));
+        } else {
+            Users newUser = Users.builder()
+                    .name(userName)
+                    .email(userEmail)
+                    .role(Role.USER)
+                    .providerName(Provider.GOOGLE)
+                    .build();
+            return getTokenDTO(generateFirstMailForNewUser(newUser));
         }
     }
 
@@ -108,12 +103,8 @@ public class AuthService {
     }
 
 
-
     /**
      * 애플 소셜 로그인을 통한 회원 가입 및 로그인
-     * @param tokenRequest
-     * @return
-     * @throws Exception
      */
     @Transactional
     public TokenDTO loginApple(AppleLoginRequestDTO tokenRequest) throws Exception {
@@ -141,6 +132,7 @@ public class AuthService {
                 throw new OAuthException(ALREADY_EXIST_ACCOUNT);
             } else if (existingUser.getUserStatus().equals("N")) {
                 log.warn("탈퇴한 회원입니다. 다시 아이디를 복원합니다.");
+                throw new UsersException(CANCLE_ACCOUNT);
             }
             return getTokenDTO(existingUser);
         } else {
@@ -150,23 +142,23 @@ public class AuthService {
                     .role(Role.USER)
                     .providerName(Provider.APPLE)
                     .build();
-            return getTokenDTO(joinUser(newUser));
+            return getTokenDTO(generateFirstMailForNewUser(newUser));
         }
     }
 
     private TokenDTO getTokenDTO(Users savedUser) {
-        JwtPayloadDTO jwtPayloadDTO = JwtPayloadDTO.fromUser(savedUser);
+        JwtPayload jwtPayload = JwtPayload.fromUser(savedUser);
 
-        String accessToken = BEARER + jwtUtils.generateAccessToken(jwtPayloadDTO);
-        String refreshToken = jwtUtils.generateRefreshToken(jwtPayloadDTO);
+        String accessToken = BEARER + jwtUtils.generateAccessToken(jwtPayload);
+        String refreshToken = jwtUtils.generateRefreshToken(jwtPayload);
         log.info("로그인 액세스 토큰 = {}", accessToken);
-        saveAuthentication(jwtPayloadDTO);
+        authenticationService.saveAuthentication(jwtPayload);
 
-        String values = redisService.getValues(jwtPayloadDTO.getUserEmail());
+        String values = redisService.getValues(jwtPayload.getUserEmail());
         if (!values.isEmpty()) {
-            redisService.deleteValues(jwtPayloadDTO.getUserEmail());
+            redisService.deleteValues(jwtPayload.getUserEmail());
         }
-        redisService.setValues(jwtPayloadDTO.getUserEmail(), refreshToken,
+        redisService.setValues(jwtPayload.getUserEmail(), refreshToken,
                 Duration.ofMillis(jwtUtils.getRefreshExpireTime()));
 
         return TokenDTO.builder()
@@ -175,7 +167,7 @@ public class AuthService {
                 .build();
     }
 
-    private Users joinUser(Users user) {
+    private Users generateFirstMailForNewUser(Users user) {
         Users savedUser = usersRepository.save(user);
 
         DailyAiInfo sampleLetter = DailyAiInfo.builder()
@@ -207,13 +199,11 @@ public class AuthService {
 
     /**
      * 로그 아웃
-     * @param accessToken
-     * @param userId
      */
     @Transactional
-    public void logout(String accessToken, Long userId) {
+    public void logout(String accessToken) {
         String resolveAccessToken = resolveToken(accessToken);
-        String principal = getPrincipal(resolveAccessToken);
+        String principal = authenticationService.getPrincipal(resolveAccessToken);
 
         log.warn("-----[SimsimFilter] AuthService logout principal = {}", principal);
 
@@ -230,17 +220,15 @@ public class AuthService {
 
     /**
      * 회원 탈퇴
-     * @param accessToken
-     * @param userId
      */
     @Transactional
     public void delete(String accessToken, Long userId) {
         String resolveAccessToken = resolveToken(accessToken);
-        String principal = getPrincipal(resolveAccessToken);
+        String principal = authenticationService.getPrincipal(resolveAccessToken);
 
         Optional<Users> user = usersRepository.findByIdAndUserStatus(userId);
         if (user.isEmpty())
-            throw new UserNotFoundException("[회원탈퇴 에러] 해당 유저를 찾을 수 없습니다.", "USER_NOT_FOUND");
+            throw new UsersException(USER_NOT_FOUND);
         Users userInfo = user.get();
         Users deleteUser = userInfo.delete();
         usersRepository.save(deleteUser);
@@ -266,13 +254,13 @@ public class AuthService {
     public TokenDTO reissue(String requestRefreshToken) {
 
         log.info("----[AuthService] 리프레스 토큰 및 액세스 토큰 재발급 시작 ----");
-        String principal = getPrincipal(requestRefreshToken);
+        String principal = authenticationService.getPrincipal(requestRefreshToken);
 
         log.warn("----[AuthService] 프린시펄 : {}", principal);
 
         Optional<Users> user = usersRepository.findByEmailAndUserStatus(principal);
         if (user.isEmpty())
-            throw new UserNotFoundException("[토큰 재발급 에러] 해당 유저를 찾을 수 없습니다.", "USER_NOT_FOUND");
+            throw new UsersException(USER_NOT_FOUND);
 
         log.warn("----[AuthService] 유저 정보 : {}", user.get().getEmail());
 
@@ -291,36 +279,25 @@ public class AuthService {
         }
 
 
-        JwtPayloadDTO jwtPayloadDTO
-                = JwtPayloadDTO.fromUser(user.get());
+        JwtPayload jwtPayload
+                = JwtPayload.fromUser(user.get());
 
-        String accessToken = BEARER + jwtUtils.generateAccessToken(jwtPayloadDTO);
-        String refreshToken = jwtUtils.generateRefreshToken(jwtPayloadDTO);
-        redisService.deleteValues(jwtPayloadDTO.getUserEmail());
-        saveAuthentication(jwtPayloadDTO);
+        String accessToken = BEARER + jwtUtils.generateAccessToken(jwtPayload);
+        String refreshToken = jwtUtils.generateRefreshToken(jwtPayload);
+        redisService.deleteValues(jwtPayload.getUserEmail());
+        authenticationService.saveAuthentication(jwtPayload);
         log.info("---- [SimSimFilter] reissue 액세스 토큰 = {}", accessToken);
 
         /**
          * Redis에 Refresh 토큰 저장
          */
-        redisService.setValues(jwtPayloadDTO.getUserEmail(), refreshToken,
+        redisService.setValues(jwtPayload.getUserEmail(), refreshToken,
                 Duration.ofMillis(jwtUtils.getRefreshExpireTime()));
 
         return TokenDTO.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .build();
-    }
-
-    private void saveAuthentication(JwtPayloadDTO jwtPayloadDTO) {
-        List<GrantedAuthority> roles = new ArrayList<>();
-        roles.add(new SimpleGrantedAuthority(jwtPayloadDTO.getUserRole().name()));
-
-        Authentication authentication =
-                new UsernamePasswordAuthenticationToken(jwtPayloadDTO, null, roles);
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        log.warn("---- [SimSimFilter] saveAuthentication : 생성한 인증 객체 ={}", SecurityContextHolder.getContext().getAuthentication().getName());
     }
 
     public String resolveToken(String accessToken) {
@@ -330,12 +307,6 @@ public class AuthService {
         return null;
     }
 
-    /**
-     * AccessToken에서 회원 정보 추출
-     */
-    public String getPrincipal(String requestAccessToken) {
-        return jwtUtils.getAuthentication(requestAccessToken).getName();
-    }
 
     private LocalDate toLocalDate(LocalDateTime localDateTime, ZoneId zoneId) {
         return localDateTime.atZone(zoneId).toLocalDate();

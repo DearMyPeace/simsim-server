@@ -1,11 +1,12 @@
 package com.project.simsim_server.config.auth;
 
+import com.project.simsim_server.config.auth.jwt.AuthenticationService;
 import com.project.simsim_server.config.auth.jwt.CustomUserDetailsService;
 import com.project.simsim_server.filter.JwtAuthenticationFilter;
 import com.project.simsim_server.config.auth.jwt.JwtUtils;
 import com.project.simsim_server.filter.JwtExceptionFilter;
 import com.project.simsim_server.domain.user.Role;
-import com.project.simsim_server.service.redis.RedisService;
+import com.project.simsim_server.config.redis.RedisService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.reactive.PathRequest;
 import org.springframework.context.annotation.Bean;
@@ -16,7 +17,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.web.RedirectStrategy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -30,10 +30,11 @@ import java.util.List;
 @Configuration
 public class SecurityConfig {
 
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final JwtUtils jwtUtils;
-    private final CustomUserDetailsService customUserDetailsService;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final RedisService redisService;
+    private final CustomUserDetailsService customUserDetailsService;
+    private final AuthenticationService authenticationService;
 
 
     /**
@@ -71,7 +72,10 @@ public class SecurityConfig {
                 .sessionManagement((session) -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                .addFilterBefore(new JwtAuthenticationFilter(jwtUtils, customUserDetailsService, redisService), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(
+                        new JwtAuthenticationFilter(jwtUtils, redisService, customUserDetailsService, authenticationService),
+                        UsernamePasswordAuthenticationFilter.class
+                )
                 .addFilterBefore(new JwtExceptionFilter(), jwtAuthenticationFilter.getClass());
 
         return http.build();

@@ -6,7 +6,7 @@ import com.project.simsim_server.dto.diary.DiaryCountResponseDTO;
 import com.project.simsim_server.dto.diary.DiaryDailyResponseDTO;
 import com.project.simsim_server.dto.diary.DiaryRequestDTO;
 import com.project.simsim_server.dto.diary.DiaryResponseDTO;
-import com.project.simsim_server.exception.DiaryLimitExceededException;
+import com.project.simsim_server.exception.dairy.DiaryException;
 import com.project.simsim_server.repository.ai.DailyAiInfoRepository;
 import com.project.simsim_server.repository.diary.DiaryRepository;
 import lombok.Getter;
@@ -16,9 +16,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.YearMonth;
 import java.util.List;
+
+import static com.project.simsim_server.exception.dairy.DiaryErrorCode.LIMIT_EXCEEDED;
 
 @RequiredArgsConstructor
 @Service
@@ -66,7 +67,7 @@ public class DiaryService {
         List<Diary> todayDiaries
                 = diaryRepository.findByCreatedAtAndUserId(userId, diaryRequestDTO.getCreatedDate().toLocalDate());
         if (todayDiaries.size() == MAX_DIARIES_PER_DAY) {
-            throw new DiaryLimitExceededException("금일 작성할 수 있는 일기 갯수를 초과했습니다.");
+            throw new DiaryException(LIMIT_EXCEEDED);
         }
         diaryRequestDTO.setUserId(userId);
         return new DiaryResponseDTO(diaryRepository.save(diaryRequestDTO.toEntity()));
