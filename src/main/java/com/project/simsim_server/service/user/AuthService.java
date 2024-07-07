@@ -169,12 +169,18 @@ public class AuthService {
 
     private Users generateFirstMailForNewUser(Users user) {
         Users savedUser = usersRepository.save(user);
+        String content
+                = "Dear My Peace 서비스를 이용해주셔서 감사합니다.🥰\n\n"
+                + "기록을 보내시면 편지✉️가 도착합니다.\n"
+                + "화면 오른쪽 상단의 설정창에서 📝편지작성자를 골라서 편지를 받을 수 있습니다.\n"
+                + "지금은 감정형 (F)로 설정되어있습니다.\n"
+                + "기록은 하루에 한 번만 보낼 수 있으니 유의해주세요! ";
 
         DailyAiInfo sampleLetter = DailyAiInfo.builder()
                 .userId(savedUser.getUserId())
                 .targetDate(toLocalDate(savedUser.getCreatedDate(), ZoneId.of("Asia/Seoul")))
                 .diarySummary("일기 작성 및 AI 편지 수령 방법 안내")
-                .replyContent("Dear My Peace 서비스를 이용해주셔서 감사합니다.")
+                .replyContent(content)
                 .replyStatus("N")
                 .isFirst(true)
                 .build();
