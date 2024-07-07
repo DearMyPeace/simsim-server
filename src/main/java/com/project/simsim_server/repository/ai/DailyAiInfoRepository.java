@@ -1,6 +1,7 @@
 package com.project.simsim_server.repository.ai;
 
 import com.project.simsim_server.domain.ai.DailyAiInfo;
+import com.project.simsim_server.dto.ai.client.EmotionsTotalDTO;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -32,8 +33,9 @@ public interface DailyAiInfoRepository extends JpaRepository<DailyAiInfo, Long> 
 
     @Query("SELECT dr FROM DailyAiInfo dr WHERE dr.userId =:userId " +
             "AND dr.targetDate BETWEEN :startDate AND :endDate")
-    List<DailyAiInfo> findAllByIdAndTargetDate(Long userId, LocalDate startDate, LocalDate endDate);
-
+    List<DailyAiInfo> findAllByIdAndTargetDate(@Param("userId") Long userId,
+                                                @Param("startDate")LocalDate startDate,
+                                                @Param("endDate") LocalDate endDate);
 
     @Query("SELECT dr FROM DailyAiInfo dr WHERE dr.userId = :userId AND dr.replyStatus = 'N' ORDER BY dr.targetDate DESC")
     List<DailyAiInfo> findByUserIdAndReplyStatus(Long userId);
@@ -44,4 +46,11 @@ public interface DailyAiInfoRepository extends JpaRepository<DailyAiInfo, Long> 
     Optional<DailyAiInfo> findByAiIdAndUserId(Long id, Long userId);
 
     List<DailyAiInfo> findByUserId(Long userId);
+
+
+    @Query("SELECT new com.project.simsim_server.dto.ai.client.EmotionsTotalDTO(SUM(dr.analyzePositiveTotal), SUM(dr.analyzeNeutralTotal), SUM(dr.analyzeNegativeTotal)) " +
+            "FROM DailyAiInfo dr WHERE dr.userId = :userId AND dr.targetDate BETWEEN :startDate AND :endDate")
+    Optional<EmotionsTotalDTO> countByUserIdAndTargetDate(@Param("userId") Long userId,
+                                                            @Param("startDate") LocalDate startDate,
+                                                            @Param("endDate") LocalDate endDate);
 }

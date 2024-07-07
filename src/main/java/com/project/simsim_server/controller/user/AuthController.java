@@ -3,7 +3,6 @@ package com.project.simsim_server.controller.user;
 import com.project.simsim_server.config.auth.dto.AppleLoginRequestDTO;
 import com.project.simsim_server.config.auth.dto.GoogleLoginRequestDTO;
 import com.project.simsim_server.config.auth.jwt.AuthenticationService;
-import com.project.simsim_server.config.auth.jwt.JwtUtils;
 import com.project.simsim_server.config.redis.TokenDTO;
 import com.project.simsim_server.config.auth.dto.AccessTokenForFrontDTO;
 import com.project.simsim_server.exception.CustomRuntimeException;
@@ -21,7 +20,8 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import static com.project.simsim_server.exception.auth.AuthErrorCode.REFRESH_TOKEN_NOT_EXIST;
+import static com.project.simsim_server.exception.auth.AuthErrorCode.
+        REFRESH_TOKEN_NOT_EXIST;
 
 
 @Tag(name = "Auth", description = "소셜 로그인/로그아웃/회원탈퇴 서비스")
@@ -33,7 +33,8 @@ public class AuthController {
 
     private final AuthService authService;
     private final AuthenticationService authenticationService;
-    private final Long REFRESH_COOKIE_EXPIRE = 15 * 24 * 60 * 60L;
+    private static final Long REFRESH_COOKIE_EXPIRE = 15 * 24 * 60 * 60L;
+    private static final String REFRESH_TOKEN_HEADER = "refresh";
 
     /**
      * 구글 로그인
@@ -109,7 +110,7 @@ public class AuthController {
      */
     @PostMapping("/reissue")
     public ResponseEntity reissueToken(
-            @CookieValue(name = "refresh", required = false) String requestRefreshToken) {
+            @CookieValue(name = REFRESH_TOKEN_HEADER, required = false) String requestRefreshToken) {
         log.warn("---[SimSimLog] RefreshToken = {}", requestRefreshToken);
         if (requestRefreshToken == null || requestRefreshToken.isEmpty()) {
             log.warn("---[SimSimLog] 리프레시 토큰이 존재하지 않아 로그아웃 합니다. ----");
@@ -151,7 +152,7 @@ public class AuthController {
     }
 
     private ResponseCookie generateRefreshTokenCookie(String refreshToken) {
-        return ResponseCookie.from("refresh", refreshToken)
+        return ResponseCookie.from(REFRESH_TOKEN_HEADER, refreshToken)
                 .httpOnly(true)
                 .secure(true)
                 .maxAge(REFRESH_COOKIE_EXPIRE)
@@ -174,7 +175,7 @@ public class AuthController {
     }
 
     private ResponseCookie deleteRefreshTokenCookie() {
-        return ResponseCookie.from("refresh", "")
+        return ResponseCookie.from(REFRESH_TOKEN_HEADER, "")
                 .path("/")
                 .maxAge(0)
                 .httpOnly(true)
