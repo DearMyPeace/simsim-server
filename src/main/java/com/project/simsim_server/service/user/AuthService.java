@@ -179,7 +179,7 @@ public class AuthService {
         DailyAiInfo sampleLetter = DailyAiInfo.builder()
                 .userId(savedUser.getUserId())
                 .targetDate(toLocalDate(savedUser.getCreatedDate(), ZoneId.of("Asia/Seoul")))
-                .diarySummary("일기 작성 및 AI 편지 수령 방법 안내")
+                .diarySummary("기록 작성 및 AI 편지 수령 방법 안내")
                 .replyContent(content)
                 .replyStatus("N")
                 .isFirst(true)
