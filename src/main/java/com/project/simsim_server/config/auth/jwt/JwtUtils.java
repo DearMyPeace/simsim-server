@@ -33,7 +33,6 @@ import java.util.stream.Collectors;
 import static com.project.simsim_server.exception.auth.AuthErrorCode.INVALID_JWT_SIGNATURE;
 import static com.project.simsim_server.exception.auth.AuthErrorCode.JWT_NOT_VALID;
 
-@ToString
 @Slf4j
 @RequiredArgsConstructor
 @Component
@@ -41,19 +40,18 @@ public class JwtUtils {
 
     @Getter
     @Value("${spring.jwt.access.expiration}")
-    private Long accessExpireTime;
+    private static Long accessExpireTime;
     @Getter
     @Value("${spring.jwt.refresh.expiration}")
-    private Long refreshExpireTime;
+    private static Long refreshExpireTime;
     @Value("${spring.jwt.key1}")
     private String key;
 
     private SecretKey secretKey;
-    private static final String BEARER = "Bearer ";
-    private static final String ACCESS_TOKEN_HEADER = "Authorization";
-    private static final String REFRESH_TOKEN_HEADER = "refresh";
     private final DiaryRepository diaryRepository;
     private final RedisService redisService;
+    private static final String BEARER = "Bearer ";
+    private static final String ACCESS_TOKEN_HEADER = "Authorization";
 
     /**
      * Secretkey 생성
