@@ -1,3 +1,4 @@
+TRUNCATE TABLE users_tbl;
 DROP TABLE IF EXISTS users_tbl;
 CREATE TABLE `users_tbl` (
     `user_id` bigint NOT NULL AUTO_INCREMENT,
@@ -15,9 +16,10 @@ CREATE TABLE `users_tbl` (
     PRIMARY KEY (`user_id`),
     UNIQUE KEY `user_email` (`user_email`)
 ) ENGINE=InnoDB AUTO_INCREMENT=58 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-CREATE INDEX inx_user_id ON users_tbl (user_id);
+ALTER TABLE users_tbl AUTO_INCREMENT = 1;
+commit;
 
-
+TRUNCATE TABLE diary_tbl;
 DROP TABLE IF EXISTS diary_tbl;
 CREATE TABLE `diary_tbl` (
     `diary_id` bigint NOT NULL AUTO_INCREMENT,
@@ -31,7 +33,11 @@ CREATE TABLE `diary_tbl` (
     PRIMARY KEY (`diary_id`),
     KEY `idx_user_id` (`user_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=182 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+ALTER TABLE diary_tbl AUTO_INCREMENT = 1;
+commit;
 
+
+TRUNCATE TABLE daily_ai_response_tbl;
 DROP TABLE IF EXISTS daily_ai_response_tbl;
 CREATE TABLE `daily_ai_response_tbl` (
     `ai_id` bigint NOT NULL AUTO_INCREMENT,
@@ -52,6 +58,8 @@ CREATE TABLE `daily_ai_response_tbl` (
     `modified_date` datetime(6) NOT NULL,
     PRIMARY KEY (`ai_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=64 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+ALTER TABLE daily_ai_response_tbl AUTO_INCREMENT = 1;
+commit;
 
 DROP TABLE IF EXISTS persona_info_tbl;
 CREATE TABLE persona_info_tbl (
