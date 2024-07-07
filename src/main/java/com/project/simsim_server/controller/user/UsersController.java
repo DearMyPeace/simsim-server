@@ -1,5 +1,6 @@
 package com.project.simsim_server.controller.user;
 
+import com.project.simsim_server.config.auth.jwt.AuthenticationService;
 import com.project.simsim_server.dto.user.PersonaResponseDTO;
 import com.project.simsim_server.dto.user.UserInfoResponseDTO;
 import com.project.simsim_server.service.user.UsersService;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 public class UsersController {
 
     private final UsersService userService;
+    private final AuthenticationService authenticationService;
 
     /**
      * 회원 정보 조회
@@ -26,8 +28,7 @@ public class UsersController {
      */
     @GetMapping("/me")
     public UserInfoResponseDTO getUserInfo() {
-        String authentication = getUserIdFromAuthentication();
-        Long userId = Long.parseLong(authentication);
+        Long userId = authenticationService.getUserIdFromAuthentication();
         return userService.findByUserId(userId);
     }
 
@@ -38,8 +39,7 @@ public class UsersController {
      */
     @PatchMapping("/persona/{personaCode}")
     public PersonaResponseDTO changeUserPersona(@PathVariable String personaCode) {
-        String authentication = getUserIdFromAuthentication();
-        Long userId = Long.parseLong(authentication);
+        Long userId = authenticationService.getUserIdFromAuthentication();
         return userService.updatePersona(personaCode, userId);
     }
 
@@ -54,13 +54,4 @@ public class UsersController {
 //        String userId = getUserIdFromAuthentication();
 //        return userService.updateBgImg(bgimg, Long.parseLong(userId));
 //    }
-
-
-
-    private String getUserIdFromAuthentication() {
-        UsernamePasswordAuthenticationToken authentication =
-                (UsernamePasswordAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
-        log.warn("조회할 객체 : {}", authentication);
-        return authentication.getName();
-    }
 }
