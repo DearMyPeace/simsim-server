@@ -33,8 +33,7 @@ public class AuthController {
 
     private final AuthService authService;
     private final AuthenticationService authenticationService;
-    private static final Long REFRESH_COOKIE_EXPIRE = 15 * 24 * 60 * 60L;
-    private static final String REFRESH_TOKEN_HEADER = "refresh";
+    private final Long REFRESH_COOKIE_EXPIRE = 15 * 24 * 60 * 60L;
 
     /**
      * 구글 로그인
@@ -110,7 +109,7 @@ public class AuthController {
      */
     @PostMapping("/reissue")
     public ResponseEntity reissueToken(
-            @CookieValue(name = REFRESH_TOKEN_HEADER, required = false) String requestRefreshToken) {
+            @CookieValue(name = "refresh", required = false) String requestRefreshToken) {
         log.warn("---[SimSimLog] RefreshToken = {}", requestRefreshToken);
         if (requestRefreshToken == null || requestRefreshToken.isEmpty()) {
             log.warn("---[SimSimLog] 리프레시 토큰이 존재하지 않아 로그아웃 합니다. ----");
@@ -152,7 +151,7 @@ public class AuthController {
     }
 
     private ResponseCookie generateRefreshTokenCookie(String refreshToken) {
-        return ResponseCookie.from(REFRESH_TOKEN_HEADER, refreshToken)
+        return ResponseCookie.from("refresh", refreshToken)
                 .httpOnly(true)
                 .secure(true)
                 .maxAge(REFRESH_COOKIE_EXPIRE)
@@ -175,7 +174,7 @@ public class AuthController {
     }
 
     private ResponseCookie deleteRefreshTokenCookie() {
-        return ResponseCookie.from(REFRESH_TOKEN_HEADER, "")
+        return ResponseCookie.from("refresh", "")
                 .path("/")
                 .maxAge(0)
                 .httpOnly(true)

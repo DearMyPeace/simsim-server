@@ -40,10 +40,10 @@ public class JwtUtils {
 
     @Getter
     @Value("${spring.jwt.access.expiration}")
-    private static Long accessExpireTime;
+    private Long accessExpireTime;
     @Getter
     @Value("${spring.jwt.refresh.expiration}")
-    private static Long refreshExpireTime;
+    private Long refreshExpireTime;
     @Value("${spring.jwt.key1}")
     private String key;
 
