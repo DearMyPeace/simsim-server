@@ -171,6 +171,7 @@ public class AuthService {
         Users savedUser = usersRepository.save(user);
         String content
             = "안녕하세요 심심조각을 이용해주셔서 감사합니다.🥰\n\n"
+            + "일상의 감정과 생각을 기록하고 저장해주세요.\n"
             + "기록을 보내시면 편지✉️가 도착해요.\n"
             + "화면 오른쪽 상단의 설정창에서 \n편지작성자📝를 고를 수 있어요.\n"
             + "지금은 감정형 (F)로 설정되어있어요.\n"
