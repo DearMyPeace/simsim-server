@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Getter
@@ -21,8 +23,8 @@ public class DiarySummaryDTO {
         List<Integer> neutral, List<Integer> negative) {
         this.date = date.toString();
         this.content = content;
-        this.positive = positive;
-        this.neutral = neutral;
-        this.negative = negative;
+        this.positive = positive != null ? positive : Arrays.asList(0, 0, 0);
+        this.neutral = neutral != null ? neutral : Arrays.asList(0, 0, 0);
+        this.negative = negative != null ? negative : Arrays.asList(0, 0, 0);
     }
 }

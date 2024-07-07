@@ -9,6 +9,7 @@ import com.project.simsim_server.dto.ai.fastapi.*;
 import com.project.simsim_server.exception.ai.AIException;
 import com.project.simsim_server.repository.ai.DailyAiInfoRepository;
 import com.project.simsim_server.repository.diary.DiaryRepository;
+import io.lettuce.core.dynamic.annotation.Param;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -211,6 +212,9 @@ public class AIService {
     }
 
     private static List<Integer> convertStringToList(String str) {
+        if (str == null) {
+            return Arrays.asList(0, 0, 0);
+        }
         return Arrays.stream(str.replaceAll("\\[|\\]", "").split(",\\s*"))
                 .map(Integer::parseInt)
                 .collect(Collectors.toList());
