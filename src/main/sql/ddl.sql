@@ -1,56 +1,60 @@
-drop table if exists users_tbl;
-create table users_tbl (
-    user_id bigint not null auto_increment,
-    user_email varchar(50) not null unique ,
-    user_name varchar(30) not null,
-    user_role enum ('ADMIN','GUEST','USER') not null,
-    user_grade tinyint default 0 not null,
-    user_piece_cnt integer default 0 not null,
-    user_provider enum('GOOGLE', 'APPLE') not null,
-    user_persona char(1) default 'F' not null,
-    user_bg_image varchar(300),
-    user_status char(1) default 'Y' not null,
-    created_date datetime(6) not null,
-    modified_date datetime(6) not null,
-    primary key (user_id)
-) CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+DROP TABLE IF EXISTS users_tbl;
+CREATE TABLE `users_tbl` (
+    `user_id` bigint NOT NULL AUTO_INCREMENT,
+    `user_email` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+    `user_name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+    `user_role` enum('ADMIN','GUEST','USER') COLLATE utf8mb4_unicode_ci NOT NULL,
+    `user_grade` tinyint NOT NULL DEFAULT '0',
+    `user_piece_cnt` int NOT NULL DEFAULT '0',
+    `user_provider` enum('GOOGLE','APPLE') COLLATE utf8mb4_unicode_ci NOT NULL,
+    `user_persona` char(1) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'F',
+    `user_bg_image` varchar(300) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `user_status` char(1) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Y',
+    `created_date` datetime(6) NOT NULL,
+    `modified_date` datetime(6) NOT NULL,
+    PRIMARY KEY (`user_id`),
+    UNIQUE KEY `user_email` (`user_email`)
+) ENGINE=InnoDB AUTO_INCREMENT=58 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+CREATE INDEX inx_user_id ON users_tbl (user_id);
 
-drop table if exists diary_tbl;
-CREATE TABLE diary_tbl (
-    diary_id BIGINT NOT NULL AUTO_INCREMENT,
-    user_id BIGINT NOT NULL,
-    diary_content VARCHAR(500),
-    diary_list_key VARCHAR(30) NOT NULL,
-    diary_delete_yn CHAR(1) DEFAULT 'N' NOT NULL,
-    marked_date DATE NOT NULL,
-    created_date DATETIME(6) NOT NULL,
-    modified_date DATETIME(6) NOT NULL,
-    PRIMARY KEY (diary_id)
-) CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
 
-drop table if exists daily_ai_response_tbl;
-create table daily_ai_response_tbl (
-    ai_id bigint not null auto_increment,
-    user_id bigint not null,
-    ai_target_date date not null,                     # 조회 이벤트 발생 일자
-    ai_diary_summary varchar(1024),
-    ai_reply_content varchar(1024),
-    ai_analyze_positive varchar(20),
-    ai_analyze_positive_total int,
-    ai_analyze_neutral varchar(20),
-    ai_analyze_neutral_total int,
-    ai_analyze_negative varchar(20),
-    ai_analyze_negative_total int,
-    ai_analyze_factors varchar(300),
-    ai_reply_status char(1) default 'N' not null ,
-    ai_is_first boolean default false not null,
-    created_date datetime(6) not null,
-    modified_date datetime(6) not null,
-    primary key (ai_id)
-) CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci;
+DROP TABLE IF EXISTS diary_tbl;
+CREATE TABLE `diary_tbl` (
+    `diary_id` bigint NOT NULL AUTO_INCREMENT,
+    `user_id` bigint NOT NULL,
+    `diary_content` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `diary_list_key` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,
+    `diary_delete_yn` char(1) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'N',
+    `marked_date` date NOT NULL,
+    `created_date` datetime(6) NOT NULL,
+    `modified_date` datetime(6) NOT NULL,
+    PRIMARY KEY (`diary_id`),
+    KEY `idx_user_id` (`user_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=182 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-drop table if exists persona_info_tbl;
-create table persona_info_tbl (
+DROP TABLE IF EXISTS daily_ai_response_tbl;
+CREATE TABLE `daily_ai_response_tbl` (
+    `ai_id` bigint NOT NULL AUTO_INCREMENT,
+    `user_id` bigint NOT NULL,
+    `ai_target_date` date NOT NULL,
+    `ai_diary_summary` varchar(3000) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `ai_reply_content` varchar(3000) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `ai_analyze_positive` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `ai_analyze_positive_total` int DEFAULT NULL,
+    `ai_analyze_neutral` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `ai_analyze_neutral_total` int DEFAULT NULL,
+    `ai_analyze_negative` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `ai_analyze_negative_total` int DEFAULT NULL,
+    `ai_analyze_factors` varchar(300) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `ai_reply_status` char(1) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'N',
+    `ai_is_first` tinyint(1) NOT NULL DEFAULT '0',
+    `created_date` datetime(6) NOT NULL,
+    `modified_date` datetime(6) NOT NULL,
+    PRIMARY KEY (`ai_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=64 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+DROP TABLE IF EXISTS persona_info_tbl;
+CREATE TABLE persona_info_tbl (
     persona_id bigint not null auto_increment,
     persona_name varchar(10) not null unique,
     persona_code char(1) not null unique,
