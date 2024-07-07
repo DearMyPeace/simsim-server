@@ -121,11 +121,11 @@ public class DailyAIReplyService {
                 throw new AIException(AI_MAIL_FAIL);
             }
 
-            //TODO 일반 등급이면서 분석 대상 날짜가 동일하면 예외 처리(동일 날짜가 아닌 12시간 이후로 수정 예정)
-            if (user.getGrade() == Grade.GENERAL && !requestDTO.getTargetDate().atStartOfDay()
-                .isBefore(LocalDateTime.of(LocalDate.now(), LocalTime.NOON))) {
-                throw new AIException(NOT_MEET_USER_GRADE);
-            }
+//            //TODO 일반 등급이면서 분석 대상 날짜가 동일하면 예외 처리(동일 날짜가 아닌 12시간 이후로 수정 예정)
+//            if (user.getGrade() == Grade.GENERAL && !requestDTO.getTargetDate().atStartOfDay()
+//                .isBefore(LocalDateTime.of(LocalDate.now(), LocalTime.NOON))) {
+//                throw new AIException(NOT_MEET_USER_GRADE);
+//            }
 
             return new AILetterResponseDTO(dailyAiInfo);
         } catch (Exception e) {
