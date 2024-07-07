@@ -14,6 +14,7 @@ import com.project.simsim_server.repository.user.UsersRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,6 +27,35 @@ public class UsersService {
     private final UsersRepository usersRepository;
     private final PersonaRepository personaRepository;
     private final DailyAiInfoRepository aiInfoRepository;
+
+
+    public UserInfoResponseDTO findByUserId(Long userId) {
+        Optional<Users> user = usersRepository.findByIdAndUserStatus(userId);
+        if (user.isEmpty())
+            throw new UsersException(USER_NOT_FOUND);
+        Users userData = user.get();
+
+        Reply replyStatus = Reply.DEFAULT;
+        List<DailyAiInfo> notReadAiReply = aiInfoRepository.findByUserIdAndReplyStatus(userId);
+        if (!notReadAiReply.isEmpty()) {
+            // 읽지 않은 편지가 있는 경우
+            replyStatus = Reply.RECEIVE;
+            // TODO - 추후 Grade에 따른 분기 추가
+        } else {
+            List<DailyAiInfo> allReplies
+                    = Optional.ofNullable(aiInfoRepository.findByUserId(userId)).orElse(Collections.emptyList());
+            if (!allReplies.isEmpty()) { // 편지가 있으면서 전부 다 읽은 경우
+                replyStatus = Reply.CHECK;
+            }
+        }
+
+        Optional<Persona> persona = personaRepository.findByPersonaCode(userData.getPersona());
+        if (persona.isEmpty())
+            throw new ResourceNotFoundException("[회원 조회 에러] 페르소나 정보가 없습니다", "RESOURCE_NOT_FOUND");
+
+        String personaName = persona.get().getPersonaName();
+        return new UserInfoResponseDTO(userData, replyStatus.getKey(), personaName);
+    }
 
 
     public PersonaResponseDTO updatePersona(String personaCode, Long userId) {
@@ -55,29 +85,4 @@ public class UsersService {
 //        usersRepository.save(userData);
 //        return userData.getBgImage();
 //    }
-
-
-    public UserInfoResponseDTO findByUserId(Long userId) {
-        Optional<Users> user = usersRepository.findByIdAndUserStatus(userId);
-        if (user.isEmpty())
-            throw new UsersException(USER_NOT_FOUND);
-        Users userData = user.get();
-
-        Reply replyStatus = Reply.DEFAULT;
-
-        List<DailyAiInfo> notReadAiReply = aiInfoRepository.findByUserIdAndReplyStatus(userId);
-        if (!notReadAiReply.isEmpty()) { // 읽지 않은 편지가 있는 경우
-            replyStatus = Reply.RECEIVE;
-            //TODO - 추후 Grade에 따른 분기 추가
-        } else if (!aiInfoRepository.findByUserId(userId).isEmpty()) { // 편지가 존재하고 다 이미 읽은 경우
-            replyStatus = Reply.CHECK;
-        }
-
-        Optional<Persona> persona = personaRepository.findByPersonaCode(userData.getPersona());
-        if (persona.isEmpty())
-            throw new ResourceNotFoundException("[회원 조회 에러] 페르소나 정보가 없습니다", "RESOURCE_NOT_FOUND");
-
-        String personaName = persona.get().getPersonaName();
-        return new UserInfoResponseDTO(userData, replyStatus.getKey(), personaName);
-    }
 }

@@ -39,22 +39,6 @@ public class DailyAIReplyService {
     private final UsersRepository usersRepository;
     private final DailyAiInfoRepository dailyAiInfoRepository;
 
-    /**
-     *
-     * @param year
-     * @param month
-     * @param day
-     * @param userId
-     * @return
-     */
-    public AILetterResponseDTO findByDateAndUserId(String year, String month, String day, Long userId) {
-        LocalDate targetDate
-                = LocalDate.of(Integer.parseInt(year), Integer.parseInt(month), Integer.parseInt(day));
-        List<DailyAiInfo> results = dailyAiInfoRepository.findByCreatedAtAndUserId(userId, targetDate);
-        DailyAiInfo target = results.get(0).updateReplyStatus("Y");
-        dailyAiInfoRepository.save(target);
-        return new AILetterResponseDTO(results.getFirst());
-    }
 
     public AILetterResponseDTO findByIdAndUserId(Long id, Long userId) {
         return dailyAiInfoRepository.findByAiIdAndUserId(id, userId)

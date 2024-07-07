@@ -22,6 +22,7 @@ public class DailyAIReplyController {
     private final DailyAIReplyService dailyAIReplyService;
     private final AuthenticationService authenticationService;
 
+
     /**
      * 원하는 일자, 원하는 갯수에 대해 AI 편지를 조회
      * @param offset
@@ -38,7 +39,6 @@ public class DailyAIReplyController {
         }
         return dailyAIReplyService.findByCreatedDateAndUserIdOrderByCreatedDateDesc(userId, count);
     }
-
 
 
     /**
@@ -79,5 +79,4 @@ public class DailyAIReplyController {
         Long userId = authenticationService.getUserIdFromAuthentication();
         return dailyAIReplyService.save(requestDTO, userId);
     }
-
 }
