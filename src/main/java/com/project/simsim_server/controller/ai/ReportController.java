@@ -1,7 +1,8 @@
 package com.project.simsim_server.controller.ai;
 
 import com.project.simsim_server.config.auth.jwt.AuthenticationService;
-import com.project.simsim_server.dto.ai.client.EmotionsTotalDTO;
+import com.project.simsim_server.dto.ai.client.WeekEmotionsResponseDTO;
+import com.project.simsim_server.dto.ai.client.WeekSummaryResponseDTO;
 import com.project.simsim_server.service.ai.ReportService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -21,9 +22,15 @@ public class ReportController {
     private final ReportService reportService;
     private final AuthenticationService authenticationService;
 
-    @GetMapping("/{targetDate}")
-    public EmotionsTotalDTO getWeeksReport(@PathVariable LocalDate targetDate) {
+    @GetMapping("/week")
+    public WeekEmotionsResponseDTO getWeeksReportEmotions(@PathVariable("targetDate") LocalDate targetDate) {
         Long userId = authenticationService.getUserIdFromAuthentication();
-        return reportService.weekReport(userId, targetDate);
+        return reportService.weekReportEmotions(userId, targetDate);
+    }
+
+    @GetMapping("/week/{targetDate}")
+    public WeekSummaryResponseDTO getWeeksReportSummary(@PathVariable("targetDate") LocalDate targetDate) {
+        Long userId = authenticationService.getUserIdFromAuthentication();
+        return reportService.weekReportSummary(userId, targetDate);
     }
 }
