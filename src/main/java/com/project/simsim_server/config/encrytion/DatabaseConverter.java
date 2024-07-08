@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 
 @RequiredArgsConstructor
 @Component
-@Converter
+@Converter(autoApply = true)
 public class DatabaseConverter implements AttributeConverter<String, String> {
 
     private final EncryptionUtil encryptionUtil;
