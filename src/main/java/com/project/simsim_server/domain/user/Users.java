@@ -1,6 +1,5 @@
 package com.project.simsim_server.domain.user;
 
-import com.project.simsim_server.config.encrytion.DatabaseConverter;
 import com.project.simsim_server.domain.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.Builder;
@@ -20,11 +19,9 @@ public class Users extends BaseTimeEntity {
     @Column(name = "user_id")
     private Long userId;
 
-    @Convert(converter = DatabaseConverter.class)
     @Column(name = "user_name", nullable = false)
     private String name;
 
-    @Convert(converter = DatabaseConverter.class)
     @Column(name = "user_email", nullable = false)
     private String email;
 
