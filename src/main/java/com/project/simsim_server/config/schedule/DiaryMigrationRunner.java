@@ -7,7 +7,8 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.List;
 
 @Component
@@ -24,10 +25,9 @@ public class DiaryMigrationRunner {
         for (Diary diary : diaries) {
             boolean updated = false;
 
-
-            // Check if email is already encrypted
+            // Check if content is already encrypted
             if (!isEncrypted(diary.getContent())) {
-                diary.update(encryptionUtil.encrypt(diary.getContent()), LocalDateTime.now());
+                diary.update(encryptionUtil.encrypt(diary.getContent()), diary.getModifiedDate());
                 updated = true;
             }
 
@@ -38,10 +38,11 @@ public class DiaryMigrationRunner {
     }
 
     private boolean isEncrypted(String value) {
-        // 이미 암호화된 문자열을 구별할 수 있는 방법이 있으면 사용하세요.
-        // 예를 들어, 암호화된 문자열은 Base64 형식이므로 이를 활용할 수 있습니다.
+        // Check if the value is Base64 encoded
         try {
-            encryptionUtil.decrypt(value);
+            byte[] decodedValue = Base64.getDecoder().decode(value);
+            // Try to decrypt the decoded value
+            encryptionUtil.decrypt(new String(decodedValue, StandardCharsets.UTF_8));
             return true;
         } catch (Exception e) {
             return false;
