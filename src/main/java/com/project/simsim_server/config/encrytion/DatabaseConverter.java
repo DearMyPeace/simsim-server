@@ -3,10 +3,12 @@ package com.project.simsim_server.config.encrytion;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
 import java.util.regex.Pattern;
 
 @RequiredArgsConstructor
+@Component
 @Converter
 public class DatabaseConverter implements AttributeConverter<String, String> {
 
