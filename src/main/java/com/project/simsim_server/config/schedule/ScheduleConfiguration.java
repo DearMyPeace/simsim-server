@@ -38,11 +38,11 @@ public class ScheduleConfiguration {
 //    }
 
     @Async
-    @Scheduled(cron = "0 5 22 * * ?", zone = "Asia/Seoul") // 매일 새벽 3시에 실행
+    @Scheduled(cron = "0 15 22 * * ?", zone = "Asia/Seoul") // 매일 새벽 3시에 실행
     public void migrateData() {
         log.info("---[SimSimSchedule] 데이터 마이그레이션 작업 시작---");
         try {
-            diaryMigrationRunner.migrate();
+            diaryMigrationRunner.encryptAndSaveAllEntries();
         } catch (Exception e) {
             log.error("데이터 마이그레이션 작업 중 오류 발생: ", e);
         }
