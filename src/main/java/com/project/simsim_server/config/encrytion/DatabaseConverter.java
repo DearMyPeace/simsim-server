@@ -4,29 +4,36 @@ import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 import lombok.RequiredArgsConstructor;
 
-@Converter
+import java.util.regex.Pattern;
+
 @RequiredArgsConstructor
+@Converter
 public class DatabaseConverter implements AttributeConverter<String, String> {
 
-    private final EncryptionUtil encryptUtil;
+    private final EncryptionUtil encryptionUtil;
+    private final Pattern base64Pattern = Pattern.compile("^[A-Za-z0-9+/]+={0,2}$");
 
-    // 암호화
     @Override
     public String convertToDatabaseColumn(String attribute) {
         try {
-            return encryptUtil.encrypt(attribute);
+            return encryptionUtil.encrypt(attribute);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Could not encrypt attribute", e);
         }
     }
 
-    // 복호화
     @Override
     public String convertToEntityAttribute(String dbData) {
         try {
-            return encryptUtil.decrypt(dbData);
+            // 데이터가 Base64 패턴에 맞는지 확인
+            if (dbData != null && base64Pattern.matcher(dbData).matches()) {
+                return encryptionUtil.decrypt(dbData);
+            } else {
+                // 암호화되지 않은 데이터는 그대로 반환
+                return dbData;
+            }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Could not decrypt database column", e);
         }
     }
 }
