@@ -1,12 +1,12 @@
 package com.project.simsim_server.domain.user;
 
+import com.project.simsim_server.config.encrytion.DatabaseConverter;
 import com.project.simsim_server.domain.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import java.nio.charset.StandardCharsets;
 
@@ -20,9 +20,11 @@ public class Users extends BaseTimeEntity {
     @Column(name = "user_id")
     private Long userId;
 
+    @Convert(converter = DatabaseConverter.class)
     @Column(name = "user_name", nullable = false)
     private String name;
 
+    @Convert(converter = DatabaseConverter.class)
     @Column(name = "user_email", nullable = false)
     private String email;
 
@@ -69,6 +71,11 @@ public class Users extends BaseTimeEntity {
     public Users update(String name) {
         this.name = name;
         this.userStatus = "Y";
+        return this;
+    }
+
+    public Users updateEmail(String email) {
+        this.email = email;
         return this;
     }
 
