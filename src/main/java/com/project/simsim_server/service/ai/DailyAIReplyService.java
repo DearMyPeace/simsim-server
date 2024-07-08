@@ -116,7 +116,7 @@ public class DailyAIReplyService {
         LocalDateTime startDateTime = requestDTO.getTargetDate().atStartOfDay();
         LocalDateTime endDateTime = requestDTO.getTargetDate().atTime(LocalTime.MAX);
         try {
-            DailyAiInfo dailyAiInfo = aiService.processUser(user, requestDTO.getTargetDate(), startDateTime, endDateTime);
+            DailyAiInfo dailyAiInfo = aiService.requestToAI(user, requestDTO.getTargetDate(), startDateTime, endDateTime);
             if (dailyAiInfo == null) {
                 throw new AIException(AI_MAIL_FAIL);
             }

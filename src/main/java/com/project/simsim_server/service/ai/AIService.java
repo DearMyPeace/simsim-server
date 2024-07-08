@@ -173,7 +173,7 @@ public class AIService {
      * @param endDateTime
      * @return
      */
-    public DailyAiInfo processUser(Users user, LocalDate targetDate, LocalDateTime startDateTime, LocalDateTime endDateTime) {
+    public DailyAiInfo requestToAI(Users user, LocalDate targetDate, LocalDateTime startDateTime, LocalDateTime endDateTime) {
         // 예외 처리
         List<Diary> targetDiaries = diaryRepository.findDiariesByCreatedAtBetweenAndUserId(startDateTime, endDateTime, user.getUserId());
         if (targetDiaries.isEmpty()) {
@@ -199,10 +199,19 @@ public class AIService {
                 .targetDate(targetDate)
                 .diarySummary(summary)
                 .replyContent(letter)
+                .happyCnt(emotions.getPositive().get(0))
+                .appreciationCnt(emotions.getPositive().get(1))
+                .loveCnt(emotions.getPositive().get(2))
                 .analyzePositive(emotions.getPositive().toString())
                 .analyzePositiveTotal(emotions.getPositive_total())
+                .tranquilityCnt(emotions.getNeutral().get(0))
+                .curiosityCnt(emotions.getNeutral().get(1))
+                .surpriseCnt(emotions.getNeutral().get(2))
                 .analyzeNeutral(emotions.getNeutral().toString())
                 .analyzeNeutralTotal(emotions.getNeutral_total())
+                .sadCnt(emotions.getNegative().get(0))
+                .angryCnt(emotions.getNegative().get(1))
+                .fearCnt(emotions.getNegative().get(2))
                 .analyzeNegative(emotions.getNegative().toString())
                 .analyzeNegativeTotal(emotions.getNegative_total())
                 .replyStatus("N")
