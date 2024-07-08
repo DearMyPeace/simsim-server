@@ -25,8 +25,8 @@ public class DatabaseConverter implements AttributeConverter<String, String> {
     @Override
     public String convertToEntityAttribute(String dbData) {
         try {
-            // 데이터가 Base64 패턴에 맞는지 확인
-            if (dbData != null && base64Pattern.matcher(dbData).matches()) {
+            // 데이터가 Base64 패턴에 맞는지 확인하여 암호화 여부 판단
+            if (dbData != null && base64Pattern.matcher(dbData).matches() && dbData.length() > 12) {
                 return encryptionUtil.decrypt(dbData);
             } else {
                 // 암호화되지 않은 데이터는 그대로 반환

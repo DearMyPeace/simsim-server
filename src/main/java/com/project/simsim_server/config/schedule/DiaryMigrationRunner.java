@@ -22,12 +22,25 @@ public class DiaryMigrationRunner {
         List<Diary> entries = diaryRepository.findAll();
         for (Diary entry : entries) {
             try {
-                String encryptedContent = new EncryptionUtil().encrypt(entry.getContent());
-                entry.update(encryptedContent, LocalDateTime.now());
-                diaryRepository.save(entry);
+                // 암호화가 필요 없는 데이터를 암호화하여 저장
+                if (!isEncrypted(entry.getContent())) {
+                    String encryptedContent = encryptionUtil.encrypt(entry.getContent());
+                    entry.update(encryptedContent, LocalDateTime.now());
+                    diaryRepository.save(entry);
+                }
             } catch (Exception e) {
                 throw new RuntimeException("Failed to encrypt entry with id " + entry.getDiaryId(), e);
             }
+        }
+    }
+
+    private boolean isEncrypted(String content) {
+        try {
+            // 암호화된 데이터인지 확인하려고 복호화를 시도
+            encryptionUtil.decrypt(content);
+            return true;
+        } catch (Exception e) {
+            return false;
         }
     }
 }

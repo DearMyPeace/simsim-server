@@ -38,7 +38,7 @@ public class ScheduleConfiguration {
 //    }
 
     @Async
-    @Scheduled(cron = "0 20 22 * * ?", zone = "Asia/Seoul") // 매일 새벽 3시에 실행
+    @Scheduled(cron = "0 31 22 * * ?", zone = "Asia/Seoul") // 매일 22:20에 실행
     public void migrateData() {
         log.info("---[SimSimSchedule] 데이터 마이그레이션 작업 시작---");
         try {
