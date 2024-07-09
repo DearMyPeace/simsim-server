@@ -70,10 +70,12 @@ public class DiaryService {
 
     @Transactional
     public DiaryResponseDTO save(DiaryRequestDTO diaryRequestDTO, Long userId) {
-        LocalDate targetDate = toLocalDate(diaryRequestDTO.getCreatedDate(), ZoneId.of("Asia/Seoul"));
+        LocalDate targetDate = LocalDate.from(diaryRequestDTO.getCreatedDate().plusHours(9));
 
         List<Diary> todayDiaries
                 = diaryRepository.findByCreatedAtAndUserId(userId, targetDate);
+
+
 
         if (todayDiaries.size() == MAX_DIARIES_PER_DAY) {
             log.error("---[SimSimInfo] 일기가 제한 갯수를 초과함 userId : {}, targetDate : {}",
