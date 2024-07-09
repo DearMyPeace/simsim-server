@@ -80,13 +80,13 @@ public class ReportService {
         return WeekSummaryResponseDTO.builder()
                 .positiveDate(positiveInfo.getFirst().getMaxDate())
                 .positiveTotalCnt(positiveInfo.getFirst().getEmotionTotal())
-                .positiveSummaries(positiveSummary.get().getDiarySummary())
+                .positiveSummary(positiveSummary.get().getDiarySummary())
                 .neutralDate(neutralInfo.getFirst().getMaxDate())
                 .neutralTotalCnt(neutralInfo.getFirst().getEmotionTotal())
-                .neutralSummaries(neutralSummary.get().getDiarySummary())
+                .neutralSummary(neutralSummary.get().getDiarySummary())
                 .negativeDate(negativeInfo.getFirst().getMaxDate())
                 .negativeTotalCnt(negativeInfo.getFirst().getEmotionTotal())
-                .negativeSummaries(negativeSummary.get().getDiarySummary())
+                .negativeSummary(negativeSummary.get().getDiarySummary())
                 .build();
     }
 }

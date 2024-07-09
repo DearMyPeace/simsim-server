@@ -5,8 +5,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.List;
 
 
 @Getter
@@ -15,35 +13,35 @@ public class WeekSummaryResponseDTO {
 
     private LocalDate positiveDate;
     private int positiveTotalCnt;
-    private String positiveSummaries;
+    private String positiveSummary;
     private LocalDate neutralDate;
     private int neutralTotalCnt;
-    private String neutralSummaries;
+    private String neutralSummary;
     private LocalDate negativeDate;
     private int negativeTotalCnt;
-    private String negativeSummaries;
+    private String negativeSummary;
 
     @Builder
     public WeekSummaryResponseDTO(
             LocalDate positiveDate,
             int positiveTotalCnt,
-            String positiveSummaries,
+            String positiveSummary,
             LocalDate neutralDate,
             int neutralTotalCnt,
-            String neutralSummaries,
+            String neutralSummary,
             LocalDate negativeDate,
             int negativeTotalCnt,
-            String negativeSummaries
+            String negativeSummary
 
     ) {
         this.positiveDate = positiveDate;
         this.positiveTotalCnt = positiveTotalCnt;
-        this.positiveSummaries = positiveSummaries;
+        this.positiveSummary = positiveSummary;
         this.neutralDate = neutralDate;
         this.neutralTotalCnt = neutralTotalCnt;
-        this.neutralSummaries = neutralSummaries;
+        this.neutralSummary = neutralSummary;
         this.negativeDate = negativeDate;
         this.negativeTotalCnt = negativeTotalCnt;
-        this.negativeSummaries = negativeSummaries;
+        this.negativeSummary = negativeSummary;
     }
 }
