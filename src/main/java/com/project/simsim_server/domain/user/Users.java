@@ -96,7 +96,12 @@ public class Users extends BaseTimeEntity {
         return this;
     }
 
-    public Users updatePuzzle(int cnt) {
+    public Users updateUserStatus(String userStatus) {
+        this.userStatus = userStatus;
+        return this;
+    }
+
+    public Users updatePeace(int cnt) {
         this.pieceCnt = cnt;
         return this;
     }

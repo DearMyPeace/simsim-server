@@ -1,19 +1,22 @@
 package com.project.simsim_server.service.user;
 
 import com.nimbusds.jose.JWKSet;
-import com.project.simsim_server.config.auth.dto.*;
+import com.project.simsim_server.config.auth.dto.AppleLoginRequestDTO;
+import com.project.simsim_server.config.auth.dto.AppleUserInfoDTO;
+import com.project.simsim_server.config.auth.dto.GoogleLoginRequestDTO;
+import com.project.simsim_server.config.auth.dto.GoogleUserInfoDTO;
 import com.project.simsim_server.config.auth.jwt.AuthenticationService;
 import com.project.simsim_server.config.auth.jwt.JwtPayload;
 import com.project.simsim_server.config.auth.jwt.JwtUtils;
+import com.project.simsim_server.config.redis.RedisService;
 import com.project.simsim_server.config.redis.TokenDTO;
 import com.project.simsim_server.domain.ai.DailyAiInfo;
 import com.project.simsim_server.domain.user.Provider;
 import com.project.simsim_server.domain.user.Role;
+import com.project.simsim_server.domain.user.Users;
 import com.project.simsim_server.exception.auth.OAuthException;
 import com.project.simsim_server.exception.user.UsersException;
 import com.project.simsim_server.repository.ai.DailyAiInfoRepository;
-import com.project.simsim_server.config.redis.RedisService;
-import com.project.simsim_server.domain.user.Users;
 import com.project.simsim_server.repository.user.UsersRepository;
 import jakarta.security.auth.message.AuthException;
 import lombok.RequiredArgsConstructor;
@@ -21,10 +24,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,11 +35,12 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.project.simsim_server.exception.auth.AuthErrorCode.*;
-import static com.project.simsim_server.exception.user.UsersErrorCode.CANCLE_ACCOUNT;
+import static com.project.simsim_server.exception.auth.AuthErrorCode.ALREADY_EXIST_ACCOUNT;
 import static com.project.simsim_server.exception.user.UsersErrorCode.USER_NOT_FOUND;
 
 @Slf4j
@@ -79,6 +79,8 @@ public class AuthService {
                 throw new OAuthException(ALREADY_EXIST_ACCOUNT);
             } else if (existingUser.getUserStatus().equals("N")) {
                 log.warn("탈퇴한 회원입니다. 다시 아이디를 복원합니다.");
+                Users users = existingUser.updateUserStatus("Y");
+                usersRepository.save(users);
 //                    throw new UsersException(CANCLE_ACCOUNT);
             }
             existingUser.update(userName);
@@ -132,7 +134,9 @@ public class AuthService {
                 throw new OAuthException(ALREADY_EXIST_ACCOUNT);
             } else if (existingUser.getUserStatus().equals("N")) {
                 log.warn("탈퇴한 회원입니다. 다시 아이디를 복원합니다.");
-                throw new UsersException(CANCLE_ACCOUNT);
+                Users users = existingUser.updateUserStatus("Y");
+                usersRepository.save(users);
+//                throw new UsersException(CANCLE_ACCOUNT);
             }
             return getTokenDTO(existingUser);
         } else {
