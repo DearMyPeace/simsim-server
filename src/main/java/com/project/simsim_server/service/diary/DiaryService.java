@@ -72,7 +72,8 @@ public class DiaryService {
     public DiaryResponseDTO save(DiaryRequestDTO diaryRequestDTO, Long userId) {
         LocalDate targetDate = LocalDate.from(diaryRequestDTO.getCreatedDate().plusHours(9));
 
-        log.warn("조회 날짜 : {}", diaryRequestDTO.getCreatedDate());
+        log.warn("들어온 날짜 : {}", diaryRequestDTO.getCreatedDate());
+        log.warn("조회 날짜 : {}", diaryRequestDTO.getCreatedDate().plusHours(9));
 
         List<Diary> todayDiaries
                 = diaryRepository.findByCreatedAtAndUserId(userId, targetDate);
