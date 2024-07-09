@@ -10,6 +10,7 @@ import com.project.simsim_server.repository.ai.DailyAiInfoRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -20,6 +21,7 @@ import static com.project.simsim_server.exception.ai.AIErrorCode.REPORT_NOT_FOUN
 
 @Slf4j
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 @Service
 public class ReportService {
 

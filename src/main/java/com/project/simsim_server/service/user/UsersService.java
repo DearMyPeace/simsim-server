@@ -13,6 +13,7 @@ import com.project.simsim_server.repository.user.PersonaRepository;
 import com.project.simsim_server.repository.user.UsersRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
@@ -21,6 +22,7 @@ import java.util.Optional;
 import static com.project.simsim_server.exception.user.UsersErrorCode.USER_NOT_FOUND;
 
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 @Service
 public class UsersService {
 
@@ -38,13 +40,12 @@ public class UsersService {
         Reply replyStatus = Reply.DEFAULT;
         List<DailyAiInfo> notReadAiReply = aiInfoRepository.findByUserIdAndReplyStatus(userId);
         if (!notReadAiReply.isEmpty()) {
-            // 읽지 않은 편지가 있는 경우
             replyStatus = Reply.RECEIVE;
             // TODO - 추후 Grade에 따른 분기 추가
         } else {
             List<DailyAiInfo> allReplies
                     = Optional.ofNullable(aiInfoRepository.findByUserId(userId)).orElse(Collections.emptyList());
-            if (!allReplies.isEmpty()) { // 편지가 있으면서 전부 다 읽은 경우
+            if (!allReplies.isEmpty()) {
                 replyStatus = Reply.CHECK;
             }
         }
@@ -58,6 +59,7 @@ public class UsersService {
     }
 
 
+    @Transactional
     public PersonaResponseDTO updatePersona(String personaCode, Long userId) {
         Optional<Users> user = usersRepository.findByIdAndUserStatus(userId);
         if (user.isEmpty())
@@ -65,7 +67,7 @@ public class UsersService {
 
         Users userData = user.get();
         String changeCode = userData.updatePersona(personaCode);
-        usersRepository.save(userData);
+//        usersRepository.save(userData);
 
         Optional<Persona> data = personaRepository.findByPersonaCode(changeCode);
         if (data.isEmpty()) {

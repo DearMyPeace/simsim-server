@@ -9,12 +9,12 @@ import com.project.simsim_server.dto.ai.fastapi.*;
 import com.project.simsim_server.exception.ai.AIException;
 import com.project.simsim_server.repository.ai.DailyAiInfoRepository;
 import com.project.simsim_server.repository.diary.DiaryRepository;
-import io.lettuce.core.dynamic.annotation.Param;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
@@ -29,6 +29,7 @@ import static com.project.simsim_server.exception.ai.AIErrorCode.AIRESPONE_NOT_F
 
 @Slf4j
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 @Service
 public class AIService {
 
@@ -173,6 +174,7 @@ public class AIService {
      * @param endDateTime
      * @return
      */
+    @Transactional
     public DailyAiInfo requestToAI(Users user, LocalDate targetDate, LocalDateTime startDateTime, LocalDateTime endDateTime) {
         // 예외 처리
         List<Diary> targetDiaries = diaryRepository.findDiariesByCreatedAtBetweenAndUserId(startDateTime, endDateTime, user.getUserId());

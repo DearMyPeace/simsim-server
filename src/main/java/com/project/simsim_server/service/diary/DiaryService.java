@@ -15,13 +15,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.List;
 
-import static com.project.simsim_server.exception.dairy.DiaryErrorCode.*;
+import static com.project.simsim_server.exception.dairy.DiaryErrorCode.DIARY_NOT_FOUND;
+import static com.project.simsim_server.exception.dairy.DiaryErrorCode.LIMIT_EXCEEDED;
 
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 @Service
 public class DiaryService {
 
@@ -65,10 +66,6 @@ public class DiaryService {
 
     @Transactional
     public DiaryResponseDTO save(DiaryRequestDTO diaryRequestDTO, Long userId) {
-//        if (diaryRequestDTO.getCreatedDate().toLocalDate().isAfter(LocalDate.now())) {
-//            throw new DiaryException(INVALID_DATE);
-//        }
-
         List<Diary> todayDiaries
                 = diaryRepository.findByCreatedAtAndUserId(userId, diaryRequestDTO.getCreatedDate().toLocalDate());
         if (todayDiaries.size() == MAX_DIARIES_PER_DAY) {
@@ -81,9 +78,6 @@ public class DiaryService {
 
     @Transactional
     public DiaryResponseDTO update(Long diaryId, DiaryRequestDTO diaryRequestDTO, Long userId) {
-//        if (diaryRequestDTO.getModifiedDate().toLocalDate().isAfter(LocalDateTime.now())) {
-//            throw new DiaryException(INVALID_DATE);
-//        }
         Diary result = diaryRepository.findByIdAndUserId(diaryId, userId)
                 .orElseThrow(() -> new DiaryException(DIARY_NOT_FOUND));
 
