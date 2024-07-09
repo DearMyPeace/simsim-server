@@ -45,7 +45,7 @@ import static com.project.simsim_server.exception.user.UsersErrorCode.USER_NOT_F
 
 @Slf4j
 @RequiredArgsConstructor
-@Transactional
+@Transactional(readOnly = true)
 @Service
 public class AuthService {
 

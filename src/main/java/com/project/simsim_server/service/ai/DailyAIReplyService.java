@@ -1,17 +1,12 @@
 package com.project.simsim_server.service.ai;
 
 import com.project.simsim_server.domain.ai.DailyAiInfo;
-import com.project.simsim_server.domain.diary.Diary;
-import com.project.simsim_server.domain.user.Grade;
 import com.project.simsim_server.domain.user.Users;
 import com.project.simsim_server.dto.ai.client.AILetterRequestDTO;
 import com.project.simsim_server.dto.ai.client.AILetterResponseDTO;
 import com.project.simsim_server.dto.ai.client.DiarySummaryResponseDTO;
-import com.project.simsim_server.dto.ai.fastapi.DailyAiEmotionResponseDTO;
-import com.project.simsim_server.dto.ai.fastapi.DailyAiLetterRequestDTO;
 import com.project.simsim_server.exception.ai.AIException;
 import com.project.simsim_server.repository.ai.DailyAiInfoRepository;
-import com.project.simsim_server.repository.diary.DiaryRepository;
 import com.project.simsim_server.repository.user.UsersRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +27,7 @@ import static com.project.simsim_server.exception.ai.AIErrorCode.*;
 
 @Slf4j
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 @Service
 public class DailyAIReplyService {
 
@@ -40,11 +36,12 @@ public class DailyAIReplyService {
     private final DailyAiInfoRepository dailyAiInfoRepository;
 
 
+    @Transactional
     public AILetterResponseDTO findByIdAndUserId(Long id, Long userId) {
         return dailyAiInfoRepository.findByAiIdAndUserId(id, userId)
                 .map((entitiy) -> {
                     entitiy.updateReplyStatus("Y");
-                    dailyAiInfoRepository.save(entitiy);
+//                    dailyAiInfoRepository.save(entitiy);
                     return new AILetterResponseDTO(entitiy);
                 })
                 .orElseThrow(() -> new AIException(AILETTERS_NOT_FOUND));
@@ -80,11 +77,6 @@ public class DailyAIReplyService {
 
     @Transactional
     public AILetterResponseDTO save(AILetterRequestDTO requestDTO, Long userId) {
-
-        // 유효하지 않은 일자 예외처리
-//        if (requestDTO.getTargetDate().isAfter(LocalDate.now())) {
-//            throw new AIException(AI_NOT_INVALID_DATE);
-//        }
         Users user = usersRepository.findByIdAndUserStatus(userId)
                 .orElseThrow(() -> new AIException(AI_MAIL_FAIL));
 
@@ -107,7 +99,7 @@ public class DailyAIReplyService {
                 return new AILetterResponseDTO(responseInfo);
             } else { // 기존에 생성된 데이터가 안내 편지면 더 이상 보이지 않게 함
                 aiInfo.getFirst().updateReplyStatus("F");
-                dailyAiInfoRepository.save(responseInfo);
+//                dailyAiInfoRepository.save(responseInfo);
             }
         }
 
@@ -134,7 +126,7 @@ public class DailyAIReplyService {
         }
     }
 
-
+    @Transactional
     public List<DiarySummaryResponseDTO> findByMonthAndUserId(String year, String month, Long userId) {
         YearMonth yearMonth = YearMonth.of(Integer.parseInt(year), Integer.parseInt(month));
         LocalDate startDate = yearMonth.atDay(1);
@@ -152,14 +144,14 @@ public class DailyAIReplyService {
             if (results.size() > 1) {
                 if (result.isFirst()) {
                     log.warn("---[SimSimInfo] 이건 안내이므로 replyStatus를 F 처리합니다 ");
-                    DailyAiInfo dailyAiInfo = result.updateReplyStatus("F");
-                    dailyAiInfoRepository.save(dailyAiInfo);
+                    result.updateReplyStatus("F");
+//                    DailyAiInfo dailyAiInfo = result.updateReplyStatus("F");
+//                    dailyAiInfoRepository.save(dailyAiInfo);
                     iterator.remove();
                 }
             }
             log.warn(result.toString());
         }
-
 
         return results.stream()
                 .map(DiarySummaryResponseDTO::new)
