@@ -6,6 +6,7 @@ import com.project.simsim_server.dto.ai.client.WeekSummaryResponseDTO;
 import com.project.simsim_server.service.ai.ReportService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -20,7 +21,7 @@ public class ReportController {
     private final AuthenticationService authenticationService;
 
     @GetMapping("/week")
-    public WeekEmotionsResponseDTO getWeeksReportEmotions(@RequestParam LocalDate targetDate) {
+    public WeekEmotionsResponseDTO getWeeksReportEmotions(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate targetDate) {
         Long userId = authenticationService.getUserIdFromAuthentication();
         return reportService.weekReportEmotions(userId, targetDate);
     }
