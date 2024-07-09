@@ -1,6 +1,5 @@
-package com.project.simsim_server.config.schedule;
+package com.project.simsim_server.config.schedule.migration;
 
-import com.project.simsim_server.config.encrytion.EncryptionUtil;
 import com.project.simsim_server.domain.diary.Diary;
 import com.project.simsim_server.repository.diary.DiaryRepository;
 import jakarta.transaction.Transactional;
@@ -17,7 +16,6 @@ import java.util.List;
 public class DiaryMigrationRunner {
 
     private final DiaryRepository diaryRepository;
-    private final EncryptionUtil encryptionUtil;
 
     @Transactional
     public void encryptAndSaveAllEntries() {

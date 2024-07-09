@@ -35,8 +35,8 @@ public class DiaryRequestDTO {
         return Diary.builder()
                 .userId(userId)
                 .content(content)
-                .createdDate(ZonedDateTime.of(createdDate, ZoneId.of("UTC")).withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime())
-                .modifiedDate(ZonedDateTime.of(modifiedDate, ZoneId.of("UTC")).withZoneSameInstant(ZoneId.systemDefault()).toLocalDateTime())
+                .createdDate(ZonedDateTime.of(createdDate, ZoneId.of("UTC")).withZoneSameInstant(ZoneId.of("Asia/Seoul")).toLocalDateTime())
+                .modifiedDate(ZonedDateTime.of(modifiedDate, ZoneId.of("UTC")).withZoneSameInstant(ZoneId.of("Asia/Seoul")).toLocalDateTime())
                 .build();
     }
 }

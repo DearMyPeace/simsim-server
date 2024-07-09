@@ -1,4 +1,4 @@
-package com.project.simsim_server.config.schedule;
+package com.project.simsim_server.config.schedule.migration;
 
 import com.project.simsim_server.config.encrytion.EncryptionUtil;
 import com.project.simsim_server.domain.user.Users;

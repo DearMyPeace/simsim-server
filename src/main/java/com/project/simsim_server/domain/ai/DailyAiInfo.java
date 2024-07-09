@@ -1,5 +1,6 @@
 package com.project.simsim_server.domain.ai;
 
+import com.project.simsim_server.config.encrytion.DatabaseConverter;
 import com.project.simsim_server.domain.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.Builder;
@@ -28,9 +29,11 @@ public class DailyAiInfo extends BaseTimeEntity {
     @Column(name = "ai_target_date", nullable = false)
     private LocalDate targetDate;
 
+    @Convert(converter = DatabaseConverter.class)
     @Column(name = "ai_diary_summary")
     private String diarySummary;
 
+    @Convert(converter = DatabaseConverter.class)
     @Column(name = "ai_reply_content")
     private String replyContent;
 
