@@ -6,7 +6,9 @@
 //import org.junit.jupiter.api.Test;
 //import org.springframework.beans.factory.annotation.Autowired;
 //import org.springframework.boot.test.context.SpringBootTest;
+//import org.springframework.transaction.annotation.Transactional;
 //
+//import java.time.LocalDate;
 //import java.time.LocalDateTime;
 //import java.util.Optional;
 //
@@ -22,6 +24,7 @@
 //    private EncryptionUtil encryptionUtil;
 //
 //    @Test
+//    @Transactional
 //    void 일기내용_암호화() {
 //        // given
 //        String testContent = "일기 내용 암호화 테스트";
@@ -42,6 +45,7 @@
 //    }
 //
 //    @Test
+//    @Transactional
 //    void 기존저장일기_암호화() {
 //        // given
 //        Optional<Diary> data = diaryRepository.findById(3L);
@@ -53,7 +57,6 @@
 //            content = diary.getContent();
 //            System.out.println("diary.getContent() = " + diary.getContent());
 //            diary.update(diary.getContent(), LocalDateTime.now());
-//            diaryRepository.save(diary);
 //        }
 //
 //        // then
@@ -77,5 +80,26 @@
 //        assertThat(responseDTO).isNotNull();
 //        assertThat(responseDTO.getContent()).isEqualTo(originContent);
 //        System.out.println("responseDTO.getContent() = " + responseDTO.getContent());
+//    }
+//
+//    @Test
+//    @Transactional
+//    void 일기저장_시간확인() {
+//        // given
+//        LocalDateTime now = LocalDateTime.now();
+//        Diary diary = Diary.builder()
+//                .userId(1L)
+//                .content("일기 저장시간 확인")
+//                .createdDate(now)
+//                .modifiedDate(now)
+//                .build();
+//
+//        // when
+//        Diary save = diaryRepository.save(diary);
+//
+//        // then
+//        LocalDate today = LocalDate.now();
+//        assertThat(save.getMarkedDate()).isEqualTo(today);
+//        System.out.println("save.getMarkedDate() = " + save.getMarkedDate());
 //    }
 //}

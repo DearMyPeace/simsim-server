@@ -11,16 +11,20 @@ import com.project.simsim_server.repository.ai.DailyAiInfoRepository;
 import com.project.simsim_server.repository.diary.DiaryRepository;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.YearMonth;
+import java.time.ZoneId;
 import java.util.List;
 
 import static com.project.simsim_server.exception.dairy.DiaryErrorCode.DIARY_NOT_FOUND;
 import static com.project.simsim_server.exception.dairy.DiaryErrorCode.LIMIT_EXCEEDED;
 
+@Slf4j
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 @Service
@@ -66,9 +70,14 @@ public class DiaryService {
 
     @Transactional
     public DiaryResponseDTO save(DiaryRequestDTO diaryRequestDTO, Long userId) {
+        LocalDate targetDate = toLocalDate(diaryRequestDTO.getCreatedDate(), ZoneId.of("Asia/Seoul"));
+
         List<Diary> todayDiaries
-                = diaryRepository.findByCreatedAtAndUserId(userId, diaryRequestDTO.getCreatedDate().toLocalDate());
+                = diaryRepository.findByCreatedAtAndUserId(userId, targetDate);
+
         if (todayDiaries.size() == MAX_DIARIES_PER_DAY) {
+            log.error("---[SimSimInfo] 일기가 제한 갯수를 초과함 userId : {} targetDate : {}  : {} 현재 일기 개수 : {}",
+                    userId, targetDate, todayDiaries);
             throw new DiaryException(LIMIT_EXCEEDED);
         }
         diaryRequestDTO.setUserId(userId);
@@ -92,5 +101,9 @@ public class DiaryService {
                 .orElseThrow(() ->
                         new IllegalArgumentException("해당 일기가 존재하지 않습니다. 일기번호 : " + diaryId));
         result.delete();
+    }
+
+    private LocalDate toLocalDate(LocalDateTime localDateTime, ZoneId zoneId) {
+        return localDateTime.atZone(zoneId).toLocalDate();
     }
 }
