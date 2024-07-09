@@ -21,8 +21,7 @@ public class DiaryMigrationRunner {
 
     @Transactional
     public void encryptAndSaveAllEntries() {
-//        List<Diary> allDiaries = diaryRepository.findAll();
-        List<Diary> allDiaries = diaryRepository.findByUserId(1L);
+        List<Diary> allDiaries = diaryRepository.findAll();
 
         for (Diary diary : allDiaries) {
             log.warn("---[SimSimInfo] 다이어리 암호화 diaryId : {}", diary.getDiaryId());
