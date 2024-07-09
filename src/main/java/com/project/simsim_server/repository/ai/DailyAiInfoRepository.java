@@ -69,7 +69,7 @@ public interface DailyAiInfoRepository extends JpaRepository<DailyAiInfo, Long> 
             @Param("endDate") LocalDate endDate);
 
     @Query("SELECT new com.project.simsim_server.dto.ai.client.AnalyzeMaxInfoDTO(dr.aiId, dr.targetDate, MAX(dr.analyzePositiveTotal)) " +
-            "FROM DailyAiInfo dr WHERE dr.userId = :userId AND dr.targetDate BETWEEN :startDate AND :endDate " +
+            "FROM DailyAiInfo dr WHERE dr.userId = :userId AND dr.isFirst = false AND dr.targetDate BETWEEN :startDate AND :endDate " +
             "GROUP BY dr.targetDate")
     List<AnalyzeMaxInfoDTO> findAllByUserIdAndAnalyzePositiveTotal(
             @Param("userId") Long userId,
