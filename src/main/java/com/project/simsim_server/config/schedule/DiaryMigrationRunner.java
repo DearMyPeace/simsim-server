@@ -5,11 +5,13 @@ import com.project.simsim_server.domain.diary.Diary;
 import com.project.simsim_server.repository.diary.DiaryRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class DiaryMigrationRunner {
@@ -19,28 +21,13 @@ public class DiaryMigrationRunner {
 
     @Transactional
     public void encryptAndSaveAllEntries() {
-        List<Diary> entries = diaryRepository.findAll();
-        for (Diary entry : entries) {
-            try {
-                // 암호화가 필요 없는 데이터를 암호화하여 저장
-                if (!isEncrypted(entry.getContent())) {
-                    String encryptedContent = encryptionUtil.encrypt(entry.getContent());
-                    entry.update(encryptedContent, LocalDateTime.now());
-                    diaryRepository.save(entry);
-                }
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to encrypt entry with id " + entry.getDiaryId(), e);
-            }
-        }
-    }
+//        List<Diary> allDiaries = diaryRepository.findAll();
+        List<Diary> allDiaries = diaryRepository.findByUserId(1L);
 
-    private boolean isEncrypted(String content) {
-        try {
-            // 암호화된 데이터인지 확인하려고 복호화를 시도
-            encryptionUtil.decrypt(content);
-            return true;
-        } catch (Exception e) {
-            return false;
+        for (Diary diary : allDiaries) {
+            log.warn("---[SimSimInfo] 다이어리 암호화 diaryId : {}", diary.getDiaryId());
+            diary.update(diary.getContent(), LocalDateTime.now());
+            diaryRepository.save(diary);
         }
     }
 }

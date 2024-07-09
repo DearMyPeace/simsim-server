@@ -40,4 +40,6 @@ public interface DiaryRepository extends JpaRepository<Diary, Long> {
             "AND d.diaryDeleteYn = 'N'" +
             "AND d.markedDate = :targetDate")
     List<Diary> findByCreatedAtAndUserId(Long userId, LocalDate targetDate);
+
+    List<Diary> findByUserId(@Param("userId") Long userId);
 }
