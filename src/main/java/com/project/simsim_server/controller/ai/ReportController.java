@@ -21,7 +21,7 @@ public class ReportController {
     private final AuthenticationService authenticationService;
 
     @GetMapping("/week")
-    public WeekEmotionsResponseDTO getWeeksReportEmotions(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate targetDate) {
+    public WeekEmotionsResponseDTO getWeeksReportEmotions(@RequestParam("targetDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate targetDate) {
         Long userId = authenticationService.getUserIdFromAuthentication();
         return reportService.weekReportEmotions(userId, targetDate);
     }
