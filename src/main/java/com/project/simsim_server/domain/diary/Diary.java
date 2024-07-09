@@ -1,5 +1,6 @@
 package com.project.simsim_server.domain.diary;
 
+import com.project.simsim_server.config.encrytion.DatabaseConverter;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -25,6 +26,7 @@ public class Diary {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
+    @Convert(converter = DatabaseConverter.class)
     @Column(name = "diary_content")
     private String content;
 

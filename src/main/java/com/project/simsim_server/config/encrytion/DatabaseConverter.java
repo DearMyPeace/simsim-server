@@ -3,47 +3,22 @@ package com.project.simsim_server.config.encrytion;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.util.regex.Pattern;
-
+@Slf4j
 @RequiredArgsConstructor
 @Component
 @Converter(autoApply = true)
 public class DatabaseConverter implements AttributeConverter<String, String> {
 
     private final EncryptionUtil encryptionUtil;
-    private final Pattern base64Pattern = Pattern.compile("^[A-Za-z0-9+/]+={0,2}$");
-
-//    @Override
-//    public String convertToDatabaseColumn(String attribute) {
-//        try {
-//            return encryptionUtil.encrypt(attribute);
-//        } catch (Exception e) {
-//            throw new RuntimeException("Could not encrypt attribute", e);
-//        }
-//    }
-//
-//    @Override
-//    public String convertToEntityAttribute(String dbData) {
-//        try {
-//            // 데이터가 Base64 패턴에 맞는지 확인하여 암호화 여부 판단
-//            if (dbData != null && base64Pattern.matcher(dbData).matches() && dbData.length() > 12) {
-//                return encryptionUtil.decrypt(dbData);
-//            } else {
-//                // 암호화되지 않은 데이터는 그대로 반환
-//                return dbData;
-//            }
-//        } catch (Exception e) {
-//            throw new RuntimeException("Could not decrypt database column", e);
-//        }
-//    }
-
 
     //application --> database
     @Override
     public String convertToDatabaseColumn(String attribute) {
         try {
+            log.warn("---[SimSimInfo] 해당 데이터를 암호화합니다.");
             return encryptionUtil.encrypt(attribute);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -54,9 +29,17 @@ public class DatabaseConverter implements AttributeConverter<String, String> {
     @Override
     public String convertToEntityAttribute(String dbData) {
         try {
-            return encryptionUtil.decrypt(dbData);
+            if (encryptionUtil.isBase64(dbData)) {
+                log.warn("---[SimSimInfo] 해당 데이터는 암호화 되어 있어 디코딩을 진행합니다.");
+                return encryptionUtil.decrypt(dbData);
+            } else {
+                log.warn("---[SimSimInfo] 해당 데이터는 평문 입니다.");
+                return dbData;
+            }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            // 복호화 실패 시 평문 데이터를 반환
+            log.warn("---[SimSimInfo] 예외가 발생하여 평문을 반환합니다.");
+            return dbData;
         }
     }
 }
