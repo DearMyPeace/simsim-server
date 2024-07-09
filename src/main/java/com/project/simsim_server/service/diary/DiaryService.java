@@ -76,8 +76,8 @@ public class DiaryService {
                 = diaryRepository.findByCreatedAtAndUserId(userId, targetDate);
 
         if (todayDiaries.size() == MAX_DIARIES_PER_DAY) {
-            log.error("---[SimSimInfo] 일기가 제한 갯수를 초과함 userId : {} targetDate : {}  : {} 현재 일기 개수 : {}",
-                    userId, targetDate, todayDiaries);
+            log.error("---[SimSimInfo] 일기가 제한 갯수를 초과함 userId : {}, targetDate : {}",
+                    userId, targetDate);
             throw new DiaryException(LIMIT_EXCEEDED);
         }
         diaryRequestDTO.setUserId(userId);

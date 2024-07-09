@@ -27,8 +27,8 @@ public class DiaryRequestDTO {
     @Builder
     public DiaryRequestDTO(String content, LocalDateTime createdDate, LocalDateTime modifiedDate) {
         this.content = content;
-        this.createdDate = createdDate;
-        this.modifiedDate = modifiedDate;
+        this.createdDate = ZonedDateTime.of(createdDate, ZoneId.of("UTC")).withZoneSameInstant(ZoneId.of("Asia/Seoul")).toLocalDateTime();
+        this.modifiedDate = ZonedDateTime.of(modifiedDate, ZoneId.of("UTC")).withZoneSameInstant(ZoneId.of("Asia/Seoul")).toLocalDateTime();
     }
 
     public Diary toEntity() {
