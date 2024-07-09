@@ -53,15 +53,15 @@ public class ScheduleConfiguration {
 //        log.info("---[SimSimSchedule] 데이터 마이그레이션 작업 종료---");
 //    }
 
-//    @Async
-//    @Scheduled(cron = "0 10 1 * * ?", zone = "Asia/Seoul") // 매일 22:20에 실행
-//    public void migrateData() {
-//        log.info("---[SimSimSchedule] 데이터 마이그레이션 작업 시작---");
-//        try {
-//            replyMigrationRunner.encryptAndSaveAllEntries();
-//        } catch (Exception e) {
-//            log.error("데이터 마이그레이션 작업 중 오류 발생: ", e);
-//        }
-//        log.info("---[SimSimSchedule] 데이터 마이그레이션 작업 종료---");
-//    }
+    @Async
+    @Scheduled(cron = "0 54 1 * * ?", zone = "Asia/Seoul")
+    public void migrateData() {
+        log.info("---[SimSimSchedule] 데이터 마이그레이션 작업 시작---");
+        try {
+            replyMigrationRunner.encryptAndSaveAllEntries();
+        } catch (Exception e) {
+            log.error("데이터 마이그레이션 작업 중 오류 발생: ", e);
+        }
+        log.info("---[SimSimSchedule] 데이터 마이그레이션 작업 종료---");
+    }
 }

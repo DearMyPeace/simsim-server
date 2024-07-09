@@ -17,7 +17,6 @@ import java.util.Optional;
 public class ReplyMigrationRunner {
 
     private final DailyAiInfoRepository dailyAiInfoRepository;
-    private final EncryptionUtil encryptionUtil;
 
     @Transactional
     public void encryptAndSaveAllEntries() throws Exception {
@@ -26,7 +25,7 @@ public class ReplyMigrationRunner {
 
         for (DailyAiInfo info : allReplies) {
             log.warn("---[SimSimInfo] 일기 요약 및 편지 암호화 diaryId : {}", info.getAiId());
-            info.updateAiResult(encryptionUtil.encrypt(info.getDiarySummary()), encryptionUtil.encrypt(info.getReplyContent()));
+            info.updateAiResult(info.getDiarySummary(), info.getReplyContent());
             dailyAiInfoRepository.save(info);
         }
     }
