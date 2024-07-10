@@ -68,7 +68,7 @@ public interface DailyAiInfoRepository extends JpaRepository<DailyAiInfo, Long> 
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate);
 
-    @Query("SELECT new com.project.simsim_server.dto.ai.client.AnalyzeMaxInfoDTO(d.aiId, d.aiTargetDate, d.aiAnalyzePositiveTotal) " +
+    @Query("SELECT new com.project.simsim_server.dto.ai.client.AnalyzeMaxInfoDTO(d.aiId, d.targetDate, d.analyzePositiveTotal) " +
             "FROM DailyAiInfo d " +
             "WHERE d.userId = :userId " +
             "AND d.targetDate BETWEEN :startDate AND :endDate " +
@@ -83,7 +83,7 @@ public interface DailyAiInfoRepository extends JpaRepository<DailyAiInfo, Long> 
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate);
 
-    @Query("SELECT new com.project.simsim_server.dto.ai.client.AnalyzeMaxInfoDTO(d.aiId, d.aiTargetDate, d.aiAnalyzePositiveTotal) " +
+    @Query("SELECT new com.project.simsim_server.dto.ai.client.AnalyzeMaxInfoDTO(d.aiId, d.targetDate, d.analyzeNeutralTotal) " +
             "FROM DailyAiInfo d " +
             "WHERE d.userId = :userId " +
             "AND d.targetDate BETWEEN :startDate AND :endDate " +
@@ -98,7 +98,7 @@ public interface DailyAiInfoRepository extends JpaRepository<DailyAiInfo, Long> 
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate);
 
-    @Query("SELECT new com.project.simsim_server.dto.ai.client.AnalyzeMaxInfoDTO(d.aiId, d.aiTargetDate, d.aiAnalyzePositiveTotal) " +
+    @Query("SELECT new com.project.simsim_server.dto.ai.client.AnalyzeMaxInfoDTO(d.aiId, d.targetDate, d.analyzeNegativeTotal) " +
             "FROM DailyAiInfo d " +
             "WHERE d.userId = :userId " +
             "AND d.targetDate BETWEEN :startDate AND :endDate " +
