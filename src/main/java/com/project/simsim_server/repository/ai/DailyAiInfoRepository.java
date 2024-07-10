@@ -68,25 +68,22 @@ public interface DailyAiInfoRepository extends JpaRepository<DailyAiInfo, Long> 
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate);
 
-    @Query("SELECT new com.project.simsim_server.dto.ai.client.AnalyzeMaxInfoDTO(dr.aiId, dr.targetDate, MAX(dr.analyzePositiveTotal)) " +
-            "FROM DailyAiInfo dr WHERE dr.userId = :userId AND dr.isFirst = false AND dr.targetDate BETWEEN :startDate AND :endDate " +
-            "GROUP BY dr.targetDate")
+    @Query("SELECT d FROM DailyAiInfo d WHERE d.userId = :userId AND d.targetDate BETWEEN :startDate AND :endDate AND d.analyzePositiveTotal = " +
+            "(SELECT MAX(d2.analyzePositiveTotal) FROM DailyAiInfo d2 WHERE d2.userId = d.userId AND d2.targetDate BETWEEN :startDate AND :endDate)")
     List<AnalyzeMaxInfoDTO> findAllByUserIdAndAnalyzePositiveTotal(
             @Param("userId") Long userId,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate);
 
-    @Query("SELECT new com.project.simsim_server.dto.ai.client.AnalyzeMaxInfoDTO(dr.aiId, dr.targetDate, MAX(dr.analyzeNeutralTotal)) " +
-            "FROM DailyAiInfo dr WHERE dr.userId = :userId AND dr.targetDate BETWEEN :startDate AND :endDate " +
-            "GROUP BY dr.targetDate")
+    @Query("SELECT d FROM DailyAiInfo d WHERE d.userId = :userId AND d.targetDate BETWEEN :startDate AND :endDate AND d.analyzeNeutralTotal = " +
+            "(SELECT MAX(d2.analyzeNeutralTotal) FROM DailyAiInfo d2 WHERE d2.userId = d.userId AND d2.targetDate BETWEEN :startDate AND :endDate)")
     List<AnalyzeMaxInfoDTO> findAllByUserIdAndAnalyzeNeutralTotal(
             @Param("userId") Long userId,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate);
 
-    @Query("SELECT new com.project.simsim_server.dto.ai.client.AnalyzeMaxInfoDTO(dr.aiId, dr.targetDate, MAX(dr.analyzeNegativeTotal)) " +
-            "FROM DailyAiInfo dr WHERE dr.userId = :userId AND dr.targetDate BETWEEN :startDate AND :endDate " +
-            "GROUP BY dr.targetDate")
+    @Query("SELECT d FROM DailyAiInfo d WHERE d.userId = :userId AND d.targetDate BETWEEN :startDate AND :endDate AND d.analyzeNegativeTotal = " +
+            "(SELECT MAX(d2.analyzeNegativeTotal) FROM DailyAiInfo d2 WHERE d2.userId = d.userId AND d2.targetDate BETWEEN :startDate AND :endDate)")
     List<AnalyzeMaxInfoDTO> findAllByUserIdAndAnalyzeNegativeTotal(
             @Param("userId") Long userId,
             @Param("startDate") LocalDate startDate,
