@@ -68,21 +68,21 @@ public interface DailyAiInfoRepository extends JpaRepository<DailyAiInfo, Long> 
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate);
 
-    @Query("SELECT d FROM DailyAiInfo d WHERE d.userId = :userId AND d.targetDate BETWEEN :startDate AND :endDate AND d.analyzePositiveTotal = " +
+    @Query("SELECT d.aiId, d.targetDate, MAX(d.analyzePositiveTotal) FROM DailyAiInfo d WHERE d.userId = :userId AND d.targetDate BETWEEN :startDate AND :endDate AND d.analyzePositiveTotal = " +
             "(SELECT MAX(d2.analyzePositiveTotal) FROM DailyAiInfo d2 WHERE d2.userId = d.userId AND d2.targetDate BETWEEN :startDate AND :endDate)")
     List<AnalyzeMaxInfoDTO> findAllByUserIdAndAnalyzePositiveTotal(
             @Param("userId") Long userId,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate);
 
-    @Query("SELECT d FROM DailyAiInfo d WHERE d.userId = :userId AND d.targetDate BETWEEN :startDate AND :endDate AND d.analyzeNeutralTotal = " +
+    @Query("SELECT d.aiId, d.targetDate, MAX(d.analyzeNeutralTotal) FROM DailyAiInfo d WHERE d.userId = :userId AND d.targetDate BETWEEN :startDate AND :endDate AND d.analyzeNeutralTotal = " +
             "(SELECT MAX(d2.analyzeNeutralTotal) FROM DailyAiInfo d2 WHERE d2.userId = d.userId AND d2.targetDate BETWEEN :startDate AND :endDate)")
     List<AnalyzeMaxInfoDTO> findAllByUserIdAndAnalyzeNeutralTotal(
             @Param("userId") Long userId,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate);
 
-    @Query("SELECT d FROM DailyAiInfo d WHERE d.userId = :userId AND d.targetDate BETWEEN :startDate AND :endDate AND d.analyzeNegativeTotal = " +
+    @Query("SELECT d.aiId, d.targetDate, MAX(d.analyzeNegativeTotal) FROM DailyAiInfo d WHERE d.userId = :userId AND d.targetDate BETWEEN :startDate AND :endDate AND d.analyzeNegativeTotal = " +
             "(SELECT MAX(d2.analyzeNegativeTotal) FROM DailyAiInfo d2 WHERE d2.userId = d.userId AND d2.targetDate BETWEEN :startDate AND :endDate)")
     List<AnalyzeMaxInfoDTO> findAllByUserIdAndAnalyzeNegativeTotal(
             @Param("userId") Long userId,
