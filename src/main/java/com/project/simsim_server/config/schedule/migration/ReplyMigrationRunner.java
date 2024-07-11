@@ -25,8 +25,15 @@ public class ReplyMigrationRunner {
 
         for (DailyAiInfo info : allReplies) {
             log.warn("---[SimSimInfo] 일기 요약 및 편지 암호화 diaryId : {}", info.getAiId());
+            log.warn("---[SimSimInfo] Before encryption - Diary Summary: {}, Reply Content: {}", info.getDiarySummary(), info.getReplyContent());
+
             info.updateAiResult(info.getDiarySummary(), info.getReplyContent());
             dailyAiInfoRepository.save(info);
+
+            DailyAiInfo savedInfo = dailyAiInfoRepository.findById(info.getAiId()).orElse(null);
+            if (savedInfo != null) {
+                log.warn("---[SimSimInfo] After encryption - Diary Summary: {}, Reply Content: {}", savedInfo.getDiarySummary(), savedInfo.getReplyContent());
+            }
         }
     }
 }
