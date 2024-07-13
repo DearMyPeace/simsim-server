@@ -71,10 +71,6 @@ public class AIBatchService {
         while (!currentDate.isAfter(endDate)) {
             requestDTO.setTargetDate(currentDate);
             AILetterResponseDTO tmp = saveAuto(requestDTO, 1L);
-            if (tmp == null) {
-                continue;
-            }
-            requestDTO.setTargetDate(requestDTO.getTargetDate().plusDays(1));
             currentDate = currentDate.plusDays(1);
         }
 
