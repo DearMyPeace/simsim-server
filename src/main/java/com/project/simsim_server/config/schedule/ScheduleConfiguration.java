@@ -27,7 +27,7 @@ public class ScheduleConfiguration {
     }
 
     @Async
-    @Scheduled(cron = "0 31 17 * * ?", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 34 17 * * ?", zone = "Asia/Seoul")
     public void generateDailyAiInfo() {
         log.info("---[SimSimSchedule] 스케줄링 작업 시작---");
         aiBatchService.generateDailyAiInfo();
