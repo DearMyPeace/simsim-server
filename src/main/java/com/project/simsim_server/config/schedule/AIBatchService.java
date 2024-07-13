@@ -66,9 +66,6 @@ public class AIBatchService {
         for (Users user : allUsers) {
             LocalDate currentDate = startDate;
             while (!currentDate.isAfter(endDate)) {
-                if (user.getUserId() == 110) {
-                    return;
-                }
                 requestDTO.setTargetDate(currentDate);
                 saveAuto(requestDTO, user.getUserId());
                 currentDate = currentDate.plusDays(1);
@@ -82,6 +79,11 @@ public class AIBatchService {
     public AILetterResponseDTO saveAuto(AILetterRequestDTO requestDTO, Long userId) {
         Users user = usersRepository.findByIdAndUserStatus(userId)
                 .orElse(null);
+
+        if (user == null) {
+            log.warn("---[SimSimINFO] 유저가 유효하지 않습니다 userId = {}", userId);
+            return null;
+        }
 
         // 해당 유저의 해당 일자 AI 답장 정보 조회
         List<DailyAiInfo> aiInfo =
@@ -104,7 +106,6 @@ public class AIBatchService {
                 return null;
             }
         }
-
 
         // 기존에 생성된 데이터가 없으면 생성
         LocalDateTime startDateTime = requestDTO.getTargetDate().atStartOfDay();
