@@ -1,4 +1,4 @@
-TRUNCATE TABLE users_tbl;
+# 유저 정보 테이블
 DROP TABLE IF EXISTS users_tbl;
 CREATE TABLE `users_tbl` (
     `user_id` bigint NOT NULL AUTO_INCREMENT,
@@ -17,9 +17,9 @@ CREATE TABLE `users_tbl` (
     UNIQUE KEY `user_email` (`user_email`)
 ) ENGINE=InnoDB AUTO_INCREMENT=58 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 ALTER TABLE users_tbl AUTO_INCREMENT = 1;
-commit;
 
-TRUNCATE TABLE diary_tbl;
+
+# 일기 테이블
 DROP TABLE IF EXISTS diary_tbl;
 CREATE TABLE `diary_tbl` (
     `diary_id` bigint NOT NULL AUTO_INCREMENT,
@@ -34,10 +34,9 @@ CREATE TABLE `diary_tbl` (
     KEY `idx_user_id` (`user_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=182 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 ALTER TABLE diary_tbl AUTO_INCREMENT = 1;
-commit;
 
 
-TRUNCATE TABLE daily_ai_response_tbl;
+# AI 분석 및 편지 테이블
 DROP TABLE IF EXISTS daily_ai_response_tbl;
 CREATE TABLE `daily_ai_response_tbl` (
     `ai_id` bigint NOT NULL AUTO_INCREMENT,
@@ -68,8 +67,9 @@ CREATE TABLE `daily_ai_response_tbl` (
     PRIMARY KEY (`ai_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=64 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 ALTER TABLE daily_ai_response_tbl AUTO_INCREMENT = 1;
-commit;
 
+
+# 페르소나 테이블
 DROP TABLE IF EXISTS persona_info_tbl;
 CREATE TABLE persona_info_tbl (
     persona_id bigint not null auto_increment,
