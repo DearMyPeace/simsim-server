@@ -74,6 +74,7 @@ public class AIBatchService {
             if (tmp == null) {
                 continue;
             }
+            requestDTO.setTargetDate(requestDTO.getTargetDate().plusDays(1));
             currentDate = currentDate.plusDays(1);
         }
 
