@@ -63,15 +63,13 @@ public class AIBatchService {
                 AILetterRequestDTO.builder()
                         .targetDate(startDate)
                         .build();
-//        for (Users user : allUsers) {
-//            dailyAIReplyService.save(requestDTO, user.getUserId());
-//            requestDTO.setTargetDate(requestDTO.getTargetDate().plusDays(1));
-//        }
-        LocalDate currentDate = startDate;
-        while (!currentDate.isAfter(endDate)) {
-            requestDTO.setTargetDate(currentDate);
-            AILetterResponseDTO tmp = saveAuto(requestDTO, 1L);
-            currentDate = currentDate.plusDays(1);
+        for (Users user : allUsers) {
+            LocalDate currentDate = startDate;
+            while (!currentDate.isAfter(endDate)) {
+                requestDTO.setTargetDate(currentDate);
+                saveAuto(requestDTO, user.getUserId());
+                currentDate = currentDate.plusDays(1);
+            }
         }
 
         log.info("--[SimSim Schedule] 편지 답장 생성 종료");
