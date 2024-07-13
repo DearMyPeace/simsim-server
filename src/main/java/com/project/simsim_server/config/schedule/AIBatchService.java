@@ -4,16 +4,13 @@ import com.project.simsim_server.domain.ai.DailyAiInfo;
 import com.project.simsim_server.domain.user.Users;
 import com.project.simsim_server.dto.ai.client.AILetterRequestDTO;
 import com.project.simsim_server.dto.ai.client.AILetterResponseDTO;
-import com.project.simsim_server.exception.ai.AIException;
 import com.project.simsim_server.repository.ai.DailyAiInfoRepository;
 import com.project.simsim_server.repository.user.UsersRepository;
 import com.project.simsim_server.service.ai.AIService;
-import com.project.simsim_server.service.ai.DailyAIReplyService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.yaml.snakeyaml.Yaml;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -28,13 +25,9 @@ import static com.project.simsim_server.exception.ai.AIErrorCode.AI_MAIL_FAIL;
 @Service
 public class AIBatchService {
 
-    private final DailyAiInfoRepository dailyAiInfoRepository;
-
-    private final UsersRepository usersRepository;
-
-    private final DailyAIReplyService dailyAIReplyService;
-
     private final AIService aiService;
+    private final UsersRepository usersRepository;
+    private final DailyAiInfoRepository dailyAiInfoRepository;
 
     @Transactional
     public void deleteFirstReply() {
@@ -71,7 +64,6 @@ public class AIBatchService {
                 currentDate = currentDate.plusDays(1);
             }
         }
-
         log.info("--[SimSim Schedule] 편지 답장 생성 종료");
     }
 
