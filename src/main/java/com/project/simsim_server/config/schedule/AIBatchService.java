@@ -66,7 +66,7 @@ public class AIBatchService {
         for (Users user : allUsers) {
             LocalDate currentDate = startDate;
             while (!currentDate.isAfter(endDate)) {
-                if (user.getUserId() == 21) {
+                if (user.getUserId() == 110) {
                     return;
                 }
                 requestDTO.setTargetDate(currentDate);
