@@ -1,9 +1,9 @@
-package com.project.simsim_server.controller.ai;
+package com.project.simsim_server.controller.report;
 
 import com.project.simsim_server.config.auth.jwt.AuthenticationService;
 import com.project.simsim_server.dto.ai.client.WeekEmotionsResponseDTO;
 import com.project.simsim_server.dto.ai.client.WeekSummaryResponseDTO;
-import com.project.simsim_server.service.ai.ReportService;
+import com.project.simsim_server.service.report.ReportService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;

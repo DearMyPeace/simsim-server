@@ -186,8 +186,6 @@ public class AIService {
         // AI 요청 정보 생성
         DailyAiLetterRequestDTO requestData = generateRequestData(user, targetDate, targetDiaries);
 
-        log.warn("---[SimSimInfo] AI 요청 데이터 = {}", requestData);
-
         // AI 요청
         String letter = requestLetter(user, requestData); // AI_LETTER_URL 호출
         DailyAiEmotionResponseDTO emotions = requestEmotion(user, requestData); //AI_EMONTION_URL 호출
