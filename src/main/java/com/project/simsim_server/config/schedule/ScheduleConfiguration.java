@@ -23,7 +23,15 @@ public class ScheduleConfiguration {
 
     @Async
     @Scheduled(cron = "0 30 2 * * ?", zone = "Asia/Seoul")
-    public void generateDailyAIReply() {
+    public void deleteDailyAIReply() {
+        log.info("---[SimSimSchedule] 스케줄링 작업 시작---");
+        aiBatchService.deleteFirstReply();
+        log.info("---[SimSimSchedule] 스케줄링 작업 종료---");
+    }
+
+    @Async
+    @Scheduled(cron = "0 10 17 * * ?", zone = "Asia/Seoul")
+    public void generateDailyAiInfo() {
         log.info("---[SimSimSchedule] 스케줄링 작업 시작---");
         aiBatchService.deleteFirstReply();
         log.info("---[SimSimSchedule] 스케줄링 작업 종료---");
@@ -53,15 +61,15 @@ public class ScheduleConfiguration {
 //        log.info("---[SimSimSchedule] 데이터 마이그레이션 작업 종료---");
 //    }
 
-    @Async
-    @Scheduled(cron = "0 41 12 * * ?", zone = "Asia/Seoul")
-    public void migrateData() {
-        log.info("---[SimSimSchedule] 데이터 마이그레이션 작업 시작---");
-        try {
-            replyMigrationRunner.encryptAndSaveAllEntries();
-        } catch (Exception e) {
-            log.error("데이터 마이그레이션 작업 중 오류 발생: ", e);
-        }
-        log.info("---[SimSimSchedule] 데이터 마이그레이션 작업 종료---");
-    }
+//    @Async
+//    @Scheduled(cron = "0 41 12 * * ?", zone = "Asia/Seoul")
+//    public void migrateData() {
+//        log.info("---[SimSimSchedule] 데이터 마이그레이션 작업 시작---");
+//        try {
+//            replyMigrationRunner.encryptAndSaveAllEntries();
+//        } catch (Exception e) {
+//            log.error("데이터 마이그레이션 작업 중 오류 발생: ", e);
+//        }
+//        log.info("---[SimSimSchedule] 데이터 마이그레이션 작업 종료---");
+//    }
 }
