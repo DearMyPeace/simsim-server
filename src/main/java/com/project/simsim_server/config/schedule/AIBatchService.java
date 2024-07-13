@@ -66,6 +66,9 @@ public class AIBatchService {
         for (Users user : allUsers) {
             LocalDate currentDate = startDate;
             while (!currentDate.isAfter(endDate)) {
+                if (user.getUserId() == 5) {
+                    return;
+                }
                 requestDTO.setTargetDate(currentDate);
                 saveAuto(requestDTO, user.getUserId());
                 currentDate = currentDate.plusDays(1);

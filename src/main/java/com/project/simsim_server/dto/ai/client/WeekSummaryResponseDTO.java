@@ -3,6 +3,7 @@ package com.project.simsim_server.dto.ai.client;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDate;
 
@@ -11,6 +12,8 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class WeekSummaryResponseDTO {
 
+    @Setter
+    private int diaryCnt;
     private LocalDate positiveDate;
     private int positiveTotalCnt;
     private String positiveSummary;
@@ -23,6 +26,7 @@ public class WeekSummaryResponseDTO {
 
     @Builder
     public WeekSummaryResponseDTO(
+            int diaryCnt,
             LocalDate positiveDate,
             int positiveTotalCnt,
             String positiveSummary,
@@ -34,6 +38,7 @@ public class WeekSummaryResponseDTO {
             String negativeSummary
 
     ) {
+        this.diaryCnt = diaryCnt;
         this.positiveDate = positiveDate;
         this.positiveTotalCnt = positiveTotalCnt;
         this.positiveSummary = positiveSummary;

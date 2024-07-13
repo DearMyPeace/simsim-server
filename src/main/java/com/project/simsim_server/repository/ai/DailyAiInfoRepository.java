@@ -76,6 +76,7 @@ public interface DailyAiInfoRepository extends JpaRepository<DailyAiInfo, Long> 
             "    SELECT MAX(d2.analyzePositive) " +
             "    FROM DailyAiInfo d2 " +
             "    WHERE d2.userId = d.userId " +
+            "    AND d2.isFirst = false" +
             "    AND d2.targetDate BETWEEN :startDate AND :endDate" +
             ")")
     List<AnalyzeMaxInfoDTO> findAllByUserIdAndAnalyzePositiveTotal(
@@ -91,6 +92,7 @@ public interface DailyAiInfoRepository extends JpaRepository<DailyAiInfo, Long> 
             "    SELECT MAX(d2.analyzeNeutralTotal) " +
             "    FROM DailyAiInfo d2 " +
             "    WHERE d2.userId = d.userId " +
+            "    AND d2.isFirst = false" +
             "    AND d2.targetDate BETWEEN :startDate AND :endDate" +
             ")")
     List<AnalyzeMaxInfoDTO> findAllByUserIdAndAnalyzeNeutralTotal(
@@ -106,6 +108,7 @@ public interface DailyAiInfoRepository extends JpaRepository<DailyAiInfo, Long> 
             "    SELECT MAX(d2.analyzeNegativeTotal) " +
             "    FROM DailyAiInfo d2 " +
             "    WHERE d2.userId = d.userId " +
+            "    AND d2.isFirst = false" +
             "    AND d2.targetDate BETWEEN :startDate AND :endDate" +
             ")")
     List<AnalyzeMaxInfoDTO> findAllByUserIdAndAnalyzeNegativeTotal(
