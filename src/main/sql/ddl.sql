@@ -15,7 +15,7 @@ CREATE TABLE `users_tbl` (
     `modified_date` datetime(6) NOT NULL,
     PRIMARY KEY (`user_id`),
     UNIQUE KEY `user_email` (`user_email`)
-) ENGINE=InnoDB AUTO_INCREMENT=58 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 ALTER TABLE users_tbl AUTO_INCREMENT = 1;
 
 
@@ -32,7 +32,7 @@ CREATE TABLE `diary_tbl` (
     `modified_date` datetime(6) NOT NULL,
     PRIMARY KEY (`diary_id`),
     KEY `idx_user_id` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=182 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 ALTER TABLE diary_tbl AUTO_INCREMENT = 1;
 
 
@@ -65,7 +65,7 @@ CREATE TABLE `daily_ai_response_tbl` (
     `created_date` datetime(6) NOT NULL,
     `modified_date` datetime(6) NOT NULL,
     PRIMARY KEY (`ai_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=64 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 ALTER TABLE daily_ai_response_tbl AUTO_INCREMENT = 1;
 
 
