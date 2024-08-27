@@ -47,21 +47,20 @@ public interface DailyAiInfoRepository extends JpaRepository<DailyAiInfo, Long> 
     Optional<DailyAiInfo> findByAiIdAndUserId(Long id, Long userId);
 
     List<DailyAiInfo> findByUserId(Long userId);
-
-
+    
     @Query("SELECT new com.project.simsim_server.dto.ai.client.WeekEmotionsResponseDTO(" +
-            "SUM(dr.happyCnt), " +
-            "SUM(dr.appreciationCnt), " +
-            "SUM(dr.loveCnt), " +
-            "SUM(dr.analyzePositiveTotal), " +
-            "SUM(dr.tranquilityCnt), " +
-            "SUM(dr.curiosityCnt), " +
-            "SUM(dr.surpriseCnt), " +
-            "SUM(dr.analyzeNeutralTotal), " +
-            "SUM(dr.sadCnt)," +
-            "SUM(dr.angryCnt)," +
-            "SUM(dr.fearCnt)," +
-            "SUM(dr.analyzeNegativeTotal)) " +
+            "COALESCE(SUM(dr.happyCnt), 0), " +
+            "COALESCE(SUM(dr.appreciationCnt), 0), " +
+            "COALESCE(SUM(dr.loveCnt), 0), " +
+            "COALESCE(SUM(dr.analyzePositiveTotal), 0), " +
+            "COALESCE(SUM(dr.tranquilityCnt), 0), " +
+            "COALESCE(SUM(dr.curiosityCnt), 0), " +
+            "COALESCE(SUM(dr.surpriseCnt), 0), " +
+            "COALESCE(SUM(dr.analyzeNeutralTotal), 0), " +
+            "COALESCE(SUM(dr.sadCnt), 0)," +
+            "COALESCE(SUM(dr.angryCnt), 0)," +
+            "COALESCE(SUM(dr.fearCnt), 0)," +
+            "COALESCE(SUM(dr.analyzeNegativeTotal), 0)) " +
             "FROM DailyAiInfo dr WHERE dr.userId =:userId AND dr.targetDate BETWEEN :startDate AND :endDate")
     Optional<WeekEmotionsResponseDTO> countByUserIdAndTargetDate(
             @Param("userId") Long userId,
