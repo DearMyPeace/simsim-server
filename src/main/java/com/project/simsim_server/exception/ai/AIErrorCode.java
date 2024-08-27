@@ -4,6 +4,7 @@ import com.project.simsim_server.exception.ErrorType;
 
 public enum AIErrorCode implements ErrorType {
 
+    NO_DIARIES("분석할 일기가 없습니다", 404),
     REPORT_NOT_FOUND("분석 결과가 존재하지 않습니다", 404),
     AILETTERS_NOT_FOUND("AI 편지가 존재하지 않습니다.", 404),
     AIRESPONE_NOT_FOUND("AI 응답이 존재하지 않습니다.", 404),

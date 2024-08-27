@@ -21,8 +21,7 @@ import java.time.Year;
 import java.util.List;
 import java.util.Optional;
 
-import static com.project.simsim_server.exception.ai.AIErrorCode.EMOTION_NOT_FOUND;
-import static com.project.simsim_server.exception.ai.AIErrorCode.REPORT_NOT_FOUND;
+import static com.project.simsim_server.exception.ai.AIErrorCode.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -64,6 +63,10 @@ public class ReportService {
         List<Diary> diaries
                 = diaryRepository.findDiariesByCreatedAtBetweenAndUserId(firstDate, targetDate.atTime(LocalTime.now()), userId);
         log.warn("---[SimSimInfo] 일기 개수 : {}", diaries.size());
+
+        if (diaries.isEmpty()) {
+            throw new AIException(NO_DIARIES);
+        }
 
         List<AnalyzeMaxInfoDTO> positiveInfo
                 = dailyAiInfoRepository.findAllByUserIdAndAnalyzePositiveTotal(userId, startDate, targetDate);
