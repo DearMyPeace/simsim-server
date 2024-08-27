@@ -20,23 +20,23 @@ public class WeekEmotionsResponseDTO {
     private int negativeTotalCnt;
 
     public WeekEmotionsResponseDTO(
-        Long happyCnt, Long appreciationCnt, Long loveCnt, Long positiveTotalCnt,
-        Long tranquilityCnt, Long curiosityCnt, Long surpriseCnt, Long neutralTotalCnt,
-        Long sadCnt, Long angryCnt, Long fearCnt, Long negativeTotalCnt
+        int happyCnt, int appreciationCnt, int loveCnt, int positiveTotalCnt,
+        int tranquilityCnt, int curiosityCnt, int surpriseCnt, int neutralTotalCnt,
+        int sadCnt, int angryCnt, int fearCnt, int negativeTotalCnt
 
     ) {
-        this.happyCnt = Integer.parseInt(String.valueOf(happyCnt));
-        this.appreciationCnt = Integer.parseInt(String.valueOf(appreciationCnt));
-        this.loveCnt = Integer.parseInt(String.valueOf(loveCnt));
-        this.positiveTotalCnt = Integer.parseInt(String.valueOf(positiveTotalCnt));
-        this.tranquilityCnt = Integer.parseInt(String.valueOf(tranquilityCnt));
-        this.curiosityCnt = Integer.parseInt(String.valueOf(curiosityCnt));
-        this.surpriseCnt = Integer.parseInt(String.valueOf(surpriseCnt));
-        this.neutralTotalCnt = Integer.parseInt(String.valueOf(neutralTotalCnt));
-        this.sadCnt = Integer.parseInt(String.valueOf(sadCnt));
-        this.angryCnt = Integer.parseInt(String.valueOf(angryCnt));
-        this.fearCnt = Integer.parseInt(String.valueOf(fearCnt));
-        this.negativeTotalCnt = Integer.parseInt(String.valueOf(negativeTotalCnt));
+        this.happyCnt = happyCnt;
+        this.appreciationCnt = appreciationCnt;
+        this.loveCnt = loveCnt;
+        this.positiveTotalCnt = positiveTotalCnt;
+        this.tranquilityCnt = tranquilityCnt;
+        this.curiosityCnt = curiosityCnt;
+        this.surpriseCnt = surpriseCnt;
+        this.neutralTotalCnt = neutralTotalCnt;
+        this.sadCnt = sadCnt;
+        this.angryCnt = angryCnt;
+        this.fearCnt = fearCnt;
+        this.negativeTotalCnt = negativeTotalCnt;
     }
 }
 
