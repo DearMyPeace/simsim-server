@@ -39,6 +39,17 @@ public class ReportService {
         LocalDate startDate = targetDate.minusDays(14);
         log.warn("---[SimSimInfo] 레포트 감정 집계 시작일 : {}, 종료일 : {}", startDate, targetDate);
 
+        Year year = Year.of(targetDate.getYear());
+        LocalDateTime firstDate = year.atMonth(1).atDay(1).atStartOfDay();
+
+        List<Diary> diaries
+                = diaryRepository.findDiariesByCreatedAtBetweenAndUserId(firstDate, targetDate.atTime(LocalTime.now()), userId);
+        log.warn("---[SimSimInfo] 일기 개수 : {}", diaries.size());
+
+        if (diaries.isEmpty()) {
+            throw new AIException(NO_DIARIES);
+        }
+
         Optional<WeekEmotionsResponseDTO> results = dailyAiInfoRepository.countByUserIdAndTargetDate(userId, startDate, targetDate);
         if (results.isEmpty()) {
             log.error("---[SimSimInfo] 레포트 감정 집계 에러 : 감정 분석 결과가 비어 있음");
