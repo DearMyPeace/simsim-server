@@ -20,23 +20,23 @@ public class WeekEmotionsResponseDTO {
     private int negativeTotalCnt;
 
     public WeekEmotionsResponseDTO(
-        int happyCnt, int appreciationCnt, int loveCnt, int positiveTotalCnt,
-        int tranquilityCnt, int curiosityCnt, int surpriseCnt, int neutralTotalCnt,
-        int sadCnt, int angryCnt, int fearCnt, int negativeTotalCnt
+        Long happyCnt, Long appreciationCnt, Long loveCnt, Long positiveTotalCnt,
+        Long tranquilityCnt, Long curiosityCnt, Long surpriseCnt, Long neutralTotalCnt,
+        Long sadCnt, Long angryCnt, Long fearCnt, Long negativeTotalCnt
 
     ) {
-        this.happyCnt = happyCnt;
-        this.appreciationCnt = appreciationCnt;
-        this.loveCnt = loveCnt;
-        this.positiveTotalCnt = positiveTotalCnt;
-        this.tranquilityCnt = tranquilityCnt;
-        this.curiosityCnt = curiosityCnt;
-        this.surpriseCnt = surpriseCnt;
-        this.neutralTotalCnt = neutralTotalCnt;
-        this.sadCnt = sadCnt;
-        this.angryCnt = angryCnt;
-        this.fearCnt = fearCnt;
-        this.negativeTotalCnt = negativeTotalCnt;
+        this.happyCnt = happyCnt.intValue();
+        this.appreciationCnt = appreciationCnt.intValue();
+        this.loveCnt = loveCnt.intValue();
+        this.positiveTotalCnt = positiveTotalCnt.intValue();
+        this.tranquilityCnt = tranquilityCnt.intValue();
+        this.curiosityCnt = curiosityCnt.intValue();
+        this.surpriseCnt = surpriseCnt.intValue();
+        this.neutralTotalCnt = neutralTotalCnt.intValue();
+        this.sadCnt = sadCnt.intValue();
+        this.angryCnt = angryCnt.intValue();
+        this.fearCnt = fearCnt.intValue();
+        this.negativeTotalCnt = negativeTotalCnt.intValue();
     }
 }
 
