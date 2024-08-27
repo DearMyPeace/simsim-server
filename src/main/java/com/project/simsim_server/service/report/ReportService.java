@@ -39,11 +39,10 @@ public class ReportService {
         LocalDate startDate = targetDate.minusDays(14);
         log.warn("---[SimSimInfo] 레포트 감정 집계 시작일 : {}, 종료일 : {}", startDate, targetDate);
 
-        Year year = Year.of(targetDate.getYear());
-        LocalDateTime firstDate = year.atMonth(1).atDay(1).atStartOfDay();
 
         List<Diary> diaries
-                = diaryRepository.findDiariesByCreatedAtBetweenAndUserId(firstDate, targetDate.atTime(LocalTime.now()), userId);
+                = diaryRepository.findDiariesByCreatedAtBetweenAndUserId(startDate.atStartOfDay(),
+                targetDate.atTime(LocalTime.MAX), userId);
         log.warn("---[SimSimInfo] 일기 개수 : {}", diaries.size());
 
         if (diaries.isEmpty()) {
