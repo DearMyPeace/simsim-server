@@ -27,13 +27,7 @@ jobs:
           mkdir -p gradle/wrapper
           echo "${{ secrets.GRADLE_WRAPPER }}" > gradle/wrapper/gradle-wrapper.properties
 
-      - name: Build with Gradle
-        run: ./gradlew build
-
-      - name: List build directory
-        run: ls -al build/libs
-
-      - name: Deploy to server
+      - name: Transfer files to server
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           TARGET_HOST: ${{ secrets.TARGET_HOST }}
@@ -45,10 +39,16 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan $TARGET_HOST >> ~/.ssh/known_hosts
 
-          ls -al build/libs
-          scp build/libs/simsim-server-0.0.1-SNAPSHOT.jar $TARGET_USER@$TARGET_HOST:$TARGET_PATH
+          # 코드 파일을 서버로 전송
+          rsync -avz --exclude='.git' . $TARGET_USER@$TARGET_HOST:$TARGET_PATH
+
+      - name: Build and deploy on server
+        env:
+          TARGET_USER: ${{ secrets.TARGET_USER }}
+          TARGET_HOST: ${{ secrets.TARGET_HOST }}
+          TARGET_PATH: ${{ secrets.TARGET_PATH }}
+        run: |
           ssh $TARGET_USER@$TARGET_HOST << EOF
-            sudo systemctl stop spring
-            mv $TARGET_PATH/simsim-server-0.0.1-SNAPSHOT.jar $TARGET_PATH/spring.jar
-            sudo systemctl start spring
+            cd $TARGET_PATH
+            make all
           EOF
