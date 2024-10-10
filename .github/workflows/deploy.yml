@@ -49,8 +49,11 @@ jobs:
           TARGET_PATH: ${{ secrets.TARGET_PATH }}
         run: |
           ssh $TARGET_USER@$TARGET_HOST << EOF
+            sudo systemctl stop spring
             sudo apt-get update
             sudo apt-get install -y make
+            make clean
             cd $TARGET_PATH
             make all
+            sudo systemctl start spring
           EOF
