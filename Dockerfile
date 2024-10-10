@@ -2,10 +2,10 @@
 FROM amazoncorretto:21-alpine3.18
 
 # 작업 디렉토리 설정
-WORKDIR .
+WORKDIR /home/ubuntu
 
 # 로컬에서 빌드된 JAR 파일을 Docker 컨테이너로 복사
-COPY build/libs/*.jar spring.jar
+COPY build/libs/*.jar /home/ubuntu/spring.jar
 
 # 애플리케이션 실행 명령어
 ENTRYPOINT ["java", "-jar", "spring.jar"]
