@@ -29,7 +29,7 @@
 //    @Test
 //    public void testGenerateDailyAIReply() {
 //        // 스케줄링 메서드를 직접 호출하여 테스트
-//        scheduleConfiguration.generateDailyAIReply();
+//        scheduleConfiguration.deleteDailyAIReply();
 //
 //        // DailyAIReplyService의 save 메서드가 호출되었는지 검증
 //        verify(dailyAIReplyService, times(1)).save();
