@@ -23,3 +23,6 @@ docker-clean:
 
 fclean: clean
 	docker network rm $(NETWORK_NAME) || true
+
+re : clean
+	make all
