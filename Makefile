@@ -2,20 +2,24 @@
 APP_NAME=simsim-server
 IMAGE_NAME=simsim-server-image
 DOCKER_FILE=Dockerfile
+NETWORK_NAME=simsim-network
 
 all: build up
 
 build:
-	•/gradlew clean build
+	./gradlew clean build
 
 docker-build:
-	docker-compose build
+	docker compose build
 
 up:
-	docker-compose up -d
+	docker compose up -d
 
 clean: docker-clean
 	./gradlew clean
 
+fclean: clean
+	docker network rm $(NETWORK_NAME) || true
+
 docker-clean:
-	docker-compose down
+	docker compose down --remove-orphans
