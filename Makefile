@@ -18,8 +18,8 @@ up:
 clean: docker-clean
 	./gradlew clean
 
+docker-clean:
+	docker compose down --remove-orphans # 네트워크는 남기고
+
 fclean: clean
 	docker network rm $(NETWORK_NAME) || true
-
-docker-clean:
-	docker compose down --remove-orphans
