@@ -51,6 +51,7 @@ public class AuthController {
         } catch (OAuthException | UsersException e) {
             return responseFailTokens(e);
         } catch (Exception e) {
+            log.error("Login Error", e);
             return responseFailTokens(new OAuthException(AuthErrorCode.LOGIN_FAILED));
         }
     }
