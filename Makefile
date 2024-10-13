@@ -2,7 +2,7 @@
 APP_NAME=simsim-server
 IMAGE_NAME=simsim-server-image
 DOCKER_FILE=Dockerfile
-NETWORK_NAME=simsim-network
+NETWORK_NAME=simsim
 
 all: build up
 
