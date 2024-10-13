@@ -15,14 +15,16 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @EnableRedisRepositories
 @Configuration
 public class RedisConfig {
+    private final RedisProperties redisProperties;
     private final String HOST = "redis";
     private final int PORT = 6379;
 
     // RedisProperties로 yml에 저장한 host, port 연결
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
+        redisProperties.setHost(HOST);
         RedisStandaloneConfiguration redisStandaloneConfiguration =
-                new RedisStandaloneConfiguration(HOST, PORT);
+                new RedisStandaloneConfiguration(redisProperties.getHost(), redisProperties.getPort());
         return new LettuceConnectionFactory(redisStandaloneConfiguration);
     }
 
