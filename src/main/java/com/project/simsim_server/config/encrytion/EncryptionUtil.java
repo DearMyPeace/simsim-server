@@ -1,5 +1,6 @@
 package com.project.simsim_server.config.encrytion;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -8,12 +9,13 @@ import javax.crypto.spec.SecretKeySpec;
 import java.security.Key;
 import java.util.Base64;
 
-
+@Slf4j
 @Component
 public class EncryptionUtil {
 
     @Value("${spring.jwt.key2}")
     private String key;
+
     private static final String ALGORITHM = "AES";
 
     //encode
@@ -38,6 +40,7 @@ public class EncryptionUtil {
     }
 
     private Key generateKey() {
+        log.error("------------[SimSim 암호화 키 확인]]]]]]]]]]]]]]]]] {}", this.key);
         return new SecretKeySpec(key.getBytes(), ALGORITHM);
     }
 
