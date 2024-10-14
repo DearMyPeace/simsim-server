@@ -31,6 +31,7 @@ public class EncryptionUtil {
     //decode
     public String decrypt(String encryptedValue) throws Exception {
         Key key = generateKey();
+        log.error("------------[SimSim 암호화 키 확인2]]]]]]]]]]]]]]]]] {}, {}", this.key, key);
         Cipher c = Cipher.getInstance(ALGORITHM);
         c.init(Cipher.DECRYPT_MODE, key);
         byte[] decodedValue = Base64.getDecoder().decode(encryptedValue);
