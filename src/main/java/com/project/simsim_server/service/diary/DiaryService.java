@@ -51,8 +51,9 @@ public class DiaryService {
             sendStatus = true;
         }
 
-        List<Diary> sendAbleDiaries = diaries.stream()
-                .filter(diary -> "Y".equals(diary.getSendAble()))
+        List<Diary> sendAbleDiaries = diaryRepository
+                .findAllByCreatedAtAndUserId(userId, targetDate)
+                .stream().filter(diary -> "Y".equals(diary.getSendAble()))
                 .collect(Collectors.toList());
         if (!sendAbleDiaries.isEmpty()) {
             sendStatus = false;
@@ -66,7 +67,6 @@ public class DiaryService {
                 .build();
     }
 
-    
     public List<DiaryCountResponseDTO> countDiariesByDate(String year, String month, Long userId) {
         YearMonth yearMonth = YearMonth.of(Integer.parseInt(year), Integer.parseInt(month));
         LocalDate startDate = yearMonth.atDay(1);
