@@ -194,6 +194,9 @@ public class AIService {
             throw new AIException(AIRESPONE_NOT_FOUND);
         }
 
+        // 모든 Diary의 isSendAble 상태를 false로 설정.
+        diaryRepository.findAllByCreatedAtAndUserId(user.getUserId(), targetDate).forEach(diary -> diary.setIsSendAble(false));
+
         DailyAiInfo saveData = dailyAiInfoRepository.save(DailyAiInfo.builder()
                 .userId(user.getUserId())
                 .targetDate(targetDate)
@@ -219,6 +222,7 @@ public class AIService {
                 .build());
 
         log.info("---[SimSimSchedule] 처리 완료 userId = {}", user.getUserId());
+        log.warn("---[SimSimStatus] targetDiaries[0].SendAble = {}", targetDiaries.getLast().getSendAble());
         return saveData;
     }
 

@@ -41,5 +41,9 @@ public interface DiaryRepository extends JpaRepository<Diary, Long> {
             "AND d.markedDate = :targetDate")
     List<Diary> findByCreatedAtAndUserId(Long userId, LocalDate targetDate);
 
+    @Query("SELECT d FROM Diary d WHERE d.userId = :userId " +
+            "AND d.markedDate = :targetDate")
+    List<Diary> findAllByCreatedAtAndUserId(Long userId, LocalDate targetDate);
+
     List<Diary> findByUserId(@Param("userId") Long userId);
 }

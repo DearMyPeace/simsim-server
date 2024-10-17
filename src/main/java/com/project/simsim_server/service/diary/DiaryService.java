@@ -15,6 +15,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+
+import java.util.stream.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
@@ -39,6 +41,7 @@ public class DiaryService {
         boolean sendStatus = false;
         List<Diary> diaries = diaryRepository
                 .findByCreatedAtAndUserId(userId, targetDate);
+
         List<DiaryResponseDTO> list = diaries.stream()
                 .map(DiaryResponseDTO::new)
                 .toList();
@@ -48,13 +51,22 @@ public class DiaryService {
             sendStatus = true;
         }
 
+        List<Diary> sendAbleDiaries = diaryRepository
+                .findAllByCreatedAtAndUserId(userId, targetDate)
+                .stream().filter(diary -> "Y".equals(diary.getSendAble()))
+                .collect(Collectors.toList());
+        if (!sendAbleDiaries.isEmpty()) {
+            sendStatus = false;
+        }
+
+        log.warn("!!!!!! sendStatus = {} !!!!!!", sendStatus);
+
         return DiaryDailyResponseDTO.builder()
                 .sendStatus(sendStatus)
                 .diaries(list)
                 .build();
     }
 
-    
     public List<DiaryCountResponseDTO> countDiariesByDate(String year, String month, Long userId) {
         YearMonth yearMonth = YearMonth.of(Integer.parseInt(year), Integer.parseInt(month));
         LocalDate startDate = yearMonth.atDay(1);

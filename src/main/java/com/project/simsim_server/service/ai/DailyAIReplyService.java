@@ -7,6 +7,7 @@ import com.project.simsim_server.dto.ai.client.AILetterResponseDTO;
 import com.project.simsim_server.dto.ai.client.DiarySummaryResponseDTO;
 import com.project.simsim_server.exception.ai.AIException;
 import com.project.simsim_server.repository.ai.DailyAiInfoRepository;
+import com.project.simsim_server.repository.diary.DiaryRepository;
 import com.project.simsim_server.repository.user.UsersRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +35,7 @@ public class DailyAIReplyService {
     private final AIService aiService;
     private final UsersRepository usersRepository;
     private final DailyAiInfoRepository dailyAiInfoRepository;
+    private final DiaryRepository diaryRepository;
 
 
     @Transactional
@@ -93,14 +95,17 @@ public class DailyAIReplyService {
             log.warn("---[SimSimINFO] AI 편지::기존 AI 데이터 ={}, userId = {}",
                     responseInfo.toString(), user.getUserId());
 
-            if (!responseInfo.isFirst()) {
-                log.warn("---[SimSimINFO] AI 편지::기존 AI 데이터는 안내문이 아니므로 저장된 데이터를 반환합니다. userId = {}",
-                        user.getUserId());
-                return new AILetterResponseDTO(responseInfo);
-            } else { // 기존에 생성된 데이터가 안내 편지면 더 이상 보이지 않게 함
+            if (responseInfo.isFirst()) {
                 aiInfo.getFirst().updateReplyStatus("F");
-//                dailyAiInfoRepository.save(responseInfo);
             }
+//            if (!responseInfo.isFirst()) {
+//                log.warn("---[SimSimINFO] AI 편지::기존 AI 데이터는 안내문이 아니므로 저장된 데이터를 반환합니다. userId = {}",
+//                        user.getUserId());
+//                return new AILetterResponseDTO(responseInfo);
+//            } else { // 기존에 생성된 데이터가 안내 편지면 더 이상 보이지 않게 함
+//                aiInfo.getFirst().updateReplyStatus("F");
+//                dailyAiInfoRepository.save(responseInfo);
+//            }
         }
 
 
@@ -113,12 +118,12 @@ public class DailyAIReplyService {
                 throw new AIException(AI_MAIL_FAIL);
             }
 
+
 //            //TODO 일반 등급이면서 분석 대상 날짜가 동일하면 예외 처리(동일 날짜가 아닌 12시간 이후로 수정 예정)
 //            if (user.getGrade() == Grade.GENERAL && !requestDTO.getTargetDate().atStartOfDay()
 //                .isBefore(LocalDateTime.of(LocalDate.now(), LocalTime.NOON))) {
 //                throw new AIException(NOT_MEET_USER_GRADE);
 //            }
-
             return new AILetterResponseDTO(dailyAiInfo);
         } catch (Exception e) {
             log.error("---[SimSimSchedule] 에러 처리 userId = {}", user.getUserId(), e);
