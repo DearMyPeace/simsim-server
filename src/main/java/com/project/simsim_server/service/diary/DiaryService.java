@@ -86,6 +86,7 @@ public class DiaryService {
 
         log.warn("들어온 날짜 : {}", diaryRequestDTO.getCreatedDate());
         log.warn("조회 날짜 : {}", diaryRequestDTO.getCreatedDate().plusHours(9));
+        log.warn("들어온 텍스트 : {}", diaryRequestDTO.getContent());
 
         List<Diary> todayDiaries
                 = diaryRepository.findByCreatedAtAndUserId(userId, targetDate);
