@@ -28,7 +28,7 @@ public class EncryptionUtil {
     //encode
     public String encrypt(String valueToEnc) throws Exception {
         Key key = generateKey(1);
-        log.warn("encrypt 상태: {}", this.key);
+        log.warn("encrypt 상태: {}, {}", this.key, valueToEnc);
         Cipher c = Cipher.getInstance(ALGORITHM);
         c.init(Cipher.ENCRYPT_MODE, key);
         byte[] encValue = c.doFinal(valueToEnc.getBytes());
@@ -39,7 +39,7 @@ public class EncryptionUtil {
     //decode
     public String decrypt(String encryptedValue) throws Exception {
         Key key = generateKey(2);
-        log.warn("decrypt 상태: {}", this.key);
+        log.warn("decrypt 상태: {}, {}", this.key, encryptedValue);
         Cipher c = Cipher.getInstance(ALGORITHM);
         c.init(Cipher.DECRYPT_MODE, key);
         byte[] decodedValue = Base64.getDecoder().decode(encryptedValue);
