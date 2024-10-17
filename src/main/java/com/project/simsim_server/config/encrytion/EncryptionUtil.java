@@ -28,7 +28,7 @@ public class EncryptionUtil {
 
     //encode
     public String encrypt(String valueToEnc) throws Exception {
-        Key key = generateKey();
+        Key key = generateKey(1);
         log.warn("encrypt 상태: {}", this.key);
         Cipher c = Cipher.getInstance(ALGORITHM);
         c.init(Cipher.ENCRYPT_MODE, key);
@@ -39,7 +39,7 @@ public class EncryptionUtil {
 
     //decode
     public String decrypt(String encryptedValue) throws Exception {
-        Key key = generateKey();
+        Key key = generateKey(2);
         log.warn("decrypt 상태: {}", this.key);
         Cipher c = Cipher.getInstance(ALGORITHM);
         c.init(Cipher.DECRYPT_MODE, key);
@@ -49,9 +49,8 @@ public class EncryptionUtil {
         return new String(decValue);
     }
 
-    private Key generateKey() {
-        log.warn("generateKey()의 key 상태 = {}", key);
-        log.warn("generateKey()의 this.key 상태 = {}", this.key);
+    private Key generateKey(int num) {
+        log.warn("{}, generateKey()의 this.key 상태 = {}", num, this.key);
         return new SecretKeySpec(key.getBytes(), ALGORITHM);
     }
 
