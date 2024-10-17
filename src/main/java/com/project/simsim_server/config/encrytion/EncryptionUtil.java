@@ -1,5 +1,6 @@
 package com.project.simsim_server.config.encrytion;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -8,7 +9,9 @@ import javax.crypto.spec.SecretKeySpec;
 import java.security.Key;
 import java.util.Base64;
 
+import static org.hibernate.query.sqm.tree.SqmNode.log;
 
+@Slf4j
 @Component
 public class EncryptionUtil {
 
@@ -19,6 +22,7 @@ public class EncryptionUtil {
     //encode
     public String encrypt(String valueToEnc) throws Exception {
         Key key = generateKey();
+        log.warn("encrypt 상태: {}", key);
         Cipher c = Cipher.getInstance(ALGORITHM);
         c.init(Cipher.ENCRYPT_MODE, key);
         byte[] encValue = c.doFinal(valueToEnc.getBytes());
@@ -29,6 +33,7 @@ public class EncryptionUtil {
     //decode
     public String decrypt(String encryptedValue) throws Exception {
         Key key = generateKey();
+        log.warn("decrypt 상태: {}", key);
         Cipher c = Cipher.getInstance(ALGORITHM);
         c.init(Cipher.DECRYPT_MODE, key);
         byte[] decodedValue = Base64.getDecoder().decode(encryptedValue);
