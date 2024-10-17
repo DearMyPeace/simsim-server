@@ -16,6 +16,7 @@ public class EncryptionUtil {
 
     @Value("${spring.jwt.key2}")
     private String key;
+    private Key secureKey;
     private static final String ALGORITHM = "AES";
 
     // 사전 확인용 메소드
@@ -23,25 +24,25 @@ public class EncryptionUtil {
     public void init() {
         log.warn("------[SimSimInfo] Key 값: {}, 길이: {}-----", this.key, this.key.length());
         log.warn("------[SimSimInfo] Key 바이트 배열 길이: {}-----", this.key.getBytes().length);
+        secureKey = generateKey(0);
     }
 
     //encode
     public String encrypt(String valueToEnc) throws Exception {
-        Key key = generateKey(1);
+//        Key key = generateKey(1);
         log.warn("encrypt 상태: {}, {}", this.key, valueToEnc);
         Cipher c = Cipher.getInstance(ALGORITHM);
-        c.init(Cipher.ENCRYPT_MODE, key);
+        c.init(Cipher.ENCRYPT_MODE, secureKey);
         byte[] encValue = c.doFinal(valueToEnc.getBytes());
-
         return Base64.getEncoder().encodeToString(encValue);
     }
 
     //decode
     public String decrypt(String encryptedValue) throws Exception {
-        Key key = generateKey(2);
+//        Key key = generateKey(2);
         log.warn("decrypt 상태: {}, {}", this.key, encryptedValue);
         Cipher c = Cipher.getInstance(ALGORITHM);
-        c.init(Cipher.DECRYPT_MODE, key);
+        c.init(Cipher.DECRYPT_MODE, secureKey);
         byte[] decodedValue = Base64.getDecoder().decode(encryptedValue);
         byte[] decValue = c.doFinal(decodedValue);
 
