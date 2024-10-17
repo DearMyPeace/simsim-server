@@ -10,8 +10,6 @@ import javax.crypto.spec.SecretKeySpec;
 import java.security.Key;
 import java.util.Base64;
 
-import static org.hibernate.query.sqm.tree.SqmNode.log;
-
 @Slf4j
 @Component
 public class EncryptionUtil {
@@ -23,7 +21,8 @@ public class EncryptionUtil {
     // 사전 확인용 메소드
     @PostConstruct
     public void init() {
-        log.warn("Key 값: {}", this.key);
+        log.warn("------[SimSimInfo] Key 값: {}, 길이: {}-----", this.key, this.key.length());
+        log.warn("------[SimSimInfo] Key 바이트 배열 길이: {}-----", this.key.getBytes().length);
     }
 
     //encode
