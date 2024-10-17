@@ -57,6 +57,7 @@ public class DiaryService {
         if (aireply.size() == 1 && !aireply.getFirst().isFirst() || aireply.size() >= 2) {
             sendStatus = true;
         }
+        log.warn("!!!!!! sendStatus = {} !!!!!!", sendStatus);
 
         return DiaryDailyResponseDTO.builder()
                 .sendStatus(sendStatus)
