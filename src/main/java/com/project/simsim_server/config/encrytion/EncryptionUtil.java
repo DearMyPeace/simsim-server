@@ -23,13 +23,13 @@ public class EncryptionUtil {
     // 사전 확인용 메소드
     @PostConstruct
     public void init() {
-        log.warn("Key 값: {}", key);
+        log.warn("Key 값: {}", this.key);
     }
 
     //encode
     public String encrypt(String valueToEnc) throws Exception {
         Key key = generateKey();
-        log.warn("encrypt 상태: {}", key);
+        log.warn("encrypt 상태: {}", this.key);
         Cipher c = Cipher.getInstance(ALGORITHM);
         c.init(Cipher.ENCRYPT_MODE, key);
         byte[] encValue = c.doFinal(valueToEnc.getBytes());
@@ -40,7 +40,7 @@ public class EncryptionUtil {
     //decode
     public String decrypt(String encryptedValue) throws Exception {
         Key key = generateKey();
-        log.warn("decrypt 상태: {}", key);
+        log.warn("decrypt 상태: {}", this.key);
         Cipher c = Cipher.getInstance(ALGORITHM);
         c.init(Cipher.DECRYPT_MODE, key);
         byte[] decodedValue = Base64.getDecoder().decode(encryptedValue);
