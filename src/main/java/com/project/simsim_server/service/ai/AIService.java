@@ -195,7 +195,7 @@ public class AIService {
         }
 
         // 모든 Diary의 isSendAble 상태를 false로 설정.
-        targetDiaries.forEach(diary -> diary.setIsSendAble(false));
+        diaryRepository.findAllByCreatedAtAndUserId(user.getUserId(), targetDate).forEach(diary -> diary.setIsSendAble(false));
 
         DailyAiInfo saveData = dailyAiInfoRepository.save(DailyAiInfo.builder()
                 .userId(user.getUserId())
