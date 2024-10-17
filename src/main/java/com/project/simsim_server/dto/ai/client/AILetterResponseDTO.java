@@ -31,7 +31,7 @@ public class AILetterResponseDTO {
                 this.content = aiEntity.getReplyContent();
             }
         } catch (Exception e) {
-            log.error("---[SimSimInfo] 복호화에 실패했습니다 {}", aiEntity.getAiId());
+            log.error("---[SimSimInfo] 복호화에 실패했습니다 Id = {}", aiEntity.getAiId());
             throw new RuntimeException("클라이언트 응답 복호화 실패", e);
         }
         this.replyStatus = aiEntity.getReplyStatus();

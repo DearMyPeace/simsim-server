@@ -59,8 +59,6 @@ public class DiaryService {
             sendStatus = false;
         }
 
-        log.warn("!!!!!! sendStatus = {} !!!!!!", sendStatus);
-
         return DiaryDailyResponseDTO.builder()
                 .sendStatus(sendStatus)
                 .diaries(list)
@@ -86,12 +84,9 @@ public class DiaryService {
 
         log.warn("들어온 날짜 : {}", diaryRequestDTO.getCreatedDate());
         log.warn("조회 날짜 : {}", diaryRequestDTO.getCreatedDate().plusHours(9));
-        log.warn("들어온 텍스트 : {}", diaryRequestDTO.getContent());
 
         List<Diary> todayDiaries
                 = diaryRepository.findByCreatedAtAndUserId(userId, targetDate);
-
-
 
         if (todayDiaries.size() == MAX_DIARIES_PER_DAY) {
             log.error("---[SimSimInfo] 일기가 제한 갯수를 초과함 userId : {}, targetDate : {}",
