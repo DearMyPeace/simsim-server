@@ -1,5 +1,6 @@
 package com.project.simsim_server.config.encrytion;
 
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -18,6 +19,12 @@ public class EncryptionUtil {
     @Value("${spring.jwt.key2}")
     private String key;
     private static final String ALGORITHM = "AES";
+
+    // 사전 확인용 메소드
+    @PostConstruct
+    public void init() {
+        log.warn("Key 값: {}", key);
+    }
 
     //encode
     public String encrypt(String valueToEnc) throws Exception {
