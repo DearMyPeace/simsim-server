@@ -46,7 +46,7 @@ public class DiaryService {
                 .filter(diary -> "Y".equals(diary.getSendAble()))
                 .collect(Collectors.toList());
         if (!sendAbleDiaries.isEmpty()) {
-            sendStatus = true;
+            sendStatus = false;
         }
 
         List<DiaryResponseDTO> list = diaries.stream()
