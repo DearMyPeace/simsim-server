@@ -47,7 +47,8 @@ public class Diary {
     private LocalDateTime modifiedDate;
 
     @Column(name = "is_send_able", nullable = false)
-    private boolean isSendAble;
+    @ColumnDefault("'N'")
+    private String SendAble;
 
     @Builder
     public Diary(Long userId, String content, LocalDateTime createdDate, LocalDateTime modifiedDate) {
@@ -58,24 +59,24 @@ public class Diary {
         this.markedDate = toLocalDate(createdDate, ZoneId.of("Asia/Seoul"));
         this.createdDate = createdDate;
         this.modifiedDate = modifiedDate;
-        this.isSendAble = false;
+        this.SendAble = "N";
     }
 
     public Diary update(String content, LocalDateTime modifiedDate) {
         this.content = content;
         this.modifiedDate = modifiedDate;
-        this.isSendAble = true;
+        this.SendAble = "Y";
         return this;
     }
 
     public void delete() {
         this.diaryDeleteYn = "Y";
         this.modifiedDate = LocalDateTime.now();
-        this.isSendAble = true;
+        this.SendAble = "Y";
     }
 
     public void setIsSendAble(boolean status) {
-        this.isSendAble = status;
+        this.SendAble = status ? "Y" : "N";
     }
 
     private LocalDate toLocalDate(LocalDateTime localDateTime, ZoneId zoneId) {

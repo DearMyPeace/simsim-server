@@ -42,7 +42,9 @@ public class DiaryService {
         List<Diary> diaries = diaryRepository
                 .findByCreatedAtAndUserId(userId, targetDate);
 
-        List<Diary> sendAbleDiaries = diaries.stream().filter(Diary::isSendAble).collect(Collectors.toList());
+        List<Diary> sendAbleDiaries = diaries.stream()
+                .filter(diary -> "Y".equals(diary.getSendAble()))
+                .collect(Collectors.toList());
         if (!sendAbleDiaries.isEmpty()) {
             sendStatus = true;
         }
