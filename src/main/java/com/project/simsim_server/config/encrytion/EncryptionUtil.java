@@ -50,6 +50,8 @@ public class EncryptionUtil {
     }
 
     private Key generateKey() {
+        log.warn("generateKey()의 key 상태 = {}", key);
+        log.warn("generateKey()의 this.key 상태 = {}", this.key);
         return new SecretKeySpec(key.getBytes(), ALGORITHM);
     }
 
