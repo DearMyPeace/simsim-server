@@ -222,6 +222,7 @@ public class AIService {
                 .build());
 
         log.info("---[SimSimSchedule] 처리 완료 userId = {}", user.getUserId());
+        log.warn("---[SimSimStatus] targetDiaries[0].SendAble = {}", targetDiaries.getLast().getSendAble());
         return saveData;
     }
 
