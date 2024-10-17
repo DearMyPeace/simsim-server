@@ -47,7 +47,7 @@ public class Diary {
     private LocalDateTime modifiedDate;
 
     @Column(name = "is_send_able", nullable = false)
-    @ColumnDefault("'N'")
+    @ColumnDefault("'Y'")
     private String sendAble;
 
     @Builder
@@ -59,7 +59,7 @@ public class Diary {
         this.markedDate = toLocalDate(createdDate, ZoneId.of("Asia/Seoul"));
         this.createdDate = createdDate;
         this.modifiedDate = modifiedDate;
-        this.sendAble = "N";
+        this.sendAble = "Y";
     }
 
     public Diary update(String content, LocalDateTime modifiedDate) {
