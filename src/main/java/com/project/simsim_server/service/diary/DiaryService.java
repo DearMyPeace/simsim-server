@@ -42,13 +42,6 @@ public class DiaryService {
         List<Diary> diaries = diaryRepository
                 .findByCreatedAtAndUserId(userId, targetDate);
 
-        List<Diary> sendAbleDiaries = diaries.stream()
-                .filter(diary -> "Y".equals(diary.getSendAble()))
-                .collect(Collectors.toList());
-        if (!sendAbleDiaries.isEmpty()) {
-            sendStatus = false;
-        }
-
         List<DiaryResponseDTO> list = diaries.stream()
                 .map(DiaryResponseDTO::new)
                 .toList();
@@ -57,6 +50,14 @@ public class DiaryService {
         if (aireply.size() == 1 && !aireply.getFirst().isFirst() || aireply.size() >= 2) {
             sendStatus = true;
         }
+
+        List<Diary> sendAbleDiaries = diaries.stream()
+                .filter(diary -> "Y".equals(diary.getSendAble()))
+                .collect(Collectors.toList());
+        if (!sendAbleDiaries.isEmpty()) {
+            sendStatus = false;
+        }
+
         log.warn("!!!!!! sendStatus = {} !!!!!!", sendStatus);
 
         return DiaryDailyResponseDTO.builder()
