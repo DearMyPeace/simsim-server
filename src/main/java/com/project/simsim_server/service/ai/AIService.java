@@ -39,8 +39,8 @@ public class AIService {
     private final DiaryRepository diaryRepository;
     private final String AI_LETTER_URL = "http://127.0.0.1:8000/ai/v1/letter";
     private final String AI_EMOTION_URL = "http://127.0.0.1:8000/ai/v1/emotion";
+    private final String AI_KEYWORDS_URL = "http://127.0.0.1:8000/ai/v1/keywords";
     private final String AI_SUMMARY_URL = "http://127.0.0.1:8000/ai/v1/summary";
-
 
     /**
      * 1. AI 요청용 DTO 생성
@@ -165,6 +165,27 @@ public class AIService {
         return emotions;
     }
 
+    /**
+     * 5. 키워드 API 호출
+     * @param user
+     * @return
+     */
+    public DailyAiKeywordsResponseDTO requestKeywords (Users user, DailyAiLetterRequestDTO requestData) {
+        ResponseEntity<DailyAiKeywordsResponseDTO> response
+                = restTemplate.postForEntity(AI_KEYWORDS_URL, requestData, DailyAiKeywordsResponseDTO.class);
+        if (response.getStatusCode() != HttpStatus.OK) {
+            log.error("---[SimSimSchedule] requestKeywords AI 응답 실패 userId = {}", user.getUserId());
+            return null;
+        }
+
+        log.warn("---[SimSimSchedule] requestKeywords AI 응답 내용 {},  userId = {}", response.getBody(), user.getUserId());
+        DailyAiKeywordsResponseDTO keywords = response.getBody();
+        if (keywords == null) {
+            log.error("---[SimSimSchedule] requestKeywords AI 응답 내용 없음 userId = {}", user.getUserId());
+            return null;
+        }
+        return keywords;
+    }
 
     /**
      * AI 응답에 DB 저장 처리
@@ -189,8 +210,10 @@ public class AIService {
         // AI 요청
         String letter = requestLetter(user, requestData); // AI_LETTER_URL 호출
         DailyAiEmotionResponseDTO emotions = requestEmotion(user, requestData); //AI_EMONTION_URL 호출
+        // DailyAiKeywordsResponseDTO keywords = requestKeywords(user, requestData); //AI_EMONTION_URL 호출
+
         String summary = requestDiarySummary(user, requestData); // AI_SUMMARY_URL 호출
-        if (letter == null || emotions == null || summary == null) {
+        if (letter == null || emotions == null /*|| keywords == null*/ || summary == null) {
             throw new AIException(AIRESPONE_NOT_FOUND);
         }
 
