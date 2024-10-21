@@ -9,6 +9,7 @@ import com.project.simsim_server.dto.diary.DiaryResponseDTO;
 import com.project.simsim_server.exception.dairy.DiaryException;
 import com.project.simsim_server.repository.ai.DailyAiInfoRepository;
 import com.project.simsim_server.repository.diary.DiaryRepository;
+import com.project.simsim_server.service.util.MarkdownEscapeService;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +37,7 @@ public class DiaryService {
     private final int MAX_DIARIES_PER_DAY = 3;
     private final DiaryRepository diaryRepository;
     private final DailyAiInfoRepository dailyAiInfoRepository;
+    private final MarkdownEscapeService markdownEscapeService;
 
     public DiaryDailyResponseDTO findByCreatedDate(LocalDate targetDate, Long userId) {
         boolean sendStatus = false;
@@ -94,6 +96,10 @@ public class DiaryService {
             throw new DiaryException(LIMIT_EXCEEDED);
         }
         diaryRequestDTO.setUserId(userId);
+
+        log.info("---[SimSimInfo] 원본 일기 내용 content : {}", diaryRequestDTO.getContent());
+        diaryRequestDTO.setContent(markdownEscapeService.escapeMarkdown(diaryRequestDTO.getContent()));
+        log.info("---[SimSimInfo] 에스케이핑 일기 내용 content : {}", diaryRequestDTO.getContent());
         return new DiaryResponseDTO(diaryRepository.save(diaryRequestDTO.toEntity()));
     }
 
