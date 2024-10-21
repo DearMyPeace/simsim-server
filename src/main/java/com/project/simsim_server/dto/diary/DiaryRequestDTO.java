@@ -11,11 +11,12 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
-@Setter
+
 @Getter
 @NoArgsConstructor
 public class DiaryRequestDTO {
 
+    @Setter
     private Long userId;
     private String content;
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'")
