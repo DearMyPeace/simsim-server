@@ -107,7 +107,7 @@ public class DiaryService {
         Diary result = diaryRepository.findByIdAndUserId(diaryId, userId)
                 .orElseThrow(() -> new DiaryException(DIARY_NOT_FOUND));
 
-        log.info("------[SimSimInfo] 일기 수정 시각 : {} {} ----------------", diaryRequestDTO.getModifiedDate(), toLocalDate(diaryRequestDTO.getModifiedDate(), ZoneId.of("KST")));
+        log.info("------[SimSimInfo] 일기 수정 시각 : {} ----------------", diaryRequestDTO.getModifiedDate());
 
         Diary updateDiary = result.update(diaryRequestDTO.getContent(), diaryRequestDTO.getModifiedDate());
         return new DiaryResponseDTO(updateDiary);
