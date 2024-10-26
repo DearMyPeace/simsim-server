@@ -123,8 +123,4 @@ public class DiaryService {
 
         log.info("------[SimSimInfo] 일기 삭제 시각 : {} ----------------", result.getModifiedDate());
     }
-
-    private LocalDate toLocalDate(LocalDateTime localDateTime, ZoneId zoneId) {
-        return localDateTime.atZone(zoneId).toLocalDate();
-    }
 }
