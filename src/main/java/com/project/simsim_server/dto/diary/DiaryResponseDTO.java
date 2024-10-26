@@ -43,6 +43,9 @@ public class DiaryResponseDTO {
         this.markedDate = diaryEntity.getMarkedDate();
         this.createdDate = convertToUTC(diaryEntity.getCreatedDate());
         this.modifiedDate = convertToUTC(diaryEntity.getModifiedDate());
+
+        log.info("------[SimSimInfo] Response 일기 생성 시각 : {} ----------------", this.createdDate);
+        log.info("------[SimSimInfo] Response 일기 삭제 시각 : {} ----------------", this.modifiedDate);
     }
 
     private String convertToUTC(LocalDateTime localDateTime) {

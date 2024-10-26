@@ -107,6 +107,8 @@ public class DiaryService {
         Diary result = diaryRepository.findByIdAndUserId(diaryId, userId)
                 .orElseThrow(() -> new DiaryException(DIARY_NOT_FOUND));
 
+        log.info("------[SimSimInfo] 일기 수정 시각 : {} ----------------", diaryRequestDTO.getModifiedDate());
+
         Diary updateDiary = result.update(diaryRequestDTO.getContent(), diaryRequestDTO.getModifiedDate());
         return new DiaryResponseDTO(updateDiary);
     }
@@ -118,6 +120,8 @@ public class DiaryService {
                 .orElseThrow(() ->
                         new IllegalArgumentException("해당 일기가 존재하지 않습니다. 일기번호 : " + diaryId));
         result.delete();
+
+        log.info("------[SimSimInfo] 일기 삭제 시각 : {} ----------------", result.getModifiedDate());
     }
 
     private LocalDate toLocalDate(LocalDateTime localDateTime, ZoneId zoneId) {
