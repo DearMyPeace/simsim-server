@@ -43,9 +43,6 @@ public class DiaryResponseDTO {
         this.markedDate = diaryEntity.getMarkedDate();
         this.createdDate = convertToKST(diaryEntity.getCreatedDate());
         this.modifiedDate = convertToKST(diaryEntity.getModifiedDate());
-
-        log.info("------[SimSimInfo] Response 일기 생성 시각 : {} ----------------", this.createdDate);
-        log.info("------[SimSimInfo] Response 일기 수정 시각 : {} ----------------", this.modifiedDate);
     }
 
     private String convertToKST(LocalDateTime utcDateTime) {
