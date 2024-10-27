@@ -42,8 +42,7 @@ public class DiaryResponseDTO {
         this.deleteYn = diaryEntity.getDiaryDeleteYn();
         this.markedDate = diaryEntity.getMarkedDate();
         this.createdDate = convertToUTC(diaryEntity.getCreatedDate());
-        this.modifiedDate = String.valueOf(diaryEntity.getModifiedDate());
-//        this.modifiedDate = convertToUTC(diaryEntity.getModifiedDate());
+        this.modifiedDate = convertToUTC(diaryEntity.getModifiedDate());
 
         log.info("------[SimSimInfo] Response 일기 생성 시각 : {} ----------------", this.createdDate);
         log.info("------[SimSimInfo] Response 일기 수정 시각 : {} ----------------", this.modifiedDate);
