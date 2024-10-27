@@ -90,8 +90,6 @@ public class DiaryService {
         List<Diary> todayDiaries
                 = diaryRepository.findByCreatedAtAndUserId(userId, targetDate);
 
-
-
         if (todayDiaries.size() == MAX_DIARIES_PER_DAY) {
             log.error("---[SimSimInfo] 일기가 제한 갯수를 초과함 userId : {}, targetDate : {}",
                     userId, targetDate);
@@ -107,7 +105,7 @@ public class DiaryService {
         Diary result = diaryRepository.findByIdAndUserId(diaryId, userId)
                 .orElseThrow(() -> new DiaryException(DIARY_NOT_FOUND));
 
-        log.info("------[SimSimInfo] 일기 수정 시각 : {} ----------------", diaryRequestDTO.getModifiedDate());
+        log.info("---[SimSimInfo] 일기 수정 시각 : {} ---", diaryRequestDTO.getModifiedDate());
 
         Diary updateDiary = result.update(diaryRequestDTO.getContent(), diaryRequestDTO.getModifiedDate());
         return new DiaryResponseDTO(updateDiary);
@@ -121,6 +119,6 @@ public class DiaryService {
                         new IllegalArgumentException("해당 일기가 존재하지 않습니다. 일기번호 : " + diaryId));
         result.delete();
 
-        log.info("------[SimSimInfo] 일기 삭제 시각 : {} ----------------", result.getModifiedDate());
+        log.info("--- [SimSimInfo] 일기 삭제 시각 : {} ---", result.getModifiedDate());
     }
 }

@@ -49,6 +49,9 @@ public class DiaryResponseDTO {
     }
 
     private String convertToUTC(LocalDateTime localDateTime) {
+        if (ZoneId.systemDefault().equals(ZoneId.of("UTC"))) {
+            return localDateTime.format(DateTimeFormatter.ISO_INSTANT);
+        }
         ZonedDateTime zonedDateTime = ZonedDateTime.of(localDateTime, ZoneId.systemDefault()).withZoneSameInstant(ZoneId.of("UTC"));
         return zonedDateTime.format(DateTimeFormatter.ISO_INSTANT);
     }
