@@ -41,18 +41,16 @@ public class DiaryResponseDTO {
         }
         this.deleteYn = diaryEntity.getDiaryDeleteYn();
         this.markedDate = diaryEntity.getMarkedDate();
-        this.createdDate = convertToUTC(diaryEntity.getCreatedDate());
-        this.modifiedDate = convertToUTC(diaryEntity.getModifiedDate());
+        this.createdDate = convertToKST(diaryEntity.getCreatedDate());
+        this.modifiedDate = convertToKST(diaryEntity.getModifiedDate());
 
         log.info("------[SimSimInfo] Response 일기 생성 시각 : {} ----------------", this.createdDate);
         log.info("------[SimSimInfo] Response 일기 수정 시각 : {} ----------------", this.modifiedDate);
     }
 
-    private String convertToUTC(LocalDateTime localDateTime) {
-        if (ZoneId.systemDefault().equals(ZoneId.of("UTC"))) {
-            return localDateTime.format(DateTimeFormatter.ISO_INSTANT);
-        }
-        ZonedDateTime zonedDateTime = ZonedDateTime.of(localDateTime, ZoneId.systemDefault()).withZoneSameInstant(ZoneId.of("UTC"));
-        return zonedDateTime.format(DateTimeFormatter.ISO_INSTANT);
+    private String convertToKST(LocalDateTime utcDateTime) {
+        ZonedDateTime kstDateTime = ZonedDateTime.of(utcDateTime, ZoneId.of("UTC"))
+                .withZoneSameInstant(ZoneId.of("Asia/Seoul"));
+        return kstDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS"));
     }
 }
