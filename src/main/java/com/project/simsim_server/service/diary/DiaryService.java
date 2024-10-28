@@ -59,8 +59,6 @@ public class DiaryService {
             sendStatus = false;
         }
 
-        log.warn("!!!!!! sendStatus = {} !!!!!!", sendStatus);
-
         return DiaryDailyResponseDTO.builder()
                 .sendStatus(sendStatus)
                 .diaries(list)
@@ -84,13 +82,8 @@ public class DiaryService {
     public DiaryResponseDTO save(DiaryRequestDTO diaryRequestDTO, Long userId) {
         LocalDate targetDate = LocalDate.from(diaryRequestDTO.getCreatedDate().plusHours(9));
 
-        log.warn("들어온 날짜 : {}", diaryRequestDTO.getCreatedDate());
-        log.warn("조회 날짜 : {}", diaryRequestDTO.getCreatedDate().plusHours(9));
-
         List<Diary> todayDiaries
                 = diaryRepository.findByCreatedAtAndUserId(userId, targetDate);
-
-
 
         if (todayDiaries.size() == MAX_DIARIES_PER_DAY) {
             log.error("---[SimSimInfo] 일기가 제한 갯수를 초과함 userId : {}, targetDate : {}",
@@ -118,9 +111,5 @@ public class DiaryService {
                 .orElseThrow(() ->
                         new IllegalArgumentException("해당 일기가 존재하지 않습니다. 일기번호 : " + diaryId));
         result.delete();
-    }
-
-    private LocalDate toLocalDate(LocalDateTime localDateTime, ZoneId zoneId) {
-        return localDateTime.atZone(zoneId).toLocalDate();
     }
 }

@@ -41,12 +41,13 @@ public class DiaryResponseDTO {
         }
         this.deleteYn = diaryEntity.getDiaryDeleteYn();
         this.markedDate = diaryEntity.getMarkedDate();
-        this.createdDate = convertToUTC(diaryEntity.getCreatedDate());
-        this.modifiedDate = convertToUTC(diaryEntity.getModifiedDate());
+        this.createdDate = convertToKST(diaryEntity.getCreatedDate());
+        this.modifiedDate = convertToKST(diaryEntity.getModifiedDate());
     }
 
-    private String convertToUTC(LocalDateTime localDateTime) {
-        ZonedDateTime zonedDateTime = ZonedDateTime.of(localDateTime, ZoneId.systemDefault()).withZoneSameInstant(ZoneId.of("UTC"));
-        return zonedDateTime.format(DateTimeFormatter.ISO_INSTANT);
+    private String convertToKST(LocalDateTime utcDateTime) {
+        ZonedDateTime kstDateTime = ZonedDateTime.of(utcDateTime, ZoneId.of("UTC"))
+                .withZoneSameInstant(ZoneId.of("Asia/Seoul"));
+        return kstDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS"));
     }
 }
