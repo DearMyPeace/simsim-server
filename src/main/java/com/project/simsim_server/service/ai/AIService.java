@@ -144,21 +144,21 @@ public class AIService {
      * @return
      */
     public String requestKeywords (Users user, DailyAiLetterRequestDTO requestData) {
-        ResponseEntity<String> response
-                = restTemplate.postForEntity(AI_KEYWORDS_URL, requestData, String.class);
+        ResponseEntity<DailyAiKeywordsResponseDTO> response
+                = restTemplate.postForEntity(AI_KEYWORDS_URL, requestData, DailyAiKeywordsResponseDTO.class);
         if (response.getStatusCode() != HttpStatus.OK) {
             log.error("---[SimSimSchedule] requestKeywords AI 응답 실패 userId = {}", user.getUserId());
             return null;
         }
 
-        String keywords = response.getBody();
-        log.warn("---[SimSimSchedule] requestKeywords AI 응답 내용 {},  userId = {}", response.getBody().toString(), user.getUserId());
+        DailyAiKeywordsResponseDTO keywords = response.getBody();
+        log.warn("---[SimSimSchedule] requestKeywords AI 응답 내용 {},  userId = {}", response.getBody(), user.getUserId());
 
         if (keywords == null) {
             log.error("---[SimSimSchedule] requestKeywords AI 응답 내용 없음 userId = {}", user.getUserId());
             return null;
         }
-        return keywords;
+        return keywords.getResult();
     }
 
     /**
