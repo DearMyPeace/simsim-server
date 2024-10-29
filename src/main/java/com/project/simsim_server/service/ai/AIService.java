@@ -152,7 +152,7 @@ public class AIService {
         }
 
         DailyAiKeywordsResponseDTO keywords = response.getBody();
-        log.warn("---[SimSimSchedule] requestKeywords AI 응답 내용 {},  userId = {}", response.getBody(), user.getUserId());
+        log.warn("---[SimSimSchedule] requestKeywords AI 응답 내용 {},  userId = {}", response.getBody().toString(), user.getUserId());
 
         if (keywords == null || keywords.getResult().isEmpty()) {
             log.error("---[SimSimSchedule] requestKeywords AI 응답 내용 없음 userId = {}", user.getUserId());
