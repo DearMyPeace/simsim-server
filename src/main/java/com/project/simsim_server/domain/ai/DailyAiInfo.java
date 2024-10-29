@@ -48,6 +48,63 @@ public class DailyAiInfo extends BaseTimeEntity {
     @Column(name = "ai_keyword_data", columnDefinition = "json")
     private String keywordData;
 
+    @Column(name = "ai_happy_cnt", nullable = false)
+    @ColumnDefault("0")
+    private int happyCnt;
+
+    @Column(name = "ai_appreciation_cnt", nullable = false)
+    @ColumnDefault("0")
+    private int appreciationCnt;
+
+    @Column(name = "ai_love_cnt", nullable = false)
+    @ColumnDefault("0")
+    private int loveCnt;
+
+    @Column(name = "ai_analyze_positive")
+    private String analyzePositive;
+
+    @Column(name = "ai_analyze_positive_total", nullable = false)
+    @ColumnDefault("0")
+    private int analyzePositiveTotal;
+
+    @Column(name = "ai_tranquility_cnt", nullable = false)
+    @ColumnDefault("0")
+    private int tranquilityCnt;
+
+    @Column(name = "ai_curiosity_cnt", nullable = false)
+    @ColumnDefault("0")
+    private int curiosityCnt;
+
+    @Column(name = "ai_surprise_cnt", nullable = false)
+    @ColumnDefault("0")
+    private int surpriseCnt;
+
+    @Column(name = "ai_analyze_neutral")
+    private String analyzeNeutral;
+
+    @Column(name = "ai_analyze_neutral_total", nullable = false)
+    @ColumnDefault("0")
+    private int analyzeNeutralTotal;
+
+    @Column(name = "ai_sad_cnt", nullable = false)
+    @ColumnDefault("0")
+    private int sadCnt;
+
+    @Column(name = "ai_angry_cnt", nullable = false)
+    @ColumnDefault("0")
+    private int angryCnt;
+
+    @Column(name = "ai_fear_cnt", nullable = false)
+    @ColumnDefault("0")
+    private int fearCnt;
+
+    @Column(name = "ai_analyze_negative")
+    private String analyzeNegative;
+
+    @Column(name = "ai_analyze_negative_total", nullable = false)
+    @ColumnDefault("0")
+    private int analyzeNegativeTotal;
+
     @Builder
     public DailyAiInfo(Long userId, LocalDate targetDate, String diarySummary,
             String replyContent, String replyStatus, boolean isFirst, String keywordData) {

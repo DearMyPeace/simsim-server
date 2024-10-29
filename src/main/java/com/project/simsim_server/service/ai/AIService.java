@@ -38,7 +38,6 @@ public class AIService {
     private final DailyAiInfoRepository dailyAiInfoRepository;
     private final DiaryRepository diaryRepository;
     private final String AI_LETTER_URL = "http://127.0.0.1:8000/ai/v1/letter";
-    private final String AI_EMOTION_URL = "http://127.0.0.1:8000/ai/v1/emotion";
     private final String AI_KEYWORDS_URL = "http://127.0.0.1:8000/ai/v1/keywords";
     private final String AI_SUMMARY_URL = "http://127.0.0.1:8000/ai/v1/summary";
 
@@ -52,7 +51,6 @@ public class AIService {
     public DailyAiLetterRequestDTO generateRequestData(Users user, LocalDate targetDate, List<Diary> targetDiaries) {
         // 페르소나 정보
         String persona = user.getPersona();
-        log.warn("----[분석할 페르소나] {} : {}", user.getEmail(), user.getPersona());
 
         // 14일~2일전 일기 요약 정보
         LocalDate startDate = targetDate.minusDays(14);
@@ -140,29 +138,6 @@ public class AIService {
 
 
     /**
-     * 4. 감정 분석 API 호출
-     * @param user
-     * @return
-     */
-    public DailyAiEmotionResponseDTO requestEmotion(Users user, DailyAiLetterRequestDTO requestData) {
-        ResponseEntity<DailyAiEmotionResponseDTO> response
-                = restTemplate.postForEntity(AI_EMOTION_URL, requestData, DailyAiEmotionResponseDTO.class);
-        if (response.getStatusCode() != HttpStatus.OK) {
-            log.error("---[SimSimSchedule] requestEmotion AI 응답 실패 userId = {}", user.getUserId());
-            return null;
-        }
-
-        log.warn("---[SimSimSchedule] requestEmotion AI 응답 내용 {},  userId = {}", response.getBody(), user.getUserId());
-        DailyAiEmotionResponseDTO emotions = response.getBody();
-        if (emotions == null || emotions.getPositive() == null
-                || emotions.getNegative() == null || emotions.getNeutral() == null) {
-            log.error("---[SimSimSchedule] requestEmotion AI 응답 내용 없음 userId = {}", user.getUserId());
-            return null;
-        }
-        return emotions;
-    }
-
-    /**
      * 5. 키워드 API 호출
      * @param user
      * @return
@@ -227,8 +202,6 @@ public class AIService {
                 .isFirst(false)
                 .build());
 
-        log.info("---[SimSimSchedule] 처리 완료 userId = {}", user.getUserId());
-        log.warn("---[SimSimStatus] targetDiaries[0].SendAble = {}", targetDiaries.getLast().getSendAble());
         return saveData;
     }
 }
