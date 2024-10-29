@@ -115,6 +115,22 @@ public class DailyAiInfo extends BaseTimeEntity {
         this.replyStatus = replyStatus;
         this.isFirst = isFirst;
         this.keywordData = keywordData;
+
+        this.happyCnt = 0;
+        this.appreciationCnt = 0;
+        this.loveCnt = 0;
+        this.analyzePositive = "";
+        this.analyzePositiveTotal = 0;
+        this.tranquilityCnt = 0;
+        this.curiosityCnt = 0;
+        this.surpriseCnt = 0;
+        this.analyzeNeutral = "";
+        this.analyzeNeutralTotal = 0;
+        this.sadCnt = 0;
+        this.angryCnt = 0;
+        this.fearCnt = 0;
+        this.analyzeNegative = "";
+        this.analyzeNegativeTotal = 0;
     }
 
     public DailyAiInfo updateAiResult(String diarySummary, String replyContent, String keywordData) {
