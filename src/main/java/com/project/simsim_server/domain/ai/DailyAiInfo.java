@@ -10,6 +10,7 @@ import lombok.ToString;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.LocalDate;
+import java.util.Map;
 
 @ToString
 @Getter
@@ -45,8 +46,9 @@ public class DailyAiInfo extends BaseTimeEntity {
     @ColumnDefault("false")
     private boolean isFirst;
 
+    @Convert(converter = MapToJsonConverter.class)
     @Column(name = "ai_keyword_data", columnDefinition = "json")
-    private String keywordData;
+    private Map<String, Double> keywordData;
 
     @Column(name = "ai_happy_cnt", nullable = false)
     @ColumnDefault("0")
@@ -107,7 +109,7 @@ public class DailyAiInfo extends BaseTimeEntity {
 
     @Builder
     public DailyAiInfo(Long userId, LocalDate targetDate, String diarySummary,
-            String replyContent, String replyStatus, boolean isFirst, String keywordData) {
+            String replyContent, String replyStatus, boolean isFirst, Map<String, Double> keywordData) {
         this.userId = userId;
         this.targetDate = targetDate;
         this.diarySummary = diarySummary;
@@ -133,7 +135,7 @@ public class DailyAiInfo extends BaseTimeEntity {
         this.analyzeNegativeTotal = 0;
     }
 
-    public DailyAiInfo updateAiResult(String diarySummary, String replyContent, String keywordData) {
+    public DailyAiInfo updateAiResult(String diarySummary, String replyContent, Map<String, Double> keywordData) {
         this.diarySummary = diarySummary;
         this.replyContent = replyContent;
         this.keywordData = keywordData;

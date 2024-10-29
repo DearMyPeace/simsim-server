@@ -2,11 +2,13 @@ package com.project.simsim_server.dto.ai.fastapi;
 
 import lombok.Getter;
 
+import java.util.Map;
+
 @Getter
 public class DailyAiKeywordsResponseDTO {
-    private String data;  // JSON 데이터를 String으로 관리
+    private Map<String, Double> result;
 
-    public DailyAiKeywordsResponseDTO(String data) {
-        this.data = data;
+    public DailyAiKeywordsResponseDTO(Map<String, Double> result) {
+        this.result = result;
     }
 }

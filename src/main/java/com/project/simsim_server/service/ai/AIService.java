@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.project.simsim_server.exception.ai.AIErrorCode.AIRESPONE_NOT_FOUND;
@@ -138,11 +139,11 @@ public class AIService {
 
 
     /**
-     * 5. 키워드 API 호출
+     * 4. 키워드 API 호출
      * @param user
      * @return
      */
-    public String requestKeywords (Users user, DailyAiLetterRequestDTO requestData) {
+    public Map<String, Double> requestKeywords (Users user, DailyAiLetterRequestDTO requestData) {
         ResponseEntity<DailyAiKeywordsResponseDTO> response
                 = restTemplate.postForEntity(AI_KEYWORDS_URL, requestData, DailyAiKeywordsResponseDTO.class);
         if (response.getStatusCode() != HttpStatus.OK) {
@@ -150,14 +151,14 @@ public class AIService {
             return null;
         }
 
-        String keywords = response.getBody().toString();
+        DailyAiKeywordsResponseDTO keywords = response.getBody();
         log.warn("---[SimSimSchedule] requestKeywords AI 응답 내용 {},  userId = {}", response.getBody(), user.getUserId());
 
-        if (keywords == null) {
+        if (keywords == null || keywords.getResult().isEmpty()) {
             log.error("---[SimSimSchedule] requestKeywords AI 응답 내용 없음 userId = {}", user.getUserId());
             return null;
         }
-        return keywords;
+        return keywords.getResult();
     }
 
     /**
@@ -182,7 +183,7 @@ public class AIService {
 
         // AI 요청
         String letter = requestLetter(user, requestData); // AI_LETTER_URL 호출
-        String keywords = requestKeywords(user, requestData); //AI_KEYWORDS_URL 호출
+        Map<String, Double> keywords = requestKeywords(user, requestData); //AI_KEYWORDS_URL 호출
         String summary = requestDiarySummary(user, requestData); // AI_SUMMARY_URL 호출
 
         if (letter == null || keywords == null || summary == null) {
