@@ -73,9 +73,6 @@ public class AIService {
             summaries.add(DiarySummaryDTO.builder()
                     .date(info.getTargetDate())
                     .content(info.getReplyContent())
-                    .positive(convertStringToList(info.getAnalyzePositive()))
-                    .neutral(convertStringToList(info.getAnalyzeNeutral()))
-                    .negative(convertStringToList(info.getAnalyzeNegative()))
                     .build());
         }
 
@@ -170,7 +167,7 @@ public class AIService {
      * @param user
      * @return
      */
-    public DailyAiKeywordsResponseDTO requestKeywords (Users user, DailyAiLetterRequestDTO requestData) {
+    public String requestKeywords (Users user, DailyAiLetterRequestDTO requestData) {
         ResponseEntity<DailyAiKeywordsResponseDTO> response
                 = restTemplate.postForEntity(AI_KEYWORDS_URL, requestData, DailyAiKeywordsResponseDTO.class);
         if (response.getStatusCode() != HttpStatus.OK) {
@@ -178,8 +175,9 @@ public class AIService {
             return null;
         }
 
+        String keywords = response.getBody().toString();
         log.warn("---[SimSimSchedule] requestKeywords AI 응답 내용 {},  userId = {}", response.getBody(), user.getUserId());
-        DailyAiKeywordsResponseDTO keywords = response.getBody();
+
         if (keywords == null) {
             log.error("---[SimSimSchedule] requestKeywords AI 응답 내용 없음 userId = {}", user.getUserId());
             return null;
@@ -209,11 +207,10 @@ public class AIService {
 
         // AI 요청
         String letter = requestLetter(user, requestData); // AI_LETTER_URL 호출
-        DailyAiEmotionResponseDTO emotions = requestEmotion(user, requestData); //AI_EMONTION_URL 호출
-        // DailyAiKeywordsResponseDTO keywords = requestKeywords(user, requestData); //AI_EMONTION_URL 호출
-
+        String keywords = requestKeywords(user, requestData); //AI_KEYWORDS_URL 호출
         String summary = requestDiarySummary(user, requestData); // AI_SUMMARY_URL 호출
-        if (letter == null || emotions == null /*|| keywords == null*/ || summary == null) {
+
+        if (letter == null || keywords == null || summary == null) {
             throw new AIException(AIRESPONE_NOT_FOUND);
         }
 
@@ -225,36 +222,13 @@ public class AIService {
                 .targetDate(targetDate)
                 .diarySummary(summary)
                 .replyContent(letter)
-                .happyCnt(emotions.getPositive().get(0))
-                .appreciationCnt(emotions.getPositive().get(1))
-                .loveCnt(emotions.getPositive().get(2))
-                .analyzePositive(emotions.getPositive().toString())
-                .analyzePositiveTotal(emotions.getPositive_total())
-                .tranquilityCnt(emotions.getNeutral().get(0))
-                .curiosityCnt(emotions.getNeutral().get(1))
-                .surpriseCnt(emotions.getNeutral().get(2))
-                .analyzeNeutral(emotions.getNeutral().toString())
-                .analyzeNeutralTotal(emotions.getNeutral_total())
-                .sadCnt(emotions.getNegative().get(0))
-                .angryCnt(emotions.getNegative().get(1))
-                .fearCnt(emotions.getNegative().get(2))
-                .analyzeNegative(emotions.getNegative().toString())
-                .analyzeNegativeTotal(emotions.getNegative_total())
                 .replyStatus("N")
+                .keywordData(keywords)
                 .isFirst(false)
                 .build());
 
         log.info("---[SimSimSchedule] 처리 완료 userId = {}", user.getUserId());
         log.warn("---[SimSimStatus] targetDiaries[0].SendAble = {}", targetDiaries.getLast().getSendAble());
         return saveData;
-    }
-
-    private static List<Integer> convertStringToList(String str) {
-        if (str == null) {
-            return Arrays.asList(0, 0, 0);
-        }
-        return Arrays.stream(str.replaceAll("\\[|\\]", "").split(",\\s*"))
-                .map(Integer::parseInt)
-                .collect(Collectors.toList());
     }
 }
