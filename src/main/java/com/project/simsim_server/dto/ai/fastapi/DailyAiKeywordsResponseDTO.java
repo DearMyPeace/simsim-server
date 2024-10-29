@@ -6,9 +6,9 @@ import java.util.Map;
 
 @Getter
 public class DailyAiKeywordsResponseDTO {
-    private Map<String, Double> result;
+    private String result;
 
-    public DailyAiKeywordsResponseDTO(Map<String, Double> result) {
+    public DailyAiKeywordsResponseDTO(String result) {
         this.result = result;
     }
 }

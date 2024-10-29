@@ -143,22 +143,22 @@ public class AIService {
      * @param user
      * @return
      */
-    public Map<String, Double> requestKeywords (Users user, DailyAiLetterRequestDTO requestData) {
-        ResponseEntity<DailyAiKeywordsResponseDTO> response
-                = restTemplate.postForEntity(AI_KEYWORDS_URL, requestData, DailyAiKeywordsResponseDTO.class);
+    public String requestKeywords (Users user, DailyAiLetterRequestDTO requestData) {
+        ResponseEntity<String> response
+                = restTemplate.postForEntity(AI_KEYWORDS_URL, requestData, String.class);
         if (response.getStatusCode() != HttpStatus.OK) {
             log.error("---[SimSimSchedule] requestKeywords AI 응답 실패 userId = {}", user.getUserId());
             return null;
         }
 
-        DailyAiKeywordsResponseDTO keywords = response.getBody();
+        String keywords = response.getBody();
         log.warn("---[SimSimSchedule] requestKeywords AI 응답 내용 {},  userId = {}", response.getBody().toString(), user.getUserId());
 
-        if (keywords == null || keywords.getResult().isEmpty()) {
+        if (keywords == null) {
             log.error("---[SimSimSchedule] requestKeywords AI 응답 내용 없음 userId = {}", user.getUserId());
             return null;
         }
-        return keywords.getResult();
+        return keywords;
     }
 
     /**
@@ -183,7 +183,7 @@ public class AIService {
 
         // AI 요청
         String letter = requestLetter(user, requestData); // AI_LETTER_URL 호출
-        Map<String, Double> keywords = requestKeywords(user, requestData); //AI_KEYWORDS_URL 호출
+        String keywords = requestKeywords(user, requestData); //AI_KEYWORDS_URL 호출
         String summary = requestDiarySummary(user, requestData); // AI_SUMMARY_URL 호출
 
         if (letter == null || keywords == null || summary == null) {

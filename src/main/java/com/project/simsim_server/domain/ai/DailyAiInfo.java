@@ -46,9 +46,8 @@ public class DailyAiInfo extends BaseTimeEntity {
     @ColumnDefault("false")
     private boolean isFirst;
 
-    @Convert(converter = MapToJsonConverter.class)
     @Column(name = "ai_keyword_data", columnDefinition = "json")
-    private Map<String, Double> keywordData;
+    private String keywordData;
 
     @Column(name = "ai_happy_cnt", nullable = false)
     @ColumnDefault("0")
@@ -109,7 +108,7 @@ public class DailyAiInfo extends BaseTimeEntity {
 
     @Builder
     public DailyAiInfo(Long userId, LocalDate targetDate, String diarySummary,
-            String replyContent, String replyStatus, boolean isFirst, Map<String, Double> keywordData) {
+            String replyContent, String replyStatus, boolean isFirst, String keywordData) {
         this.userId = userId;
         this.targetDate = targetDate;
         this.diarySummary = diarySummary;
@@ -135,7 +134,7 @@ public class DailyAiInfo extends BaseTimeEntity {
         this.analyzeNegativeTotal = 0;
     }
 
-    public DailyAiInfo updateAiResult(String diarySummary, String replyContent, Map<String, Double> keywordData) {
+    public DailyAiInfo updateAiResult(String diarySummary, String replyContent, String keywordData) {
         this.diarySummary = diarySummary;
         this.replyContent = replyContent;
         this.keywordData = keywordData;
