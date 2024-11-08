@@ -180,30 +180,16 @@ public class AIService {
         // AI 요청 정보 생성
         DailyAiLetterRequestDTO requestData = generateRequestData(user, targetDate, targetDiaries);
 
+        log.info("---[SimSimInfo] requestToAI 시작 ---");
         // AI 요청
         String letter = requestLetter(user, requestData); // AI_LETTER_URL 호출
+        log.info("---[SimSimInfo] letter 끝 ---");
         String keywords = requestKeywords(user, requestData); //AI_KEYWORDS_URL 호출
+        log.info("---[SimSimInfo] requestKeywords 끝 ---");
         String summary = requestDiarySummary(user, requestData); // AI_SUMMARY_URL 호출
+        log.info("---[SimSimInfo] requestDiarySummary 끝 ---");
 
         if (letter == null || keywords == null || summary == null) {
-            if (letter == null) {
-                log.error("---[SimSimError] Response Letter is null");
-            } else {
-                log.error("---[SimSimError] Response Letter : {}", letter);
-            }
-
-            if (keywords == null) {
-                log.error("---[SimSimError] Response Keywords is null");
-            } else {
-                log.error("---[SimSimError] Response Keywords : {}", keywords);
-            }
-
-            if (summary == null) {
-                log.error("---[SimSimError] Response Summary is null");
-            } else {
-                log.error("---[SimSimError] Response Summary : {}", summary);
-            }
-            
             throw new AIException(AIRESPONE_NOT_FOUND);
         }
 
