@@ -186,6 +186,24 @@ public class AIService {
         String summary = requestDiarySummary(user, requestData); // AI_SUMMARY_URL 호출
 
         if (letter == null || keywords == null || summary == null) {
+            if (letter == null) {
+                log.error("---[SimSimError] Response Letter is null");
+            } else {
+                log.error("---[SimSimError] Response Letter : {}", letter);
+            }
+
+            if (keywords == null) {
+                log.error("---[SimSimError] Response Keywords is null");
+            } else {
+                log.error("---[SimSimError] Response Keywords : {}", keywords);
+            }
+
+            if (summary == null) {
+                log.error("---[SimSimError] Response Summary is null");
+            } else {
+                log.error("---[SimSimError] Response Summary : {}", summary);
+            }
+            
             throw new AIException(AIRESPONE_NOT_FOUND);
         }
 
