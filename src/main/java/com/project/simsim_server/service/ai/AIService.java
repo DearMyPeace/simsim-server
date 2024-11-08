@@ -145,9 +145,10 @@ public class AIService {
                 = restTemplate.postForEntity(AI_KEYWORDS_URL, requestData, DailyAiKeywordsResponseDTO.class);
         if (response.getStatusCode() != HttpStatus.OK) {
             log.error("---[SimSimSchedule] requestKeywords AI 응답 실패 userId = {}", user.getUserId());
-            log.error("---[SimSimSchedule] requestKeywords AI 응답 실패 응답코드 = {}", response.getStatusCode());
             return null;
         }
+
+        log.info("---[SimSimSchedule] requestKeywords AI 응답 실패 응답코드 = {}", response.getStatusCode());
 
         DailyAiKeywordsResponseDTO keywords = response.getBody();
         log.warn("---[SimSimSchedule] requestKeywords AI 응답 내용 = {},  userId = {}", Objects.requireNonNull(response.getBody()).getResult(), user.getUserId());
