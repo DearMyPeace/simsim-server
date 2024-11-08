@@ -20,10 +20,7 @@ import org.springframework.web.client.RestTemplate;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.project.simsim_server.exception.ai.AIErrorCode.AIRESPONE_NOT_FOUND;
@@ -152,7 +149,7 @@ public class AIService {
         }
 
         DailyAiKeywordsResponseDTO keywords = response.getBody();
-        log.warn("---[SimSimSchedule] requestKeywords AI 응답 내용 {},  userId = {}", response.getBody().getResult(), user.getUserId());
+        log.warn("---[SimSimSchedule] requestKeywords AI 응답 내용 = {},  userId = {}", Objects.requireNonNull(response.getBody()).getResult(), user.getUserId());
 
         if (keywords == null) {
             log.error("---[SimSimSchedule] requestKeywords AI 응답 내용 없음 userId = {}", user.getUserId());
@@ -181,19 +178,19 @@ public class AIService {
         // AI 요청 정보 생성
         DailyAiLetterRequestDTO requestData = generateRequestData(user, targetDate, targetDiaries);
 
-        // AI 요청
-        String letter = requestLetter(user, requestData); // AI_LETTER_URL 호출
-        String keywords = requestKeywords(user, requestData); //AI_KEYWORDS_URL 호출
-        String summary = requestDiarySummary(user, requestData); // AI_SUMMARY_URL 호출
+        try {
+            // AI 요청
+            String letter = requestLetter(user, requestData); // AI_LETTER_URL 호출
+            String keywords = requestKeywords(user, requestData); //AI_KEYWORDS_URL 호출
+            String summary = requestDiarySummary(user, requestData); // AI_SUMMARY_URL 호출
+            if (letter == null || keywords == null || summary == null) {
+                throw new AIException(AIRESPONE_NOT_FOUND);
+            }
 
-        if (letter == null || keywords == null || summary == null) {
-            throw new AIException(AIRESPONE_NOT_FOUND);
-        }
+            // 모든 Diary의 isSendAble 상태를 false로 설정.
+            diaryRepository.findAllByCreatedAtAndUserId(user.getUserId(), targetDate).forEach(diary -> diary.setIsSendAble(false));
 
-        // 모든 Diary의 isSendAble 상태를 false로 설정.
-        diaryRepository.findAllByCreatedAtAndUserId(user.getUserId(), targetDate).forEach(diary -> diary.setIsSendAble(false));
-
-        return dailyAiInfoRepository.save(DailyAiInfo.builder()
+            return dailyAiInfoRepository.save(DailyAiInfo.builder()
                 .userId(user.getUserId())
                 .targetDate(targetDate)
                 .diarySummary(summary)
@@ -202,5 +199,10 @@ public class AIService {
                 .keywordData(keywords)
                 .isFirst(false)
                 .build());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new AIException(AIRESPONE_NOT_FOUND);
+        }
     }
 }
