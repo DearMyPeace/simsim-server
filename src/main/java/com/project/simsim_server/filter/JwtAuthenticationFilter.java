@@ -61,9 +61,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     String userEmail = jwtUtils.getEmail(accessToken.get());
                     String values = redisService.getValues(userEmail);
 
-                    log.warn("---- [SimSimFilter] JwtAuthenticationFilter : 검증 이메일 ={}", userEmail);
-                    log.warn("---- [SimSimFilter] JwtAuthenticationFilter : 레디스 토큰 ={}", values);
-
                     if (values.isEmpty()) {
                         log.error("---- [SimSimFilter] JwtAuthenticationFilter : 리프레시 토큰이 없습니다.");
                         throw new OAuthException(REFRESH_TOKEN_NOT_EXIST);

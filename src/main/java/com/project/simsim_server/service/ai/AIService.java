@@ -170,6 +170,8 @@ public class AIService {
      */
     @Transactional
     public DailyAiInfo requestToAI(Users user, LocalDate targetDate, LocalDateTime startDateTime, LocalDateTime endDateTime) {
+        log.info("---[SimSimInfo] requestToAI 시작 ---");
+
         // 예외 처리
         List<Diary> targetDiaries = diaryRepository.findDiariesByCreatedAtBetweenAndUserId(startDateTime, endDateTime, user.getUserId());
         if (targetDiaries.isEmpty()) {
@@ -180,7 +182,7 @@ public class AIService {
         // AI 요청 정보 생성
         DailyAiLetterRequestDTO requestData = generateRequestData(user, targetDate, targetDiaries);
 
-        log.info("---[SimSimInfo] requestToAI 시작 ---");
+        log.info("---[SimSimInfo] AI API 시작 ---");
         // AI 요청
         String letter = requestLetter(user, requestData); // AI_LETTER_URL 호출
         log.info("---[SimSimInfo] letter 끝 ---");
