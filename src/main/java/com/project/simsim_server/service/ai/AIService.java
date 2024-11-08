@@ -145,6 +145,7 @@ public class AIService {
                 = restTemplate.postForEntity(AI_KEYWORDS_URL, requestData, DailyAiKeywordsResponseDTO.class);
         if (response.getStatusCode() != HttpStatus.OK) {
             log.error("---[SimSimSchedule] requestKeywords AI 응답 실패 userId = {}", user.getUserId());
+            log.error("---[SimSimSchedule] requestKeywords AI 응답 실패 응답코드 = {}", response.getStatusCode());
             return null;
         }
 
@@ -178,19 +179,19 @@ public class AIService {
         // AI 요청 정보 생성
         DailyAiLetterRequestDTO requestData = generateRequestData(user, targetDate, targetDiaries);
 
-        try {
-            // AI 요청
-            String letter = requestLetter(user, requestData); // AI_LETTER_URL 호출
-            String keywords = requestKeywords(user, requestData); //AI_KEYWORDS_URL 호출
-            String summary = requestDiarySummary(user, requestData); // AI_SUMMARY_URL 호출
-            if (letter == null || keywords == null || summary == null) {
-                throw new AIException(AIRESPONE_NOT_FOUND);
-            }
+        // AI 요청
+        String letter = requestLetter(user, requestData); // AI_LETTER_URL 호출
+        String keywords = requestKeywords(user, requestData); //AI_KEYWORDS_URL 호출
+        String summary = requestDiarySummary(user, requestData); // AI_SUMMARY_URL 호출
 
-            // 모든 Diary의 isSendAble 상태를 false로 설정.
-            diaryRepository.findAllByCreatedAtAndUserId(user.getUserId(), targetDate).forEach(diary -> diary.setIsSendAble(false));
+        if (letter == null || keywords == null || summary == null) {
+            throw new AIException(AIRESPONE_NOT_FOUND);
+        }
 
-            return dailyAiInfoRepository.save(DailyAiInfo.builder()
+        // 모든 Diary의 isSendAble 상태를 false로 설정.
+        diaryRepository.findAllByCreatedAtAndUserId(user.getUserId(), targetDate).forEach(diary -> diary.setIsSendAble(false));
+
+        return dailyAiInfoRepository.save(DailyAiInfo.builder()
                 .userId(user.getUserId())
                 .targetDate(targetDate)
                 .diarySummary(summary)
@@ -199,10 +200,5 @@ public class AIService {
                 .keywordData(keywords)
                 .isFirst(false)
                 .build());
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new AIException(AIRESPONE_NOT_FOUND);
-        }
     }
 }
