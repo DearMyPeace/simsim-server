@@ -9,12 +9,12 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor
 public class DiaryContentDTO {
-    private String time;
+//    private String time;
     private String content;
 
     @Builder
     public DiaryContentDTO(LocalDateTime time, String content) {
-        this.time = time.toString();
+//        this.time = time.toString();
         this.content = content;
     }
 }
