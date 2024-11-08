@@ -12,7 +12,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 public class DiarySummaryDTO {
-    private String date;
+//    private String date;
     private String content;
     private List<Integer> positive;
     private List<Integer> neutral;
@@ -21,7 +21,7 @@ public class DiarySummaryDTO {
     @Builder
     public DiarySummaryDTO(LocalDate date, String content, List<Integer> positive,
         List<Integer> neutral, List<Integer> negative) {
-        this.date = date.toString();
+//        this.date = date.toString();
         this.content = content;
         this.positive = positive != null ? positive : Arrays.asList(0, 0, 0);
         this.neutral = neutral != null ? neutral : Arrays.asList(0, 0, 0);
