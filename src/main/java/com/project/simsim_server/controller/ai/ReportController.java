@@ -1,4 +1,4 @@
-package com.project.simsim_server.controller.report;
+package com.project.simsim_server.controller.ai;
 
 import com.project.simsim_server.config.auth.jwt.AuthenticationService;
 import com.project.simsim_server.dto.ai.client.WeekEmotionsResponseDTO;
