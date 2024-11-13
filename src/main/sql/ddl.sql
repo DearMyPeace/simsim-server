@@ -69,6 +69,23 @@ CREATE TABLE `daily_ai_response_tbl` (
 ALTER TABLE daily_ai_response_tbl AUTO_INCREMENT = 1;
 
 
+# 레포트 테이블
+DROP TABLE IF EXISTS monthly_report_tbl;
+CREATE TABLE `monthly_report_tbl` (
+    `month_report_id` bigint NOT NULL AUTO_INCREMENT,
+    `user_id` bigint NOT NULL,
+    `mr_target_date` date NOT NULL,
+    `mr_target_year` int NOT NULL,
+    `mr_target_month` int NOT NULL,
+    `mr_summary` varchar(3000) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+    `mr_keywords_data` JSON,
+    `created_date` datetime NOT NULL,
+    `modified_date` datetime NOT NULL,
+    PRIMARY KEY (`month_report_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+ALTER TABLE monthly_report_tbl AUTO_INCREMENT = 1;
+
+
 # 페르소나 테이블
 DROP TABLE IF EXISTS persona_info_tbl;
 CREATE TABLE persona_info_tbl (
