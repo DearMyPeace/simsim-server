@@ -53,7 +53,7 @@ public class DiaryService {
 
         List<Diary> sendAbleDiaries = diaryRepository
                 .findAllByCreatedAtAndUserId(userId, targetDate)
-                .stream().filter(diary -> "Y".equals(diary.getSendAble()))
+                .stream().filter(diary -> "Y".equals(diary.getIsSendAble()))
                 .collect(Collectors.toList());
         if (!sendAbleDiaries.isEmpty()) {
             sendStatus = false;
