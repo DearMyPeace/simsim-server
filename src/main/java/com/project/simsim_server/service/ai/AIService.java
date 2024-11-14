@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
@@ -145,23 +146,29 @@ public class AIService {
 
         Map<String, Object> requestBody = Map.of("diarys", extractContentOnly);
 
-        ResponseEntity<DailyAiKeywordsResponseDTO> response
-                = restTemplate.postForEntity(AI_KEYWORDS_URL, requestBody, DailyAiKeywordsResponseDTO.class);
-        if (response.getStatusCode() != HttpStatus.OK) {
-            log.error("---[SimSimSchedule] requestKeywords AI 응답 실패 userId = {}", user.getUserId());
-            return null;
+//        ResponseEntity<DailyAiKeywordsResponseDTO> response
+//                = restTemplate.postForEntity(AI_KEYWORDS_URL, requestBody, DailyAiKeywordsResponseDTO.class);
+//        if (response.getStatusCode() != HttpStatus.OK) {
+//            log.error("---[SimSimSchedule] requestKeywords AI 응답 실패 userId = {}", user.getUserId());
+//            return null;
+//        }
+        try {
+            ResponseEntity<DailyAiKeywordsResponseDTO> response =
+                    restTemplate.postForEntity(AI_KEYWORDS_URL, requestBody, DailyAiKeywordsResponseDTO.class);
+            log.info("---[SimSimSchedule] requestKeywords AI 응답 실패 응답코드 = {}", response.getStatusCode());
+            DailyAiKeywordsResponseDTO keywords = response.getBody();
+
+            log.warn("---[SimSimSchedule] requestKeywords AI 응답 내용 = {},  userId = {}", Objects.requireNonNull(response.getBody()).getResult(), user.getUserId());
+
+            if (keywords == null) {
+                log.error("---[SimSimSchedule] requestKeywords AI 응답 내용 없음 userId = {}", user.getUserId());
+                return null;
+            }
+            return keywords.getResult();
+        } catch (HttpClientErrorException e) {
+            System.err.println("Error response: " + e.getStatusCode() + " - " + e.getResponseBodyAsString());
         }
-
-        log.info("---[SimSimSchedule] requestKeywords AI 응답 실패 응답코드 = {}", response.getStatusCode());
-
-        DailyAiKeywordsResponseDTO keywords = response.getBody();
-        log.warn("---[SimSimSchedule] requestKeywords AI 응답 내용 = {},  userId = {}", Objects.requireNonNull(response.getBody()).getResult(), user.getUserId());
-
-        if (keywords == null) {
-            log.error("---[SimSimSchedule] requestKeywords AI 응답 내용 없음 userId = {}", user.getUserId());
-            return null;
-        }
-        return keywords.getResult();
+        return null;
     }
 
     /**
