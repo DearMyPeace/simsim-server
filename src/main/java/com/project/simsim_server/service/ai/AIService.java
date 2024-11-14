@@ -35,9 +35,9 @@ public class AIService {
     private final RestTemplate restTemplate;
     private final DailyAiInfoRepository dailyAiInfoRepository;
     private final DiaryRepository diaryRepository;
-    private final String AI_LETTER_URL = "http://ai:8000/ai/v1/letter";
-    private final String AI_KEYWORDS_URL = "http://ai:8000/ai/v1/keywords";
-    private final String AI_SUMMARY_URL = "http://ai:8000/ai/v1/summary";
+    private final String AI_LETTER_URL = "http://127.0.0.1:8000/ai/v1/letter";
+    private final String AI_KEYWORDS_URL = "http://127.0.0.1:8000/ai/v1/keywords";
+    private final String AI_SUMMARY_URL = "http://127.0.0.1:8000/ai/v1/summary";
 
     /**
      * 1. AI 요청용 DTO 생성
@@ -186,10 +186,10 @@ public class AIService {
         // AI 요청
         String letter = requestLetter(user, requestData); // AI_LETTER_URL 호출
         log.info("---[SimSimInfo] letter 끝 ---");
-        String keywords = requestKeywords(user, requestData); //AI_KEYWORDS_URL 호출
-        log.info("---[SimSimInfo] requestKeywords 끝 ---");
         String summary = requestDiarySummary(user, requestData); // AI_SUMMARY_URL 호출
         log.info("---[SimSimInfo] requestDiarySummary 끝 ---");
+        String keywords = requestKeywords(user, requestData); //AI_KEYWORDS_URL 호출
+        log.info("---[SimSimInfo] requestKeywords 끝 ---");
 
         if (letter == null || keywords == null || summary == null) {
             throw new AIException(AIRESPONE_NOT_FOUND);
