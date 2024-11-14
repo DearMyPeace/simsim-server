@@ -140,7 +140,8 @@ public class AIService {
      * @param user
      * @return
      */
-    public String requestKeywords (Users user, DailyAiLetterRequestDTO requestData) {
+    public String requestKeywords(Users user, DailyAiLetterRequestDTO requestData) {
+        log.info("---[SimSimInfo] requestKeywords 메소드 호출");
         ResponseEntity<DailyAiKeywordsResponseDTO> response
                 = restTemplate.postForEntity(AI_KEYWORDS_URL, requestData, DailyAiKeywordsResponseDTO.class);
         if (response.getStatusCode() != HttpStatus.OK) {
