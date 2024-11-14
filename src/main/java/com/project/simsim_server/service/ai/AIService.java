@@ -166,7 +166,9 @@ public class AIService {
             }
             return keywords.getResult();
         } catch (HttpClientErrorException e) {
-            log.error("Error response: " + e.getStatusCode() + " - " + e.getResponseBodyAsString());
+            log.error("HttpClientErrorException 발생: " + e.getStatusCode() + " - " + e.getResponseBodyAsString());
+        } catch (Exception e) {
+            log.error("다른 예외 발생: ", e);
         }
         return null;
     }
