@@ -207,9 +207,9 @@ public class AIService {
         String keywords = requestKeywords(user, extractContentOnly); //AI_KEYWORDS_URL 호출
         log.info("---[SimSimInfo] requestKeywords 끝 ---");
 
-        if (letter == null || keywords == null || summary == null) {
-            throw new AIException(AIRESPONE_NOT_FOUND);
-        }
+//        if (letter == null || keywords == null || summary == null) {
+//            throw new AIException(AIRESPONE_NOT_FOUND);
+//        }
 
         // 모든 Diary의 isSendAble 상태를 false로 설정.
         diaryRepository.findAllByCreatedAtAndUserId(user.getUserId(), targetDate).forEach(diary -> diary.setIsSendAble(false));
