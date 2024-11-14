@@ -140,10 +140,13 @@ public class AIService {
      * @param user
      * @return
      */
-    public String requestKeywords(Users user, DailyAiLetterRequestDTO requestData) {
+    public String requestKeywords(Users user, List<Map<String, String>> extractContentOnly) {
         log.info("---[SimSimInfo] requestKeywords 메소드 호출");
+
+        Map<String, Object> requestBody = Map.of("diarys", extractContentOnly);
+
         ResponseEntity<DailyAiKeywordsResponseDTO> response
-                = restTemplate.postForEntity(AI_KEYWORDS_URL, requestData, DailyAiKeywordsResponseDTO.class);
+                = restTemplate.postForEntity(AI_KEYWORDS_URL, requestBody, DailyAiKeywordsResponseDTO.class);
         if (response.getStatusCode() != HttpStatus.OK) {
             log.error("---[SimSimSchedule] requestKeywords AI 응답 실패 userId = {}", user.getUserId());
             return null;
@@ -189,7 +192,12 @@ public class AIService {
         log.info("---[SimSimInfo] letter 끝 ---");
         String summary = requestDiarySummary(user, requestData); // AI_SUMMARY_URL 호출
         log.info("---[SimSimInfo] requestDiarySummary 끝 ---");
-        String keywords = requestKeywords(user, requestData); //AI_KEYWORDS_URL 호출
+
+        List<Map<String, String>> extractContentOnly = targetDiaries.stream()
+                .map(diary -> Map.of("content", diary.getContent()))
+                .collect(Collectors.toList());
+
+        String keywords = requestKeywords(user, extractContentOnly); //AI_KEYWORDS_URL 호출
         log.info("---[SimSimInfo] requestKeywords 끝 ---");
 
         if (letter == null || keywords == null || summary == null) {
