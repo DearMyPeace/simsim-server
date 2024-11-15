@@ -33,6 +33,7 @@ public class ExportController {
     @GetMapping("/diary")
     public ResponseEntity<Resource> exportDiary() throws IOException {
         Long userId = authenticationService.getUserIdFromAuthentication();
+        log.info("---[SimSimInfo] 유저 {} 일기 Export 요청 시작", userId);
 
         String fileName = "diary_export_" + LocalDate.now() + ".csv";
         String directory = System.getProperty("java.io.tmpdir"); // 안전한 임시 디렉토리 사용
