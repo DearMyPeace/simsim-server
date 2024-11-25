@@ -62,7 +62,7 @@ public class ExportService {
             writer.append("ai_id,user_id,ai_target_date,ai_diary_summary,ai_reply_content,ai_reply_status,created_date,modified_date\n");
             for (DailyAiInfo reponse : responses) {
                 writer.append(String.format(
-                        "%d,%d,%s,%s,%s,%s,%s,%s\n",
+                        "%d,%d,%s,\"%s\",\"%s\",%s,%s,%s\n",
                         reponse.getAiId(),
                         reponse.getUserId(),
                         reponse.getTargetDate(),
