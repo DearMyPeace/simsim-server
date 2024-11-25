@@ -66,8 +66,8 @@ public class ExportService {
                         reponse.getAiId(),
                         reponse.getUserId(),
                         reponse.getTargetDate(),
-                        reponse.getDiarySummary(),
-                        reponse.getReplyContent(),
+                        reponse.getDiarySummary().replace("\"", "\"\""),
+                        reponse.getReplyContent().replace("\"", "\"\""),
                         reponse.getReplyStatus(),
                         reponse.getCreatedDate(),
                         reponse.getModifiedDate()
