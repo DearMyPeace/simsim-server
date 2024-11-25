@@ -42,13 +42,13 @@ public class ExportController {
         exportService.getDiaries(userId, filePath);
         File file = new File(filePath);
         if (!file.exists()) {
-            log.error("File not found: {}", filePath);
+            log.error("--- [SimSimError] exportDiary() 해당 파일이 존재하지 않습니다 {}", filePath);
             return ResponseEntity.notFound().build();
         }
 
         try {
             InputStreamResource resource = new InputStreamResource(new FileInputStream(file));
-            log.info("File successfully created and ready for download: {}", filePath);
+            log.info("--- [SimSimInfo] exportDiary() 파일이 생성되었습니다 {}", filePath);
 
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getName() + "\"")
@@ -56,7 +56,38 @@ public class ExportController {
                     .contentLength(file.length())
                     .body(resource);
         } catch (IOException e) {
-            log.error("Error reading file: {}", filePath, e);
+            log.error("--- [SimSimError] exportDiary() {} 파일 읽기에 실패했습니다", filePath, e);
+            throw e;
+        }
+    }
+
+    @GetMapping("/report")
+    public ResponseEntity<Resource> exportReport() throws IOException {
+        Long userId = authenticationService.getUserIdFromAuthentication();
+        log.info("---[SimSimInfo] 유저 {} AI 응답 Export 요청 시작", userId);
+
+        String fileName = "response_export_" + LocalDate.now() + ".csv";
+        String directory = System.getProperty("java.io.tmpdir"); // 안전한 임시 디렉토리 사용
+        String filePath = directory + File.separator + fileName;
+
+        exportService.getReponses(userId, filePath);
+        File file = new File(filePath);
+        if (!file.exists()) {
+            log.error("--- [SimSimError] exportResponses() 해당 파일이 존재하지 않습니다 {}", filePath);
+            return ResponseEntity.notFound().build();
+        }
+
+        try {
+            InputStreamResource resource = new InputStreamResource(new FileInputStream(file));
+            log.info("--- [SimSimInfo] exportResponses() 파일이 생성되었습니다 {}", filePath);
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getName() + "\"")
+                    .contentType(MediaType.parseMediaType("text/csv; charset=UTF-8"))
+                    .contentLength(file.length())
+                    .body(resource);
+        } catch (IOException e) {
+            log.error("--- [SimSimError] exportResponses() {} 파일 읽기에 실패했습니다", filePath, e);
             throw e;
         }
     }
