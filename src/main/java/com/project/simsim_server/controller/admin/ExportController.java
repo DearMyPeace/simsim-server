@@ -18,6 +18,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
 
 
 @Slf4j
@@ -31,7 +33,7 @@ public class ExportController {
     private final AuthenticationService authenticationService;
 
     @GetMapping("/diary")
-    public ResponseEntity<Resource> exportDiary() throws IOException {
+    public ResponseEntity<List<Map<String, Object>>> exportDiary() throws IOException {
         Long userId = authenticationService.getUserIdFromAuthentication();
         log.info("---[SimSimInfo] 유저 {} 일기 Export 요청 시작", userId);
 
@@ -39,30 +41,13 @@ public class ExportController {
         String directory = System.getProperty("java.io.tmpdir"); // 안전한 임시 디렉토리 사용
         String filePath = directory + File.separator + fileName;
 
-        exportService.getDiaries(userId, filePath);
-        File file = new File(filePath);
-        if (!file.exists()) {
-            log.error("--- [SimSimError] exportDiary() 해당 파일이 존재하지 않습니다 {}", filePath);
-            return ResponseEntity.notFound().build();
-        }
-
-        try {
-            InputStreamResource resource = new InputStreamResource(new FileInputStream(file));
-            log.info("--- [SimSimInfo] exportDiary() 파일이 생성되었습니다 {}", filePath);
-
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getName() + "\"")
-                    .contentType(MediaType.parseMediaType("text/csv; charset=UTF-8"))
-                    .contentLength(file.length())
-                    .body(resource);
-        } catch (IOException e) {
-            log.error("--- [SimSimError] exportDiary() {} 파일 읽기에 실패했습니다", filePath, e);
-            throw e;
-        }
+        List<Map<String, Object>> diaryData = exportService.getDiaries(userId, filePath);
+        log.info("--- [SimSimInfo] 유저 {} 기록 Export 완료 (CSV 파일: {})", userId, filePath);
+        return ResponseEntity.ok(diaryData);
     }
 
     @GetMapping("/report")
-    public ResponseEntity<Resource> exportReport() throws IOException {
+    public ResponseEntity<List<Map<String, Object>>> exportReport() throws IOException {
         Long userId = authenticationService.getUserIdFromAuthentication();
         log.info("---[SimSimInfo] 유저 {} AI 응답 Export 요청 시작", userId);
 
@@ -70,25 +55,8 @@ public class ExportController {
         String directory = System.getProperty("java.io.tmpdir"); // 안전한 임시 디렉토리 사용
         String filePath = directory + File.separator + fileName;
 
-        exportService.getReponses(userId, filePath);
-        File file = new File(filePath);
-        if (!file.exists()) {
-            log.error("--- [SimSimError] exportResponses() 해당 파일이 존재하지 않습니다 {}", filePath);
-            return ResponseEntity.notFound().build();
-        }
-
-        try {
-            InputStreamResource resource = new InputStreamResource(new FileInputStream(file));
-            log.info("--- [SimSimInfo] exportResponses() 파일이 생성되었습니다 {}", filePath);
-
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getName() + "\"")
-                    .contentType(MediaType.parseMediaType("text/csv; charset=UTF-8"))
-                    .contentLength(file.length())
-                    .body(resource);
-        } catch (IOException e) {
-            log.error("--- [SimSimError] exportResponses() {} 파일 읽기에 실패했습니다", filePath, e);
-            throw e;
-        }
+        List<Map<String, Object>> responsesData = exportService.getReponses(userId, filePath);
+        log.info("--- [SimSimInfo] 유저 {} 편지 Export 완료 (CSV 파일: {})", userId, filePath);
+        return ResponseEntity.ok(responsesData);
     }
 }
