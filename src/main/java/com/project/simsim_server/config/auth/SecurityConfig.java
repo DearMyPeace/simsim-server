@@ -63,7 +63,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests((request) -> request
                         .requestMatchers( "/api/v1/auth/apple", "/api/v1/auth/google", "/api/v1/auth/reissue",
                                 "/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        .requestMatchers("/admin").hasRole(Role.ADMIN.name())
+                        .requestMatchers("/api/v1/admin").hasRole(Role.ADMIN.name())
                         .requestMatchers(HttpMethod.POST,"/notice").hasRole(Role.ADMIN.name())
                         .requestMatchers(HttpMethod.PATCH,"/notice/{noticeId}").hasRole(Role.ADMIN.name())
                         .requestMatchers(HttpMethod.DELETE,"/notice/{noticeId}").hasRole(Role.ADMIN.name())
