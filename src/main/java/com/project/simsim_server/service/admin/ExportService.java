@@ -27,7 +27,7 @@ public class ExportService {
     private final DiaryRepository diaryRepository;
     private final DailyAiInfoRepository dailyAiInfoRepository;
 
-    public List<Map<String, Object>> getDiaries(Long userId, String fileName) throws IOException {
+    public List<Map<String, Object>> getDiaries(Long userId, String fileName) {
         Users user = usersRepository.findById(userId).orElseThrow(() -> new RuntimeException("해당 회원이 존재하지 않습니다."));
         if (user.getRole() != Role.ADMIN) {
             throw new RuntimeException("해당 유저는 접근할 수 없습니다.");
@@ -69,7 +69,7 @@ public class ExportService {
         })).collect(Collectors.toList());
     }
 
-    public List<Map<String, Object>> getReponses(Long userId, String fileName) throws IOException {
+    public List<Map<String, Object>> getReponses(Long userId, String fileName) {
         Users user = usersRepository.findById(userId).orElseThrow(() -> new RuntimeException("해당 회원이 존재하지 않습니다."));
         if (user.getRole() != Role.ADMIN) {
             throw new RuntimeException("해당 유저는 접근할 수 없습니다.");
@@ -98,14 +98,22 @@ public class ExportService {
         return responses.stream().map((response) -> {
             Map<String, Object> responseMap = new LinkedHashMap<>();
             responseMap.put("ai_id", response.getAiId());
-            responseMap.put("user_id", user.getUserId());
+            responseMap.put("user_id", response.getUserId());
             responseMap.put("ai_target_date", response.getTargetDate());
-            responseMap.put("ai_diary_summary", response.getDiarySummary());
-            responseMap.put("ai_reply_content", response.getReplyContent());
+            responseMap.put("ai_diary_summary", escapeJson(response.getDiarySummary()));
+            responseMap.put("ai_reply_content", escapeJson(response.getReplyContent()));
             responseMap.put("ai_reply_status", response.getReplyStatus());
             responseMap.put("created_date", response.getCreatedDate());
             responseMap.put("modified_date", response.getModifiedDate());
             return responseMap;
         }).collect(Collectors.toList());
     }
+
+    private String escapeJson(String value) {
+        if (value == null) {
+            return null;
+        }
+        return value.replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t");
+    }
+
 }
