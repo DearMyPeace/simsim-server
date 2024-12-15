@@ -194,6 +194,8 @@ public class AIService {
             throw new AIException(AIRESPONE_NOT_FOUND);
         }
 
+        log.info("---[SimSimInfo] 편지 응답 확인 {}", letter);
+
         // 모든 Diary의 isSendAble 상태를 false로 설정.
         diaryRepository.findAllByCreatedAtAndUserId(user.getUserId(), targetDate).forEach(diary -> diary.setIsSendAble(false));
 
