@@ -26,9 +26,6 @@ public class AILetterResponseDTO {
             if (encryptionUtil.isBase64(aiEntity.getDiarySummary())) {
                 this.summary = encryptionUtil.decrypt(aiEntity.getDiarySummary());
                 this.content = encryptionUtil.decrypt(aiEntity.getReplyContent());
-
-                log.info("---[SimSimInfo] 편지 응답 확인 AILetterResponseDTO {}", this.content);
-
             } else {
                 this.summary = aiEntity.getDiarySummary();
                 this.content = aiEntity.getReplyContent();
