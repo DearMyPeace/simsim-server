@@ -1,7 +1,7 @@
 package com.project.simsim_server.controller.user;
 
 import com.project.simsim_server.config.auth.dto.AppleLoginRequestDTO;
-import com.project.simsim_server.config.auth.dto.LoginRequestDTO;
+import com.project.simsim_server.config.auth.dto.GoogleLoginRequestDTO;
 import com.project.simsim_server.config.auth.jwt.AuthenticationService;
 import com.project.simsim_server.config.redis.TokenDTO;
 import com.project.simsim_server.config.auth.dto.AccessTokenForFrontDTO;
@@ -37,9 +37,14 @@ public class AuthController {
 
     /**
      * 구글 로그인
+     *
+     * @param requestDTO
+     * @return ResponseEntity AccessToken, RefreshToken
      */
     @PostMapping("/google")
-    public ResponseEntity googleAuthLogin(@RequestBody LoginRequestDTO requestDTO) {
+    public ResponseEntity googleAuthLogin(@RequestBody GoogleLoginRequestDTO requestDTO) throws AuthException {
+        log.info("구글 로그인 요청 정보 = {}", requestDTO.toString());
+
         try {
             TokenDTO tokenDTO = authService.loginGoogle(requestDTO);
             return responseSuccessTokens(tokenDTO);
@@ -50,11 +55,17 @@ public class AuthController {
         }
     }
 
+
     /**
      * 애플 로그인
+     * @param requestDTO
+     * @return
+     * @throws AuthException
      */
     @PostMapping("/apple")
-    public ResponseEntity appleAuthLogin(@RequestBody AppleLoginRequestDTO requestDTO) {
+    public ResponseEntity appleAuthLogin(@RequestBody AppleLoginRequestDTO requestDTO) throws AuthException {
+        log.info("애플 로그인 요청 정보 = {}", requestDTO.toString());
+
         try {
             TokenDTO tokenDTO = authService.loginApple(requestDTO);
             return responseSuccessTokens(tokenDTO);
@@ -65,23 +76,11 @@ public class AuthController {
         }
     }
 
-    /**
-     * 카카오 로그인
-     */
-    @PostMapping("/kakao")
-    public ResponseEntity kakaoAuthLogin(@RequestBody LoginRequestDTO requestDTO) {
-        try {
-            TokenDTO tokenDTO = authService.loginKakao(requestDTO);
-            return responseSuccessTokens(tokenDTO);
-        } catch (OAuthException | UsersException e) {
-            return responseFailTokens(e);
-        } catch (Exception e) {
-            return responseFailTokens(new OAuthException(AuthErrorCode.LOGIN_FAILED));
-        }
-    }
 
     /**
      * 회원 로그아웃
+     * @param accessToken
+     * @return
      */
     @DeleteMapping("/logout")
     public ResponseEntity logout(@RequestHeader("Authorization") String accessToken) {
@@ -92,6 +91,8 @@ public class AuthController {
 
     /**
      * 회원 탈퇴
+     * @param accessToken
+     * @return
      */
     @DeleteMapping("/delete")
     public ResponseEntity cancleAccount(@RequestHeader("Authorization") String accessToken) {
@@ -103,6 +104,8 @@ public class AuthController {
 
     /**
      * 액세스 토큰 만료 시 토큰 재발급
+     * @param requestRefreshToken
+     * @return
      */
     @PostMapping("/reissue")
     public ResponseEntity reissueToken(
@@ -118,6 +121,8 @@ public class AuthController {
             if (reissuedTokenDto == null) {
                 throw new OAuthException(AuthErrorCode.LOGIN_FAILED);
             }
+            log.warn("---[SimSimLog] 토큰 재발급 성공 AccessToken = {},  RefreshToken = {}", reissuedTokenDto.getAccessToken(),
+                    reissuedTokenDto.getRefreshToken());
             return responseSuccessTokens(reissuedTokenDto);
         } catch (OAuthException | UsersException e) {
             return responseFailTokens(e);
@@ -129,6 +134,8 @@ public class AuthController {
 
     /**
      * 로그인 성공 시 응답
+     * @param tokenDTO
+     * @return
      */
     private ResponseEntity<AccessTokenForFrontDTO> responseSuccessTokens(TokenDTO tokenDTO) {
         ResponseCookie responseCookie = generateRefreshTokenCookie(tokenDTO.getRefreshToken());
@@ -156,6 +163,7 @@ public class AuthController {
 
     /**
      * 로그인 실패 시 응답
+     * @return
      */
     private ResponseEntity<Object> responseFailTokens(CustomRuntimeException e) {
         ResponseCookie responseCookie = deleteRefreshTokenCookie();
@@ -174,7 +182,8 @@ public class AuthController {
     }
 
     /**
-     * 로그아웃 및 회원 탈퇴 시 응답
+     * 로그아웃 / 회원 탈퇴 시 응답
+     * @return
      */
     private ResponseEntity<Object> responseElseTokens() {
         ResponseCookie responseCookie = deleteRefreshTokenCookie();

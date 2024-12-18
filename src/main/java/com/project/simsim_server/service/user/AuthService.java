@@ -1,7 +1,10 @@
 package com.project.simsim_server.service.user;
 
 import com.nimbusds.jose.JWKSet;
-import com.project.simsim_server.config.auth.dto.*;
+import com.project.simsim_server.config.auth.dto.AppleLoginRequestDTO;
+import com.project.simsim_server.config.auth.dto.AppleUserInfoDTO;
+import com.project.simsim_server.config.auth.dto.GoogleLoginRequestDTO;
+import com.project.simsim_server.config.auth.dto.GoogleUserInfoDTO;
 import com.project.simsim_server.config.auth.jwt.AuthenticationService;
 import com.project.simsim_server.config.auth.jwt.JwtPayload;
 import com.project.simsim_server.config.auth.jwt.JwtUtils;
@@ -15,6 +18,7 @@ import com.project.simsim_server.exception.auth.OAuthException;
 import com.project.simsim_server.exception.user.UsersException;
 import com.project.simsim_server.repository.ai.DailyAiInfoRepository;
 import com.project.simsim_server.repository.user.UsersRepository;
+import jakarta.security.auth.message.AuthException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
@@ -31,6 +35,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -53,25 +58,23 @@ public class AuthService {
     private final String BEARER = "Bearer ";
     private final String GOOGLE_PROFILE_URL = "https://www.googleapis.com/userinfo/v2/me";
     private final String GOOGLE_CANCLE_URL = "https://accounts.google.com/o/oauth2/revoke?token={access_token}";
-    private final String APPLE_KEYS_URL = "https://appleid.apple.com/auth/keys";
+    private static final String APPLE_KEYS_URL = "https://appleid.apple.com/auth/keys";
     private final String APPLE_CANCLE_URL = "https://appleid.apple.com/auth/revoke";
-    private final String KAKAO_PROFILE_URL = "https://kapi.kakao.com/v2/user/me";
-    private final String KAKAO_CANCLE_URL = "https://kapi.kakao.com/v1/user/unlink";
 
 
     /**
      * Google 소셜 로그인을 통한 회원 가입 및 로그인
      */
     @Transactional
-    public TokenDTO loginGoogle(LoginRequestDTO requestDTO) {
-        GoogleUserInfoDTO userInfo = getGoogleUserInfo(requestDTO.getAccessToken());
+    public TokenDTO loginGoogle(GoogleLoginRequestDTO tokenRequest) throws AuthException {
+        GoogleUserInfoDTO userInfo = getGoogleUserInfo(tokenRequest.getAccess_token());
         String userEmail = userInfo.getEmail();
         String userName = userInfo.getName();
 
         Optional<Users> usersOptional = usersRepository.findByEmail(userEmail);
         if (usersOptional.isPresent()) {
             Users existingUser = usersOptional.get();
-            if (existingUser.getProviderName() == Provider.APPLE || existingUser.getProviderName() == Provider.KAKAO) {
+            if (existingUser.getProviderName() == Provider.APPLE) {
                 log.warn("이미 가입한 이메일 주소 입니다.");
                 throw new OAuthException(ALREADY_EXIST_ACCOUNT);
             } else if (existingUser.getUserStatus().equals("N")) {
@@ -96,7 +99,7 @@ public class AuthService {
     private GoogleUserInfoDTO getGoogleUserInfo(String accessToken) {
         final HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.AUTHORIZATION, BEARER + accessToken);
-        final HttpEntity<LoginRequestDTO> httpEntity = new HttpEntity<>(headers);
+        final HttpEntity<GoogleLoginRequestDTO> httpEntity = new HttpEntity<>(headers);
         return restTemplate.exchange(GOOGLE_PROFILE_URL, HttpMethod.GET, httpEntity, GoogleUserInfoDTO.class)
                 .getBody();
     }
@@ -121,10 +124,12 @@ public class AuthService {
             userEmail = tokenRequest.getUser().getEmail();
         }
 
+        log.warn("애플 이름 : {}, 이메일: {}", userName, userEmail);
+
         Optional<Users> usersOptional = usersRepository.findByEmail(userEmail);
         if (usersOptional.isPresent()) {
             Users existingUser = usersOptional.get();
-            if (existingUser.getProviderName() == Provider.GOOGLE || existingUser.getProviderName() == Provider.KAKAO) {
+            if (existingUser.getProviderName() == Provider.GOOGLE) {
                 log.warn("이미 가입한 이메일 주소 입니다.");
                 throw new OAuthException(ALREADY_EXIST_ACCOUNT);
             } else if (existingUser.getUserStatus().equals("N")) {
@@ -145,59 +150,12 @@ public class AuthService {
         }
     }
 
-    /**
-     * 카카오톡 소셜 로그인을 통한 회원 가입 및 로그인
-     */
-    @Transactional
-    public TokenDTO loginKakao(LoginRequestDTO requestDTO) {
-        KakaoUserInfoDTO userInfo = getKakaoUserInfo(requestDTO.getAccessToken());
-        String userEmail = userInfo.getAccountInfo().getEmail();
-        String userName = userInfo.getAccountInfo().getName();
-
-        log.info("---[SimSimInfo] 카카오 로그인 : {}", userInfo);
-
-        Optional<Users> usersOptional = usersRepository.findByEmail(userEmail);
-        if (usersOptional.isPresent()) {
-            Users existingUser = usersOptional.get();
-            if (existingUser.getProviderName() == Provider.APPLE || existingUser.getProviderName() == Provider.GOOGLE) {
-                log.warn("이미 가입한 이메일 주소 입니다.");
-                throw new OAuthException(ALREADY_EXIST_ACCOUNT);
-            } else if (existingUser.getUserStatus().equals("N")) {
-                log.warn("탈퇴한 회원입니다. 다시 아이디를 복원합니다.");
-                Users users = existingUser.updateUserStatus("Y");
-                usersRepository.save(users);
-//                    throw new UsersException(CANCLE_ACCOUNT);
-            }
-            existingUser.update(userName);
-            return getTokenDTO(usersRepository.save(existingUser));
-        } else {
-            Users newUser = Users.builder()
-                    .name(userName)
-                    .email(userEmail)
-                    .role(Role.USER)
-                    .providerName(Provider.KAKAO)
-                    .build();
-            return getTokenDTO(generateFirstMailForNewUser(newUser));
-        }
-    }
-
-    private KakaoUserInfoDTO getKakaoUserInfo(String accessToken) {
-        final HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.AUTHORIZATION, BEARER + accessToken);
-        final HttpEntity<LoginRequestDTO> httpEntity = new HttpEntity<>(headers);
-        return restTemplate.exchange(KAKAO_PROFILE_URL, HttpMethod.GET, httpEntity, KakaoUserInfoDTO.class)
-                .getBody();
-    }
-
-
-    /**
-     * 심심조각 토큰
-     */
     private TokenDTO getTokenDTO(Users savedUser) {
         JwtPayload jwtPayload = JwtPayload.fromUser(savedUser);
 
         String accessToken = BEARER + jwtUtils.generateAccessToken(jwtPayload);
         String refreshToken = jwtUtils.generateRefreshToken(jwtPayload);
+        log.info("로그인 액세스 토큰 = {}", accessToken);
         authenticationService.saveAuthentication(jwtPayload);
 
         String values = redisService.getValues(jwtPayload.getUserEmail());
@@ -251,17 +209,22 @@ public class AuthService {
 
 
     /**
-     * 로그아웃
+     * 로그 아웃
      */
     @Transactional
     public void logout(String accessToken) {
         String resolveAccessToken = resolveToken(accessToken);
         String principal = authenticationService.getPrincipal(resolveAccessToken);
 
+        log.warn("-----[SimsimFilter] AuthService logout principal = {}", principal);
+
+        // Redis에서 RefreshToken 삭제
         String refreshTokenInRedis = redisService.getValues(principal);
         if (refreshTokenInRedis != null) {
             redisService.deleteValues(principal);
         }
+
+        log.info(principal + " : " + "logout" + "(" + new Date() + ")");
     }
 
 
@@ -281,11 +244,14 @@ public class AuthService {
         Users deleteUser = userInfo.delete();
         usersRepository.save(deleteUser);
 
+        // Redis에서 RefreshToken 삭제
         String userEmail = user.get().getEmail();
         String refreshTokenInRedis = redisService.getValues(userEmail);
         if (refreshTokenInRedis != null) {
             redisService.deleteValues(userEmail);
         }
+
+        log.info(principal + " : " + "delete" + "(" + new Date() + ")");
     }
 
 
@@ -300,6 +266,8 @@ public class AuthService {
 
         log.info("----[AuthService] 리프레스 토큰 및 액세스 토큰 재발급 시작 ----");
         String principal = authenticationService.getPrincipal(requestRefreshToken);
+
+        log.warn("----[AuthService] 프린시펄 : {}", principal);
 
         Optional<Users> user = usersRepository.findByEmailAndUserStatus(principal);
         if (user.isEmpty())
