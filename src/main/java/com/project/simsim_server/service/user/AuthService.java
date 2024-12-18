@@ -67,7 +67,7 @@ public class AuthService {
      */
     @Transactional
     public TokenDTO loginGoogle(GoogleLoginRequestDTO tokenRequest) throws AuthException {
-        GoogleUserInfoDTO userInfo = getGoogleUserInfo(tokenRequest.getAccess_token());
+        GoogleUserInfoDTO userInfo = getGoogleUserInfo(tokenRequest.getAccessToken());
         String userEmail = userInfo.getEmail();
         String userName = userInfo.getName();
 
@@ -124,8 +124,6 @@ public class AuthService {
             userEmail = tokenRequest.getUser().getEmail();
         }
 
-        log.warn("애플 이름 : {}, 이메일: {}", userName, userEmail);
-
         Optional<Users> usersOptional = usersRepository.findByEmail(userEmail);
         if (usersOptional.isPresent()) {
             Users existingUser = usersOptional.get();
@@ -155,7 +153,6 @@ public class AuthService {
 
         String accessToken = BEARER + jwtUtils.generateAccessToken(jwtPayload);
         String refreshToken = jwtUtils.generateRefreshToken(jwtPayload);
-        log.info("로그인 액세스 토큰 = {}", accessToken);
         authenticationService.saveAuthentication(jwtPayload);
 
         String values = redisService.getValues(jwtPayload.getUserEmail());
@@ -209,16 +206,13 @@ public class AuthService {
 
 
     /**
-     * 로그 아웃
+     * 로그아웃
      */
     @Transactional
     public void logout(String accessToken) {
         String resolveAccessToken = resolveToken(accessToken);
         String principal = authenticationService.getPrincipal(resolveAccessToken);
 
-        log.warn("-----[SimsimFilter] AuthService logout principal = {}", principal);
-
-        // Redis에서 RefreshToken 삭제
         String refreshTokenInRedis = redisService.getValues(principal);
         if (refreshTokenInRedis != null) {
             redisService.deleteValues(principal);
@@ -244,14 +238,11 @@ public class AuthService {
         Users deleteUser = userInfo.delete();
         usersRepository.save(deleteUser);
 
-        // Redis에서 RefreshToken 삭제
         String userEmail = user.get().getEmail();
         String refreshTokenInRedis = redisService.getValues(userEmail);
         if (refreshTokenInRedis != null) {
             redisService.deleteValues(userEmail);
         }
-
-        log.info(principal + " : " + "delete" + "(" + new Date() + ")");
     }
 
 
@@ -263,18 +254,11 @@ public class AuthService {
      */
     @Transactional
     public TokenDTO reissue(String requestRefreshToken) {
-
-        log.info("----[AuthService] 리프레스 토큰 및 액세스 토큰 재발급 시작 ----");
         String principal = authenticationService.getPrincipal(requestRefreshToken);
-
-        log.warn("----[AuthService] 프린시펄 : {}", principal);
 
         Optional<Users> user = usersRepository.findByEmailAndUserStatus(principal);
         if (user.isEmpty())
             throw new UsersException(USER_NOT_FOUND);
-
-        log.warn("----[AuthService] 유저 정보 : {}", user.get().getEmail());
-
 
         if (!jwtUtils.validateToken(requestRefreshToken)) {
             redisService.deleteValues(user.get().getEmail());
@@ -289,7 +273,6 @@ public class AuthService {
             SecurityContextHolder.clearContext();
         }
 
-
         JwtPayload jwtPayload
                 = JwtPayload.fromUser(user.get());
 
@@ -297,11 +280,7 @@ public class AuthService {
         String refreshToken = jwtUtils.generateRefreshToken(jwtPayload);
         redisService.deleteValues(jwtPayload.getUserEmail());
         authenticationService.saveAuthentication(jwtPayload);
-        log.info("---- [SimSimFilter] reissue 액세스 토큰 = {}", accessToken);
 
-        /**
-         * Redis에 Refresh 토큰 저장
-         */
         redisService.setValues(jwtPayload.getUserEmail(), refreshToken,
                 Duration.ofMillis(jwtUtils.getRefreshExpireTime()));
 
@@ -317,7 +296,6 @@ public class AuthService {
         }
         return null;
     }
-
 
     private LocalDate toLocalDate(LocalDateTime localDateTime, ZoneId zoneId) {
         return localDateTime.atZone(zoneId).toLocalDate();
