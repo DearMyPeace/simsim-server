@@ -61,7 +61,7 @@ public class SecurityConfig {
         http
                 .headers(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((request) -> request
-                        .requestMatchers( "/api/v1/auth/apple", "/api/v1/auth/google", "/api/v1/auth/reissue",
+                        .requestMatchers( "/api/v1/auth/apple", "/api/v1/auth/google", "/api/v1/auth/kakao", "/api/v1/auth/reissue",
                                 "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/api/v1/admin").hasRole(Role.ADMIN.name())
                         .requestMatchers(HttpMethod.POST,"/notice").hasRole(Role.ADMIN.name())
