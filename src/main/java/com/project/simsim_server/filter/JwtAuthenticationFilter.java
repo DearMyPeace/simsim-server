@@ -33,7 +33,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final AuthenticationService authenticationService;
 
     private static final String[] AUTHENTICATION_NOT_REQUIRED
-            = new String[] {"/swagger-ui","/v3/api-docs", "/api/v1/auth/apple", "/api/v1/auth/google", "/api/v1/auth/kakao", "/api/v1/auth/reissue"};
+            = new String[] {"/swagger-ui","/v3/api-docs", "/api/v1/auth/apple", "/api/v1/auth/google", "/api/v1/auth/reissue"};
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
