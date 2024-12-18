@@ -4,5 +4,5 @@ import lombok.Getter;
 
 @Getter
 public class GoogleLoginRequestDTO {
-    private String accessToken;
+    private String access_token;
 }
