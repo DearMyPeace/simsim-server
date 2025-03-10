@@ -28,6 +28,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.project.simsim_server.exception.ai.AIErrorCode.AIRESPONE_NOT_FOUND;
@@ -162,29 +163,39 @@ public class AIService {
             return null;
         }
 
-        ResponseEntity<DailyAiKeywordReponseDTO> response
-                = restTemplate.postForEntity(AI_KEYWORDS_URL, requestData.getMonthlyDiaries(), DailyAiKeywordReponseDTO.class);
+        DailyAiKeywordRequestDTO keywordRequestDTO = DailyAiKeywordRequestDTO.builder()
+                .diarys(requestData.getMonthlyDiaries())
+                .build();
+
+        String requestString = objectMapper.writeValueAsString(keywordRequestDTO);
+        log.info("---[SimSimInfo] AI 키워드 요청 데이터 JSON = {}", requestString);
+        log.info("---[SimSimInfo] AI 키워드 요청 데이터 = {}", keywordRequestDTO.toString());
+
+        ResponseEntity<String> response
+                = restTemplate.postForEntity(AI_KEYWORDS_URL, keywordRequestDTO, String.class);
         if (response.getStatusCode() != HttpStatus.OK) {
             log.error("---[SimSimSchedule] requestKeywords AI 응답 내용 없음 userId = {}", user.getUserId());
             return null;
         }
+        String keywords = response.getBody();
 
-        DailyAiKeywordReponseDTO keywords = response.getBody();
+//        DailyAiKeywordReponseDTO keywords = response.getBody();
         if (keywords == null) {
             log.error("---[SimSimSchedule] requestKeywords AI 응답 내용 없음 userId = {}", user.getUserId());
             return null;
         }
-        log.warn("---[SimSimSchedule] requestKeywords AI 응답 내용 = {},  userId = {}", keywords.toString(), user.getUserId());
+        log.warn("---[SimSimSchedule] requestKeywords AI 응답 내용 = {},  userId = {}", keywords, user.getUserId());
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        String jsonKeywordsData = null;
-        try {
-            jsonKeywordsData = objectMapper.writeValueAsString(keywords);
-            log.info("---[SimSimInfo] AI 키워드 분석 정보 = {}", jsonKeywordsData);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return jsonKeywordsData;
+//        ObjectMapper objectMapper = new ObjectMapper();
+//        String jsonKeywordsData = null;
+//        try {
+//            jsonKeywordsData = objectMapper.writeValueAsString(keywords);
+//            log.info("---[SimSimInfo] AI 키워드 분석 정보 = {}", jsonKeywordsData);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        return jsonKeywordsData;
+        return keywords;
     }
 
 
