@@ -38,7 +38,7 @@ public class DiaryService {
     private final DailyAiInfoRepository dailyAiInfoRepository;
 
     public DiaryDailyResponseDTO findByCreatedDate(LocalDate targetDate, Long userId) {
-        boolean sendStatus = false;
+        boolean isSendStatus = false;
         List<Diary> diaries = diaryRepository
                 .findByCreatedAtAndUserId(userId, targetDate);
 
@@ -48,19 +48,20 @@ public class DiaryService {
 
         List<DailyAiInfo> aireply = dailyAiInfoRepository.findByCreatedAtAndUserId(userId, targetDate);
         if (aireply.size() == 1 && !aireply.getFirst().isFirst() || aireply.size() >= 2) {
-            sendStatus = true;
+            isSendStatus = true;
         }
 
         List<Diary> sendAbleDiaries = diaryRepository
                 .findAllByCreatedAtAndUserId(userId, targetDate)
-                .stream().filter(diary -> "Y".equals(diary.getSendAble()))
+                .stream().filter(diary -> "Y".equals(diary.getIsSendAble()))
                 .collect(Collectors.toList());
+
         if (!sendAbleDiaries.isEmpty()) {
-            sendStatus = false;
+            isSendStatus = false;
         }
 
         return DiaryDailyResponseDTO.builder()
-                .sendStatus(sendStatus)
+                .sendStatus(isSendStatus)
                 .diaries(list)
                 .build();
     }
