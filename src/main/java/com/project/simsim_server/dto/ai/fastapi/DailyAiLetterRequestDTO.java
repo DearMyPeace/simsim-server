@@ -9,14 +9,14 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 public class DailyAiLetterRequestDTO {
-    private List<DiaryContentDTO> diaries;
+    private List<DiaryContentDTO> diarys;
     private List<DiaryContentDTO> monthlyDiaries;
     private String persona;
     private List<DiarySummaryDTO> summary;
 
     @Builder
-    public DailyAiLetterRequestDTO(List<DiaryContentDTO> diaries, List<DiaryContentDTO> monthlyDiaries, String persona, List<DiarySummaryDTO> summary) {
-        this.diaries = diaries;
+    public DailyAiLetterRequestDTO(List<DiaryContentDTO> diarys, List<DiaryContentDTO> monthlyDiaries, String persona, List<DiarySummaryDTO> summary) {
+        this.diarys = diarys;
         this.monthlyDiaries = monthlyDiaries;
         this.persona = persona;
         this.summary = summary;
