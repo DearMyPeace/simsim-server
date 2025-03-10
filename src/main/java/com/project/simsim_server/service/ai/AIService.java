@@ -167,10 +167,6 @@ public class AIService {
                 .diarys(requestData.getMonthlyDiaries())
                 .build();
 
-        String requestString = objectMapper.writeValueAsString(keywordRequestDTO);
-        log.info("---[SimSimInfo] AI 키워드 요청 데이터 JSON = {}", requestString);
-        log.info("---[SimSimInfo] AI 키워드 요청 데이터 = {}", keywordRequestDTO.toString());
-
         ResponseEntity<String> response
                 = restTemplate.postForEntity(AI_KEYWORDS_URL, keywordRequestDTO, String.class);
         if (response.getStatusCode() != HttpStatus.OK) {
@@ -178,23 +174,12 @@ public class AIService {
             return null;
         }
         String keywords = response.getBody();
-
-//        DailyAiKeywordReponseDTO keywords = response.getBody();
         if (keywords == null) {
             log.error("---[SimSimSchedule] requestKeywords AI 응답 내용 없음 userId = {}", user.getUserId());
             return null;
         }
         log.warn("---[SimSimSchedule] requestKeywords AI 응답 내용 = {},  userId = {}", keywords, user.getUserId());
 
-//        ObjectMapper objectMapper = new ObjectMapper();
-//        String jsonKeywordsData = null;
-//        try {
-//            jsonKeywordsData = objectMapper.writeValueAsString(keywords);
-//            log.info("---[SimSimInfo] AI 키워드 분석 정보 = {}", jsonKeywordsData);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        return jsonKeywordsData;
         return keywords;
     }
 
@@ -209,9 +194,9 @@ public class AIService {
         DailyAiLetterRequestDTO requestData = generateRequestData(user, targetDate, targetDiaries);
 
         // AI 요청
-        String letter = requestLetter(user, requestData); // AI_LETTER_URL 호출
-        String summary = requestDiarySummary(user, requestData); // AI_SUMMARY_URL 호출
-        String keywords = requestKeywords(user, requestData); // AI_KEYWORDS_URL 호출
+        String letter = requestLetter(user, requestData);
+        String summary = requestDiarySummary(user, requestData);
+        String keywords = requestKeywords(user, requestData);
         if (letter == null || keywords == null || summary == null) {
             throw new AIException(AIRESPONE_NOT_FOUND);
         }
@@ -227,13 +212,22 @@ public class AIService {
                 .isFirst(false)
                 .build());
 
-        // Keywords 정보를 저장
-        MonthlyReport reportData = monthlyReportRepository.save(MonthlyReport.builder()
-                .userId(user.getUserId())
-                .targetDate(targetDate)
-                .keywordsData(keywords)
-                .monthlySummary(null) // TODO - 기능 추가 여부에 따라 제거 예정
-                .build());
+        int targetYear = LocalDate.now().getYear();
+        int targetMonth = LocalDate.now().getMonthValue();
+        Long userId = user.getUserId();
+        List<MonthlyReport> reportDataList = monthlyReportRepository.findByIdAndTargetDate(userId,
+                targetYear, targetMonth);
+
+        MonthlyReport reportData = reportDataList.get(0);
+        if (reportData == null) {
+            reportData = MonthlyReport.builder()
+                    .userId(user.getUserId())
+                    .keywordsData(keywords)
+                    .build();
+        } else {
+            reportData.updateAIResponse(keywords, null); //TODO - 두번째 인자 제거 예정
+        }
+        monthlyReportRepository.save(reportData);
 
         log.info("---[SimSimSchedule] 처리 완료 userId = {}", user.getUserId());
         log.warn("---[SimSimStatus] targetDiaries[0].SendAble = {}", targetDiaries.getLast().getIsSendAble());
