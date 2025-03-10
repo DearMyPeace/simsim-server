@@ -86,7 +86,7 @@ public class AIService {
         List<Diary> monthlyDiariesInfo = diaryRepository.findDiariesByCreatedAtBetweenAndUserId(startDateTime, endDateTime, user.getUserId());
         List<DiaryContentDTO> monthlyDiaries = new ArrayList<>();
         for(Diary diary : monthlyDiariesInfo) {
-            diaries.add(DiaryContentDTO.builder()
+            monthlyDiaries.add(DiaryContentDTO.builder()
                     .time(diary.getCreatedDate())
                     .content(diary.getContent())
                     .build());
