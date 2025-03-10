@@ -1,10 +1,13 @@
 package com.project.simsim_server.config.schedule;
 
 import com.project.simsim_server.domain.ai.DailyAiInfo;
+import com.project.simsim_server.domain.diary.Diary;
 import com.project.simsim_server.domain.user.Users;
 import com.project.simsim_server.dto.ai.client.AILetterRequestDTO;
 import com.project.simsim_server.dto.ai.client.AILetterResponseDTO;
+import com.project.simsim_server.exception.ai.AIException;
 import com.project.simsim_server.repository.ai.DailyAiInfoRepository;
+import com.project.simsim_server.repository.diary.DiaryRepository;
 import com.project.simsim_server.repository.user.UsersRepository;
 import com.project.simsim_server.service.ai.AIService;
 import jakarta.transaction.Transactional;
@@ -19,6 +22,7 @@ import java.time.YearMonth;
 import java.util.List;
 
 import static com.project.simsim_server.exception.ai.AIErrorCode.AI_MAIL_FAIL;
+import static com.project.simsim_server.exception.ai.AIErrorCode.NO_DIARIES;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -28,6 +32,7 @@ public class AIBatchService {
     private final AIService aiService;
     private final UsersRepository usersRepository;
     private final DailyAiInfoRepository dailyAiInfoRepository;
+    private final DiaryRepository diaryRepository;
 
     @Transactional
     public void deleteFirstReply() {
@@ -71,10 +76,15 @@ public class AIBatchService {
     public AILetterResponseDTO saveAuto(AILetterRequestDTO requestDTO, Long userId) {
         Users user = usersRepository.findByIdAndUserStatus(userId)
                 .orElse(null);
-
         if (user == null) {
             log.warn("---[SimSimINFO] 유저가 유효하지 않습니다 userId = {}", userId);
             return null;
+        }
+
+        List<Diary> diaries = diaryRepository.findByCreatedAtAndUserId(userId, requestDTO.getTargetDate());
+        if (diaries.isEmpty()) {
+            log.info("---[SimSimSchedule] 해당 날짜({})에 작성한 일기가 없는 회원 userId = {}", requestDTO.getTargetDate(), user.getUserId());
+            throw new AIException(NO_DIARIES);
         }
 
         // 해당 유저의 해당 일자 AI 답장 정보 조회
@@ -100,15 +110,12 @@ public class AIBatchService {
         }
 
         // 기존에 생성된 데이터가 없으면 생성
-        LocalDateTime startDateTime = requestDTO.getTargetDate().atStartOfDay();
-        LocalDateTime endDateTime = requestDTO.getTargetDate().atTime(LocalTime.MAX);
         try {
-            DailyAiInfo dailyAiInfo = aiService.requestToAI(user, requestDTO.getTargetDate(), startDateTime, endDateTime);
-            if (dailyAiInfo == null) {
+            AILetterResponseDTO reponseDTO = aiService.requestToAI(user, requestDTO.getTargetDate(), diaries);
+            if (reponseDTO == null) {
                 return null;
             }
-
-            return new AILetterResponseDTO(dailyAiInfo);
+            return reponseDTO;
         } catch (Exception e) {
             log.error("---[SimSimSchedule] 에러 처리 userId = {}", user.getUserId(), e);
             return null;

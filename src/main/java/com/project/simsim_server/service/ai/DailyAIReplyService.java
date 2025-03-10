@@ -1,6 +1,7 @@
 package com.project.simsim_server.service.ai;
 
 import com.project.simsim_server.domain.ai.DailyAiInfo;
+import com.project.simsim_server.domain.diary.Diary;
 import com.project.simsim_server.domain.user.Users;
 import com.project.simsim_server.dto.ai.client.AILetterRequestDTO;
 import com.project.simsim_server.dto.ai.client.AILetterResponseDTO;
@@ -82,49 +83,45 @@ public class DailyAIReplyService {
         Users user = usersRepository.findByIdAndUserStatus(userId)
                 .orElseThrow(() -> new AIException(AI_MAIL_FAIL));
 
+        List<Diary> diaries = diaryRepository.findByCreatedAtAndUserId(userId, requestDTO.getTargetDate());
+        if (diaries.isEmpty()) {
+            log.info("---[SimSimSchedule] 해당 날짜({})에 작성한 일기가 없는 회원 userId = {}", requestDTO.getTargetDate(), user.getUserId());
+            throw new AIException(NO_DIARIES);
+        }
 
-        // 해당 유저의 해당 일자 AI 답장 정보 조회
+        // TODO - 추후 삭제
+        for (Diary diary : diaries) {
+            log.warn("---[SimSimInfo] 금일 일기 userId = {} : {}", diary.getUserId(), diary.getContent());
+        }
+
+        boolean hasSendable = diaries.stream()
+                .anyMatch(diary -> "Y".equals(diary.getIsSendAble()));
+
         List<DailyAiInfo> aiInfo =
                 dailyAiInfoRepository.findByCreatedAtAndUserId(userId, requestDTO.getTargetDate());
 
-        // 기존에 생성된 데이터가 있으면 반환(안내 편지는 제외 시킴)
-        if (!aiInfo.isEmpty()) {
-            log.warn("---[SimSimINFO] AI 편지::기존 AI 데이터 개수 ={}, userId = {}",
-                    aiInfo.size(), user.getUserId());
+        log.warn("---[SimSimINFO] AI 편지::기존 AI 데이터 개수 ={}, userId = {}",
+                aiInfo.size(), user.getUserId());
+
+        // 기존 AI 응답 반환
+        if (!hasSendable && !aiInfo.isEmpty() && !aiInfo.getFirst().isFirst()) {
             DailyAiInfo responseInfo = aiInfo.getFirst();
             log.warn("---[SimSimINFO] AI 편지::기존 AI 데이터 ={}, userId = {}",
                     responseInfo.toString(), user.getUserId());
+            log.warn("---[SimSimINFO] AI 편지::기존 AI 응답을 반환합니다");
 
-            if (responseInfo.isFirst()) {
-                aiInfo.getFirst().updateReplyStatus("F");
-            }
-//            if (!responseInfo.isFirst()) {
-//                log.warn("---[SimSimINFO] AI 편지::기존 AI 데이터는 안내문이 아니므로 저장된 데이터를 반환합니다. userId = {}",
-//                        user.getUserId());
-//                return new AILetterResponseDTO(responseInfo);
-//            } else { // 기존에 생성된 데이터가 안내 편지면 더 이상 보이지 않게 함
-//                aiInfo.getFirst().updateReplyStatus("F");
-//                dailyAiInfoRepository.save(responseInfo);
-//            }
+            aiInfo.getFirst().updateReplyStatus("F");
+            dailyAiInfoRepository.save(aiInfo.getFirst());
+            return new AILetterResponseDTO(responseInfo);
         }
 
-
-        // 기존에 생성된 데이터가 없으면 생성
-        LocalDateTime startDateTime = requestDTO.getTargetDate().atStartOfDay();
-        LocalDateTime endDateTime = requestDTO.getTargetDate().atTime(LocalTime.MAX);
+        // AI 응답 새로 생성
         try {
-            DailyAiInfo dailyAiInfo = aiService.requestToAI(user, requestDTO.getTargetDate(), startDateTime, endDateTime);
-            if (dailyAiInfo == null) {
+            AILetterResponseDTO responseDTO = aiService.requestToAI(user, requestDTO.getTargetDate(), diaries);
+            if (responseDTO == null) {
                 throw new AIException(AI_MAIL_FAIL);
             }
-
-
-//            //TODO 일반 등급이면서 분석 대상 날짜가 동일하면 예외 처리(동일 날짜가 아닌 12시간 이후로 수정 예정)
-//            if (user.getGrade() == Grade.GENERAL && !requestDTO.getTargetDate().atStartOfDay()
-//                .isBefore(LocalDateTime.of(LocalDate.now(), LocalTime.NOON))) {
-//                throw new AIException(NOT_MEET_USER_GRADE);
-//            }
-            return new AILetterResponseDTO(dailyAiInfo);
+            return responseDTO;
         } catch (Exception e) {
             log.error("---[SimSimSchedule] 에러 처리 userId = {}", user.getUserId(), e);
             throw new AIException(AI_MAIL_FAIL);
