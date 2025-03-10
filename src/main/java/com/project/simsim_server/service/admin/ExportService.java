@@ -41,7 +41,7 @@ public class ExportService {
             diaryMap.put("markedDate", diary.getMarkedDate());
             diaryMap.put("createdDate", diary.getCreatedDate());
             diaryMap.put("modifiedDate", diary.getModifiedDate());
-            diaryMap.put("sendAble", diary.getSendAble());
+            diaryMap.put("sendAble", diary.getIsSendAble());
             return diaryMap;
         })).collect(Collectors.toList());
     }
