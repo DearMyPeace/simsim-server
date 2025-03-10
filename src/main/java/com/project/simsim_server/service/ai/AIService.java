@@ -155,20 +155,35 @@ public class AIService {
      * 4. 월간 키워드 API 호출
      */
     public String requestKeywords(Users user, DailyAiLetterRequestDTO requestData) {
-        ResponseEntity<DailyLetterSummaryResponseDTO> response
-                = restTemplate.postForEntity(AI_KEYWORDS_URL, requestData, DailyLetterSummaryResponseDTO.class);
+
+        DailyAiKeywordRequestDTO keywordRequestDTO = DailyAiKeywordRequestDTO.builder()
+                .diarys(requestData.getMonthlyDiaries())
+                .build();
+
+        log.info("---[SimSimInfo] AI 키워드 요청 데이터 = {}", keywordRequestDTO.toString());
+        ResponseEntity<DailyAiKeywordReponseDTO> response
+                = restTemplate.postForEntity(AI_KEYWORDS_URL, keywordRequestDTO, DailyAiKeywordReponseDTO.class);
         if (response.getStatusCode() != HttpStatus.OK) {
             log.error("---[SimSimSchedule] requestKeywords AI 응답 내용 없음 userId = {}", user.getUserId());
             return null;
         }
 
-        log.warn("---[SimSimSchedule] requestKeywords AI 응답 내용 {},  userId = {}", response.getBody(), user.getUserId());
-        DailyLetterSummaryResponseDTO keywords = response.getBody();
-        if (keywords == null || keywords.getResult().isEmpty()) {
+        DailyAiKeywordReponseDTO keywords = response.getBody();
+        if (keywords == null) {
             log.error("---[SimSimSchedule] requestKeywords AI 응답 내용 없음 userId = {}", user.getUserId());
             return null;
         }
-        return keywords.getResult();
+        log.warn("---[SimSimSchedule] requestKeywords AI 응답 내용 {},  userId = {}", response.getBody(), user.getUserId());
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        String jsonKeywordsData = null;
+        try {
+            jsonKeywordsData = objectMapper.writeValueAsString(keywords);
+            log.info("---[SimSimInfo] AI 키워드 분석 정보 = {}", jsonKeywordsData);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return jsonKeywordsData;
     }
 
 
