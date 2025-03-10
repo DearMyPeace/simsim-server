@@ -94,7 +94,7 @@ public class AIService {
 
         DailyAiLetterRequestDTO requestData = DailyAiLetterRequestDTO.builder()
                 .persona(persona)
-                .diaries(diaries) // 요청일 하루의 일기 - AI 편지 생성용
+                .diarys(diaries) // 요청일 하루의 일기 - AI 편지 생성용
                 .monthlyDiaries(monthlyDiaries) // 요청일 한달간의 일기 - 키워드 생성용
                 .summary(summaries) // 요청일 이전 2주간의 AI 응답
                 .build();
