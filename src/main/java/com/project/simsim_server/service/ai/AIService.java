@@ -162,16 +162,8 @@ public class AIService {
             return null;
         }
 
-        DailyAiKeywordRequestDTO keywordRequestDTO = DailyAiKeywordRequestDTO.builder()
-                .diarys(requestData.getMonthlyDiaries())
-                .build();
-
-        String requestString = objectMapper.writeValueAsString(keywordRequestDTO);
-        log.info("---[SimSimInfo] AI 키워드 요청 데이터 JSON = {}", requestString);
-        log.info("---[SimSimInfo] AI 키워드 요청 데이터 = {}", keywordRequestDTO.toString());
-
         ResponseEntity<DailyAiKeywordReponseDTO> response
-                = restTemplate.postForEntity(AI_KEYWORDS_URL, keywordRequestDTO, DailyAiKeywordReponseDTO.class);
+                = restTemplate.postForEntity(AI_KEYWORDS_URL, requestData.getMonthlyDiaries(), DailyAiKeywordReponseDTO.class);
         if (response.getStatusCode() != HttpStatus.OK) {
             log.error("---[SimSimSchedule] requestKeywords AI 응답 내용 없음 userId = {}", user.getUserId());
             return null;
