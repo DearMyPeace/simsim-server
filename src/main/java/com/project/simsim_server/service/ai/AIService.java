@@ -1,6 +1,7 @@
 package com.project.simsim_server.service.ai;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.simsim_server.domain.ai.DailyAiInfo;
 import com.project.simsim_server.domain.ai.MonthlyReport;
@@ -154,13 +155,21 @@ public class AIService {
     /**
      * 4. 월간 키워드 API 호출
      */
-    public String requestKeywords(Users user, DailyAiLetterRequestDTO requestData) {
+    public String requestKeywords(Users user, DailyAiLetterRequestDTO requestData) throws JsonProcessingException {
+
+        if (requestData.getMonthlyDiaries() == null || requestData.getMonthlyDiaries().isEmpty()) {
+            log.error("Monthly diaries are empty or null. userId = {}", user.getUserId());
+            return null;
+        }
 
         DailyAiKeywordRequestDTO keywordRequestDTO = DailyAiKeywordRequestDTO.builder()
                 .diarys(requestData.getMonthlyDiaries())
                 .build();
 
+        String requestString = objectMapper.writeValueAsString(keywordRequestDTO);
+        log.info("---[SimSimInfo] AI 키워드 요청 데이터 JSON = {}", requestString);
         log.info("---[SimSimInfo] AI 키워드 요청 데이터 = {}", keywordRequestDTO.toString());
+
         ResponseEntity<DailyAiKeywordReponseDTO> response
                 = restTemplate.postForEntity(AI_KEYWORDS_URL, keywordRequestDTO, DailyAiKeywordReponseDTO.class);
         if (response.getStatusCode() != HttpStatus.OK) {
@@ -173,7 +182,7 @@ public class AIService {
             log.error("---[SimSimSchedule] requestKeywords AI 응답 내용 없음 userId = {}", user.getUserId());
             return null;
         }
-        log.warn("---[SimSimSchedule] requestKeywords AI 응답 내용 {},  userId = {}", response.getBody(), user.getUserId());
+        log.warn("---[SimSimSchedule] requestKeywords AI 응답 내용 = {},  userId = {}", keywords.toString(), user.getUserId());
 
         ObjectMapper objectMapper = new ObjectMapper();
         String jsonKeywordsData = null;
@@ -191,7 +200,7 @@ public class AIService {
      * AI 응답에 DB 저장 처리
      */
     @Transactional
-    public AILetterResponseDTO requestToAI(Users user, LocalDate targetDate, List<Diary> targetDiaries) {
+    public AILetterResponseDTO requestToAI(Users user, LocalDate targetDate, List<Diary> targetDiaries) throws JsonProcessingException {
 
         // AI 요청 정보 생성
         DailyAiLetterRequestDTO requestData = generateRequestData(user, targetDate, targetDiaries);
