@@ -74,6 +74,9 @@ public class AIService {
             summaries.add(DiarySummaryDTO.builder()
                     .date(info.getTargetDate())
                     .content(info.getReplyContent())
+                    .positive(new ArrayList<>(Arrays.asList(0, 0, 0)))
+                    .neutral(new ArrayList<>(Arrays.asList(0, 0, 0)))
+                    .negative(new ArrayList<>(Arrays.asList(0, 0, 0)))
                     .build());
         }
 
