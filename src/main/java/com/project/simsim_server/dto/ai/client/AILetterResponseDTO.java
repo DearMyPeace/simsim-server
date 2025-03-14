@@ -14,7 +14,6 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class AILetterResponseDTO {
     private Long aiId;
-
     private Long reportId;
     private LocalDate date;
     private String summary;
