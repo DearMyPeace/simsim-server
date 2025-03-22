@@ -25,7 +25,7 @@ public class ReportController {
      * @param targetDate year + month ex) 202503
      * @return AIMonthlyResponseDTO 리스트 (rate, keyword, comment)
      */
-    @GetMapping("/montly/{targetDate}")
+    @GetMapping("/monthly/{targetDate}")
     public List<AIMonthlyResponseDTO> getAIMontlyReport(
             @PathVariable String targetDate
     ) {
