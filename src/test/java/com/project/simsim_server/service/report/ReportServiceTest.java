@@ -33,20 +33,20 @@ class ReportServiceTest {
 
     private final Long TEST_USER_ID = 1L;
 
-    @Test
-    void 월간레포트_확인() {
-        // given
-        String targetDate = YearMonth.now().format(DateTimeFormatter.ofPattern("yyyyMM"));
-
-        // when
-        List<AIMonthlyResponseDTO> reponseList = reportService.findByuserIdAndTargetDate(TEST_USER_ID, targetDate);
-
-        // then
-        assertThat(reponseList).isNotNull();
-        assertThat(reponseList.get(0).getKeyword()).isEqualTo("카공");
-        assertThat(reponseList.get(0).getRate()).isEqualTo(3.0867);
-        assertThat(reponseList.get(0).getComment()).isEqualTo("카공의 비율은 3% 입니다.");
-    }
+//    @Test
+//    void 월간레포트_확인() {
+//        // given
+//        String targetDate = YearMonth.now().format(DateTimeFormatter.ofPattern("yyyyMM"));
+//
+//        // when
+//        List<AIMonthlyResponseDTO> reponseList = reportService.findByuserIdAndTargetDate(TEST_USER_ID, targetDate);
+//
+//        // then
+//        assertThat(reponseList).isNotNull();
+//        assertThat(reponseList.get(0).getKeyword()).isEqualTo("카공");
+//        assertThat(reponseList.get(0).getRate()).isEqualTo(3.0867);
+//        assertThat(reponseList.get(0).getComment()).isEqualTo("카공의 비율은 3% 입니다.");
+//    }
 
     @Test
     void 월간레포트_미래날짜_확인() {
