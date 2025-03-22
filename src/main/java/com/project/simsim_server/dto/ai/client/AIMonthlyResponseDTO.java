@@ -28,7 +28,7 @@ public class AIMonthlyResponseDTO {
     }
 
     private String generateComment(String keyword, Double rate) {
-        int ratePercentage = (int) Math.floor(rate);
+        int ratePercentage = (int) Math.floor(rate * 100);
         return keyword + "의 비율은 " + ratePercentage + "% 입니다.";
     }
 
