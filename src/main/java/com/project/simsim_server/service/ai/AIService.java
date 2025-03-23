@@ -202,7 +202,9 @@ public class AIService {
         }
 
         // 모든 Diary의 isSendAble 상태를 false로 설정
-        diaryRepository.findAllByCreatedAtAndUserId(user.getUserId(), targetDate).forEach(diary -> diary.setIsSendAble(false));
+        List<Diary> diaries = diaryRepository.findAllByCreatedAtAndUserId(user.getUserId(), targetDate);
+        diaries.forEach(diary -> diary.setIsSendAble(false));
+        diaryRepository.saveAll(diaries);
         DailyAiInfo aiData = dailyAiInfoRepository.save(DailyAiInfo.builder()
                 .userId(user.getUserId())
                 .targetDate(targetDate)
@@ -215,22 +217,24 @@ public class AIService {
         int targetYear = targetDate.getYear();
         int targetMonth = targetDate.getMonthValue();
         Long userId = user.getUserId();
+        MonthlyReport reportData = null;
         List<MonthlyReport> reportDataList = monthlyReportRepository.findByIdAndTargetDate(userId,
                 targetYear, targetMonth);
-
-        MonthlyReport reportData = reportDataList.get(0);
-        if (reportData == null) {
+        if (!reportDataList.isEmpty()) {
+            reportData = reportDataList.get(0);
+            reportData.updateAIResponse(keywords, null); //TODO - 두번째 인자 제거 예정
+        } else {
             reportData = MonthlyReport.builder()
                     .userId(user.getUserId())
                     .keywordsData(keywords)
                     .build();
-        } else {
-            reportData.updateAIResponse(keywords, null); //TODO - 두번째 인자 제거 예정
         }
         monthlyReportRepository.save(reportData);
 
         log.info("---[SimSimSchedule] 처리 완료 userId = {}", user.getUserId());
-        log.warn("---[SimSimStatus] targetDiaries[0].SendAble = {}", targetDiaries.getLast().getIsSendAble());
+        if (!targetDiaries.isEmpty()) {
+            log.warn("---[SimSimStatus] targetDiaries[0].SendAble = {}", targetDiaries.getLast().getIsSendAble());
+        }
         return new AILetterResponseDTO(aiData, reportData);
     }
 }
