@@ -81,7 +81,7 @@ public class DailyAIReplyService {
     @Transactional
     public AILetterResponseDTO save(AILetterRequestDTO requestDTO, Long userId) {
 
-        if (requestDTO.getTargetDate() == null) {
+        if (requestDTO == null || requestDTO.getTargetDate() == null) {
             log.error("---[SimSimInfo] 요청일자가 null입니다. userId = {}", userId);
             throw new AIException(AI_MAIL_FAIL);
         }
