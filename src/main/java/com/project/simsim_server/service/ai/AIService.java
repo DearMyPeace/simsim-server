@@ -96,6 +96,7 @@ public class AIService {
         }
 
         DailyAiLetterRequestDTO requestData = DailyAiLetterRequestDTO.builder()
+                .targetDate(targetDate)
                 .persona(persona)
                 .diarys(diaries) // 요청일 하루의 일기 - AI 편지 생성용
                 .monthlyDiaries(monthlyDiaries) // 요청일 한달간의 일기 - 키워드 생성용
@@ -190,7 +191,6 @@ public class AIService {
      */
     @Transactional
     public AILetterResponseDTO requestToAI(Users user, LocalDate targetDate, List<Diary> targetDiaries) throws JsonProcessingException {
-
         if (targetDate == null) {
             log.error("---[SimSimInfo] 요청일자가 null입니다. userId = {}", user.getUserId());
             throw new AIException(AI_MAIL_FAIL);
@@ -213,15 +213,15 @@ public class AIService {
         diaryRepository.saveAll(diaries);
         DailyAiInfo aiData = dailyAiInfoRepository.save(DailyAiInfo.builder()
                 .userId(user.getUserId())
-                .targetDate(targetDate)
+                .targetDate(requestData.getTargetDate())
                 .diarySummary(summary)
                 .replyContent(letter)
                 .replyStatus("N")
                 .isFirst(false)
                 .build());
 
-        int targetYear = targetDate.getYear();
-        int targetMonth = targetDate.getMonthValue();
+        int targetYear = requestData.getTargetDate().getYear();
+        int targetMonth = requestData.getTargetDate().getMonthValue();
         Long userId = user.getUserId();
         MonthlyReport reportData = null;
         List<MonthlyReport> reportDataList = monthlyReportRepository.findByIdAndTargetDate(userId,
