@@ -212,8 +212,8 @@ public class AIService {
                 .isFirst(false)
                 .build());
 
-        int targetYear = LocalDate.now().getYear();
-        int targetMonth = LocalDate.now().getMonthValue();
+        int targetYear = targetDate.getYear();
+        int targetMonth = targetDate.getMonthValue();
         Long userId = user.getUserId();
         List<MonthlyReport> reportDataList = monthlyReportRepository.findByIdAndTargetDate(userId,
                 targetYear, targetMonth);
