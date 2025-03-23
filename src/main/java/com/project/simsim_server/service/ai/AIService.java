@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.project.simsim_server.exception.ai.AIErrorCode.AIRESPONE_NOT_FOUND;
+import static com.project.simsim_server.exception.ai.AIErrorCode.AI_MAIL_FAIL;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -189,6 +190,11 @@ public class AIService {
      */
     @Transactional
     public AILetterResponseDTO requestToAI(Users user, LocalDate targetDate, List<Diary> targetDiaries) throws JsonProcessingException {
+
+        if (targetDate == null) {
+            log.error("---[SimSimInfo] 요청일자가 null입니다. userId = {}", user.getUserId());
+            throw new AIException(AI_MAIL_FAIL);
+        }
 
         // AI 요청 정보 생성
         DailyAiLetterRequestDTO requestData = generateRequestData(user, targetDate, targetDiaries);
