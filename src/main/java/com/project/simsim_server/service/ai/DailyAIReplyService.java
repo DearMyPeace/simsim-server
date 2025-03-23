@@ -80,6 +80,9 @@ public class DailyAIReplyService {
 
     @Transactional
     public AILetterResponseDTO save(AILetterRequestDTO requestDTO, Long userId) {
+
+        log.info("---[SimSimInfo] 요청일자 = {}", requestDTO.getTargetDate());
+
         Users user = usersRepository.findByIdAndUserStatus(userId)
                 .orElseThrow(() -> new AIException(AI_MAIL_FAIL));
 
