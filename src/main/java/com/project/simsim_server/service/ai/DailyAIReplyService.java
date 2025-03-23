@@ -86,12 +86,14 @@ public class DailyAIReplyService {
             throw new AIException(AI_MAIL_FAIL);
         }
 
+        LocalDate targetDate = requestDTO.getTargetDate();
+
         Users user = usersRepository.findByIdAndUserStatus(userId)
                 .orElseThrow(() -> new AIException(AI_MAIL_FAIL));
 
-        List<Diary> diaries = diaryRepository.findByCreatedAtAndUserId(userId, requestDTO.getTargetDate());
+        List<Diary> diaries = diaryRepository.findByCreatedAtAndUserId(userId, targetDate);
         if (diaries.isEmpty()) {
-            log.info("---[SimSimSchedule] 해당 날짜({})에 작성한 일기가 없는 회원 userId = {}", requestDTO.getTargetDate(), user.getUserId());
+            log.info("---[SimSimSchedule] 해당 날짜({})에 작성한 일기가 없는 회원 userId = {}", targetDate, user.getUserId());
             throw new AIException(NO_DIARIES);
         }
 
@@ -104,7 +106,7 @@ public class DailyAIReplyService {
                 .anyMatch(diary -> "Y".equals(diary.getIsSendAble()));
 
         List<DailyAiInfo> aiInfo =
-                dailyAiInfoRepository.findByCreatedAtAndUserId(userId, requestDTO.getTargetDate());
+                dailyAiInfoRepository.findByCreatedAtAndUserId(userId, targetDate);
 
         log.warn("---[SimSimINFO] AI 편지::기존 AI 데이터 개수 ={}, userId = {}",
                 aiInfo.size(), user.getUserId());
@@ -123,7 +125,7 @@ public class DailyAIReplyService {
 
         // AI 응답 새로 생성
         try {
-            AILetterResponseDTO responseDTO = aiService.requestToAI(user, requestDTO.getTargetDate(), diaries);
+            AILetterResponseDTO responseDTO = aiService.requestToAI(user, targetDate, diaries);
             if (responseDTO == null) {
                 throw new AIException(AI_MAIL_FAIL);
             }
