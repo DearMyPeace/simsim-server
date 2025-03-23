@@ -161,7 +161,7 @@ public class AIService {
     public String requestKeywords(Users user, DailyAiLetterRequestDTO requestData) throws JsonProcessingException {
 
         if (requestData.getMonthlyDiaries() == null || requestData.getMonthlyDiaries().isEmpty()) {
-            log.error("Monthly diaries are empty or null. userId = {}", user.getUserId());
+            log.error("---[SimSimError] requestKeywords 요청 데이터가 없습니다. userId = {}", user.getUserId());
             return null;
         }
 
@@ -191,10 +191,6 @@ public class AIService {
      */
     @Transactional
     public AILetterResponseDTO requestToAI(Users user, LocalDate targetDate, List<Diary> targetDiaries) throws JsonProcessingException {
-        if (targetDate == null) {
-            log.error("---[SimSimInfo] 요청일자가 null입니다. userId = {}", user.getUserId());
-            throw new AIException(AI_MAIL_FAIL);
-        }
 
         // AI 요청 정보 생성
         DailyAiLetterRequestDTO requestData = generateRequestData(user, targetDate, targetDiaries);
@@ -213,15 +209,15 @@ public class AIService {
         diaryRepository.saveAll(diaries);
         DailyAiInfo aiData = dailyAiInfoRepository.save(DailyAiInfo.builder()
                 .userId(user.getUserId())
-                .targetDate(requestData.getTargetDate())
+                .targetDate(targetDate)
                 .diarySummary(summary)
                 .replyContent(letter)
                 .replyStatus("N")
                 .isFirst(false)
                 .build());
 
-        int targetYear = requestData.getTargetDate().getYear();
-        int targetMonth = requestData.getTargetDate().getMonthValue();
+        int targetYear = targetDate.getYear();
+        int targetMonth = targetDate.getMonthValue();
         Long userId = user.getUserId();
         MonthlyReport reportData = null;
         List<MonthlyReport> reportDataList = monthlyReportRepository.findByIdAndTargetDate(userId,
@@ -232,6 +228,7 @@ public class AIService {
         } else {
             reportData = MonthlyReport.builder()
                     .userId(user.getUserId())
+                    .targetDate(targetDate)
                     .keywordsData(keywords)
                     .build();
         }
