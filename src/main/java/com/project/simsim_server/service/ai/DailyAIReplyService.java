@@ -1,12 +1,12 @@
 package com.project.simsim_server.service.ai;
 
 import com.project.simsim_server.domain.ai.DailyAiInfo;
-import com.project.simsim_server.domain.ai.Thumbs;
+import com.project.simsim_server.domain.ai.Thums;
 import com.project.simsim_server.domain.diary.Diary;
 import com.project.simsim_server.domain.user.Users;
 import com.project.simsim_server.dto.ai.client.AILetterRequestDTO;
 import com.project.simsim_server.dto.ai.client.AILetterResponseDTO;
-import com.project.simsim_server.dto.ai.client.AIThumbsRequestDTO;
+import com.project.simsim_server.dto.ai.client.AIThumsRequestDTO;
 import com.project.simsim_server.dto.ai.client.DiarySummaryResponseDTO;
 import com.project.simsim_server.exception.ai.AIException;
 import com.project.simsim_server.repository.ai.DailyAiInfoRepository;
@@ -158,9 +158,9 @@ public class DailyAIReplyService {
     }
 
     @Transactional
-    public AILetterResponseDTO updateThumbsStatus(AIThumbsRequestDTO requestDTO, Long userId) {
+    public AILetterResponseDTO updateThumsStatus(AIThumsRequestDTO requestDTO, Long userId) {
 
-        if (requestDTO == null || requestDTO.getThumbsStatus() == null) {
+        if (requestDTO == null || requestDTO.getThumsStatus() == null) {
             log.error("---[SimSimInfo] findByAiIdAndUserId() 요청내용이 null입니다. userId = {}", userId);
             throw new AIException(AI_MAIL_FAIL);
         }
@@ -168,9 +168,9 @@ public class DailyAIReplyService {
         DailyAiInfo result = dailyAiInfoRepository.findByAiIdAndUserId(requestDTO.getAiId(), userId)
                 .orElseThrow(() -> new AIException(AILETTERS_NOT_FOUND));
 
-        Thumbs.validateString(requestDTO.getThumbsStatus());
+        Thums.validateString(requestDTO.getThumsStatus());
 
-        DailyAiInfo response = result.updateThumbsStatus(requestDTO.getThumbsStatus());
+        DailyAiInfo response = result.updateThumbsStatus(requestDTO.getThumsStatus());
         return new AILetterResponseDTO(response);
     }
 }

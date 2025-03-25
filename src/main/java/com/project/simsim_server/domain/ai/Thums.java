@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum Thumbs {
+public enum Thums {
 
     UP("U", "좋아요"),
     DOWN("D", "싫어요"),
@@ -14,8 +14,8 @@ public enum Thumbs {
     private final String key;
     private final String title;
 
-    public static Thumbs validateString(String thumbsStatus) {
-        for (Thumbs status : Thumbs.values()) {
+    public static Thums validateString(String thumbsStatus) {
+        for (Thums status : Thums.values()) {
             if (status.getKey().equals(thumbsStatus)) {
                 return status;
             }

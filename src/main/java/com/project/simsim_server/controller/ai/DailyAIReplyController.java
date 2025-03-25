@@ -3,7 +3,7 @@ package com.project.simsim_server.controller.ai;
 import com.project.simsim_server.config.auth.jwt.AuthenticationService;
 import com.project.simsim_server.dto.ai.client.AILetterRequestDTO;
 import com.project.simsim_server.dto.ai.client.AILetterResponseDTO;
-import com.project.simsim_server.dto.ai.client.AIThumbsRequestDTO;
+import com.project.simsim_server.dto.ai.client.AIThumsRequestDTO;
 import com.project.simsim_server.dto.ai.client.DiarySummaryResponseDTO;
 import com.project.simsim_server.service.ai.DailyAIReplyService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -71,9 +71,9 @@ public class DailyAIReplyController {
 
 
 
-    @PostMapping("/thumbs")
-    public AILetterResponseDTO updateThumbsStatus(@RequestBody AIThumbsRequestDTO requestDTO) {
+    @PostMapping("/thums")
+    public AILetterResponseDTO updateThumsStatus(@RequestBody AIThumsRequestDTO requestDTO) {
         Long userId = authenticationService.getUserIdFromAuthentication();
-        return dailyAIReplyService.updateThumbsStatus(requestDTO, userId);
+        return dailyAIReplyService.updateThumsStatus(requestDTO, userId);
     }
 }
