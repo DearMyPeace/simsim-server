@@ -1,10 +1,12 @@
 package com.project.simsim_server.service.ai;
 
 import com.project.simsim_server.domain.ai.DailyAiInfo;
+import com.project.simsim_server.domain.ai.Thumbs;
 import com.project.simsim_server.domain.diary.Diary;
 import com.project.simsim_server.domain.user.Users;
 import com.project.simsim_server.dto.ai.client.AILetterRequestDTO;
 import com.project.simsim_server.dto.ai.client.AILetterResponseDTO;
+import com.project.simsim_server.dto.ai.client.AIThumbsRequestDTO;
 import com.project.simsim_server.dto.ai.client.DiarySummaryResponseDTO;
 import com.project.simsim_server.exception.ai.AIException;
 import com.project.simsim_server.repository.ai.DailyAiInfoRepository;
@@ -23,7 +25,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.YearMonth;
-import java.util.*;
+import java.util.Iterator;
+import java.util.List;
 
 import static com.project.simsim_server.exception.ai.AIErrorCode.*;
 
@@ -37,18 +40,6 @@ public class DailyAIReplyService {
     private final UsersRepository usersRepository;
     private final DailyAiInfoRepository dailyAiInfoRepository;
     private final DiaryRepository diaryRepository;
-
-
-    @Transactional
-    public AILetterResponseDTO findByIdAndUserId(Long id, Long userId) {
-        return dailyAiInfoRepository.findByAiIdAndUserId(id, userId)
-                .map((entitiy) -> {
-                    entitiy.updateReplyStatus("Y");
-//                    dailyAiInfoRepository.save(entitiy);
-                    return new AILetterResponseDTO(entitiy);
-                })
-                .orElseThrow(() -> new AIException(AILETTERS_NOT_FOUND));
-    }
 
 
     public List<AILetterResponseDTO> findByCreatedDateAndUserIdOrderByCreatedDateDesc
@@ -155,8 +146,6 @@ public class DailyAIReplyService {
                 if (result.isFirst()) {
                     log.warn("---[SimSimInfo] 이건 안내이므로 replyStatus를 F 처리합니다 ");
                     result.updateReplyStatus("F");
-//                    DailyAiInfo dailyAiInfo = result.updateReplyStatus("F");
-//                    dailyAiInfoRepository.save(dailyAiInfo);
                     iterator.remove();
                 }
             }
@@ -166,5 +155,22 @@ public class DailyAIReplyService {
         return results.stream()
                 .map(DiarySummaryResponseDTO::new)
                 .toList();
+    }
+
+    @Transactional
+    public AILetterResponseDTO updateThumbsStatus(AIThumbsRequestDTO requestDTO, Long userId) {
+
+        if (requestDTO == null || requestDTO.getThumbsStatus() == null) {
+            log.error("---[SimSimInfo] findByAiIdAndUserId() 요청내용이 null입니다. userId = {}", userId);
+            throw new AIException(AI_MAIL_FAIL);
+        }
+
+        DailyAiInfo result = dailyAiInfoRepository.findByAiIdAndUserId(requestDTO.getAiId(), userId)
+                .orElseThrow(() -> new AIException(AILETTERS_NOT_FOUND));
+
+        Thumbs.validateString(requestDTO.getThumbsStatus());
+
+        DailyAiInfo response = result.updateThumbsStatus(requestDTO.getThumbsStatus());
+        return new AILetterResponseDTO(response);
     }
 }
