@@ -3,6 +3,7 @@ package com.project.simsim_server.controller.ai;
 import com.project.simsim_server.config.auth.jwt.AuthenticationService;
 import com.project.simsim_server.dto.ai.client.AILetterRequestDTO;
 import com.project.simsim_server.dto.ai.client.AILetterResponseDTO;
+import com.project.simsim_server.dto.ai.client.AIThumsRequestDTO;
 import com.project.simsim_server.dto.ai.client.DiarySummaryResponseDTO;
 import com.project.simsim_server.service.ai.DailyAIReplyService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -42,18 +43,6 @@ public class DailyAIReplyController {
 
 
     /**
-     * id로 일기 조회
-     * @param id
-     * @return
-     */
-    @GetMapping
-    public AILetterResponseDTO getAILetter(@RequestParam("id") Long id) {
-        Long userId = authenticationService.getUserIdFromAuthentication();
-        return dailyAIReplyService.findByIdAndUserId(id, userId);
-    }
-
-
-    /**
      * 월별 일기 조회
      * @param year
      * @param month
@@ -78,5 +67,13 @@ public class DailyAIReplyController {
     public AILetterResponseDTO save(@RequestBody AILetterRequestDTO requestDTO) {
         Long userId = authenticationService.getUserIdFromAuthentication();
         return dailyAIReplyService.save(requestDTO, userId);
+    }
+
+
+
+    @PostMapping("/thums")
+    public AILetterResponseDTO updateThumsStatus(@RequestBody AIThumsRequestDTO requestDTO) {
+        Long userId = authenticationService.getUserIdFromAuthentication();
+        return dailyAIReplyService.updateThumsStatus(requestDTO, userId);
     }
 }

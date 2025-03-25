@@ -28,11 +28,8 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import static com.project.simsim_server.exception.ai.AIErrorCode.AIRESPONE_NOT_FOUND;
-import static com.project.simsim_server.exception.ai.AIErrorCode.AI_MAIL_FAIL;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -214,6 +211,7 @@ public class AIService {
                 .replyContent(letter)
                 .replyStatus("N")
                 .isFirst(false)
+                .thumsStatus("N")
                 .build());
 
         int targetYear = targetDate.getYear();
@@ -224,7 +222,7 @@ public class AIService {
                 targetYear, targetMonth);
         if (!reportDataList.isEmpty()) {
             reportData = reportDataList.get(0);
-            reportData.updateAIResponse(keywords, null); //TODO - 두번째 인자 제거 예정
+            reportData.updateAIResponse(keywords, ""); //TODO - 두번째 인자 제거 예정
         } else {
             reportData = MonthlyReport.builder()
                     .userId(user.getUserId())

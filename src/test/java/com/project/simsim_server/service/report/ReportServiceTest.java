@@ -1,26 +1,17 @@
 package com.project.simsim_server.service.report;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.project.simsim_server.domain.ai.MonthlyReport;
-import com.project.simsim_server.domain.diary.Diary;
-import com.project.simsim_server.dto.ai.client.AIMonthlyResponseDTO;
-import com.project.simsim_server.dto.ai.client.WeekSummaryResponseDTO;
 import com.project.simsim_server.exception.ai.AIErrorCode;
 import com.project.simsim_server.exception.ai.AIException;
 import com.project.simsim_server.repository.ai.MonthlyReportRepository;
-import com.project.simsim_server.repository.diary.DiaryRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
 class ReportServiceTest {
