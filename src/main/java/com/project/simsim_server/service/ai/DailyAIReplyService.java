@@ -170,7 +170,7 @@ public class DailyAIReplyService {
 
         Thums.validateString(requestDTO.getThumsStatus());
 
-        DailyAiInfo response = result.updateThumbsStatus(requestDTO.getThumsStatus());
+        DailyAiInfo response = result.updateThumsStatus(requestDTO.getThumsStatus());
         return new AILetterResponseDTO(response);
     }
 }

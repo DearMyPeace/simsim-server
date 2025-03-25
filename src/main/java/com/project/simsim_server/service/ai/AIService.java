@@ -211,7 +211,7 @@ public class AIService {
                 .replyContent(letter)
                 .replyStatus("N")
                 .isFirst(false)
-                .thumbsStatus("N")
+                .thumsStatus("N")
                 .build());
 
         int targetYear = targetDate.getYear();

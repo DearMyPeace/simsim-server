@@ -39,7 +39,7 @@ public class AILetterResponseDTO {
             throw new RuntimeException("클라이언트 응답 복호화 실패", e);
         }
         this.replyStatus = aiEntity.getReplyStatus();
-        this.thumbsStatus = aiEntity.getThumbsStatus();
+        this.thumbsStatus = aiEntity.getThumsStatus();
     }
 
     public AILetterResponseDTO(DailyAiInfo aiEntity, MonthlyReport monthlyReport) {

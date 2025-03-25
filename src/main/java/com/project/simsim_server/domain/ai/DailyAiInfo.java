@@ -105,9 +105,9 @@ public class DailyAiInfo extends BaseTimeEntity {
     @ColumnDefault("false")
     private boolean isFirst;
 
-    @Column(name="ai_thumbs_status", nullable = false)
+    @Column(name="ai_thums_status", nullable = false)
     @ColumnDefault("'N'")
-    private String thumbsStatus;
+    private String thumsStatus;
 
     @Builder
     public DailyAiInfo(Long userId, LocalDate targetDate, String diarySummary,
@@ -116,7 +116,7 @@ public class DailyAiInfo extends BaseTimeEntity {
             String analyzeFactors, String replyStatus, boolean isFirst,
             int happyCnt, int appreciationCnt, int loveCnt,
             int tranquilityCnt, int curiosityCnt, int surpriseCnt,
-            int sadCnt, int angryCnt, int fearCnt, String thumbsStatus) {
+            int sadCnt, int angryCnt, int fearCnt, String thumsStatus) {
         this.userId = userId;
         this.targetDate = targetDate;
         this.diarySummary = diarySummary;
@@ -139,7 +139,7 @@ public class DailyAiInfo extends BaseTimeEntity {
         this.sadCnt = sadCnt;
         this.angryCnt = angryCnt;
         this.fearCnt = fearCnt;
-        this.thumbsStatus = thumbsStatus;
+        this.thumsStatus = thumsStatus;
     }
 
     public DailyAiInfo updateAiResult(String diarySummary, String replyContent) {
@@ -153,8 +153,8 @@ public class DailyAiInfo extends BaseTimeEntity {
         return this;
     }
 
-    public DailyAiInfo updateThumbsStatus(String thumbsStatus) {
-        this.thumbsStatus = thumbsStatus;
+    public DailyAiInfo updateThumsStatus(String thumsStatus) {
+        this.thumsStatus = thumsStatus;
         return this;
     }
 }
