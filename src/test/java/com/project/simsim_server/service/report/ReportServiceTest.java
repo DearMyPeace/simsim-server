@@ -60,7 +60,7 @@ class ReportServiceTest {
     @Test
     void 월간레포트_기록이없는월_확인() {
         // given
-        String targetDate = YearMonth.of(2025, 1).format(DateTimeFormatter.ofPattern("yyyyMM"));
+        String targetDate = YearMonth.of(2020, 1).format(DateTimeFormatter.ofPattern("yyyyMM"));
 
         // when & then
         assertThatThrownBy(() -> reportService.findByuserIdAndTargetDate(TEST_USER_ID, targetDate))
