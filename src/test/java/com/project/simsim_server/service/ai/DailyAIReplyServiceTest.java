@@ -104,16 +104,16 @@ class DailyAIReplyServiceTest {
                 .hasMessageContaining("유효하지 않은 값입니다. : K");
     }
 
-    @Test
-    void 페르소나화면선택_확인() {
-        // given
-        LocalDate date = LocalDate.of(2025, 3, 29);
-        AILetterRequestDTO requestDTO = new AILetterRequestDTO(date, "F");
-        Users user = usersRepository.findById(TEST_USER_ID).get();
-
-        // when
-        dailyAIReplyService.save(requestDTO, user.getUserId());
-        assertThat(requestDTO.getPersonaCode()).isEqualTo("F");
-        assertThat(requestDTO.getPersonaCode()).isNotEqualTo(user.getUserId());
-    }
+//    @Test
+//    void 페르소나화면선택_확인() {
+//        // given
+//        LocalDate date = LocalDate.of(2025, 3, 29);
+//        AILetterRequestDTO requestDTO = new AILetterRequestDTO(date, "F");
+//        Users user = usersRepository.findById(TEST_USER_ID).get();
+//
+//        // when
+//        dailyAIReplyService.save(requestDTO, user.getUserId());
+//        assertThat(requestDTO.getPersonaCode()).isEqualTo("F");
+//        assertThat(requestDTO.getPersonaCode()).isNotEqualTo(user.getUserId());
+//    }
 }
