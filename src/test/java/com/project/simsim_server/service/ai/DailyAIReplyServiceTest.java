@@ -107,7 +107,7 @@ class DailyAIReplyServiceTest {
     @Test
     void 페르소나화면선택_확인() {
         // given
-        LocalDate date = LocalDate.of(2025, 3, 30);
+        LocalDate date = LocalDate.of(2025, 3, 29);
         AILetterRequestDTO requestDTO = new AILetterRequestDTO(date, "F");
         Users user = usersRepository.findById(TEST_USER_ID).get();
 
