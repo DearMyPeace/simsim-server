@@ -111,7 +111,7 @@ public class AIBatchService {
 
         // 기존에 생성된 데이터가 없으면 생성
         try {
-            AILetterResponseDTO reponseDTO = aiService.requestToAI(user, requestDTO.getTargetDate(), diaries);
+            AILetterResponseDTO reponseDTO = aiService.requestToAI(user, requestDTO, diaries);
             if (reponseDTO == null) {
                 return null;
             }

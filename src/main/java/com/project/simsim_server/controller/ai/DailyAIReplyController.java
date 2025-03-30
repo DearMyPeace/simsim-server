@@ -23,6 +23,17 @@ public class DailyAIReplyController {
     private final DailyAIReplyService dailyAIReplyService;
     private final AuthenticationService authenticationService;
 
+    /**
+     * id로 일기 조회
+     * @param id
+     * @return
+     */
+    @GetMapping
+    public AILetterResponseDTO getAILetter(@RequestParam("id") Long id) {
+        Long userId = authenticationService.getUserIdFromAuthentication();
+        return dailyAIReplyService.findByIdAndUserId(id, userId);
+    }
+
 
     /**
      * 원하는 일자, 원하는 갯수에 대해 AI 편지를 조회
