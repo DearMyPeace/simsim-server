@@ -116,7 +116,7 @@ public class DailyAIReplyService {
 
         // AI 응답 새로 생성
         try {
-            AILetterResponseDTO responseDTO = aiService.requestToAI(user, targetDate, diaries);
+            AILetterResponseDTO responseDTO = aiService.requestToAI(user, requestDTO, diaries);
             if (responseDTO == null) {
                 throw new AIException(AI_MAIL_FAIL);
             }
@@ -172,5 +172,16 @@ public class DailyAIReplyService {
 
         DailyAiInfo response = result.updateThumsStatus(requestDTO.getThumsStatus());
         return new AILetterResponseDTO(response);
+    }
+
+    @Transactional
+    public AILetterResponseDTO findByIdAndUserId(Long id, Long userId) {
+        return dailyAiInfoRepository.findByAiIdAndUserId(id, userId)
+                .map((entitiy) -> {
+                    entitiy.updateReplyStatus("Y");
+//                    dailyAiInfoRepository.save(entitiy);
+                    return new AILetterResponseDTO(entitiy);
+                })
+                .orElseThrow(() -> new AIException(AILETTERS_NOT_FOUND));
     }
 }

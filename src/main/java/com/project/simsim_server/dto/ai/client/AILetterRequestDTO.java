@@ -1,6 +1,7 @@
 package com.project.simsim_server.dto.ai.client;
 
 import com.project.simsim_server.domain.ai.DailyAiInfo;
+import com.project.simsim_server.domain.user.Persona;
 import com.project.simsim_server.dto.ai.fastapi.DiarySummaryDTO;
 import lombok.Builder;
 import lombok.Getter;
@@ -20,10 +21,12 @@ import java.util.List;
 public class AILetterRequestDTO {
 
     private LocalDate targetDate;
+    private String personaCode;
 
     @Builder
-    public AILetterRequestDTO(LocalDate targetDate) {
+    public AILetterRequestDTO(LocalDate targetDate, String personaCode) {
         this.targetDate = targetDate;
+        this.personaCode = personaCode;
     }
 
     public DailyAiInfo toEntity() {

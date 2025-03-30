@@ -19,7 +19,6 @@ public class AILetterResponseDTO {
     private String summary;
     private String content;
     private String replyStatus;
-
     private String thumbsStatus;
 
     public AILetterResponseDTO(DailyAiInfo aiEntity) {
@@ -60,6 +59,7 @@ public class AILetterResponseDTO {
             throw new RuntimeException("클라이언트 응답 복호화 실패", e);
         }
         this.replyStatus = aiEntity.getReplyStatus();
+        this.thumbsStatus = aiEntity.getThumsStatus();
     }
 }
 

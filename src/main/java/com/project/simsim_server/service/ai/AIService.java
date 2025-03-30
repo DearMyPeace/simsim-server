@@ -7,6 +7,7 @@ import com.project.simsim_server.domain.ai.DailyAiInfo;
 import com.project.simsim_server.domain.ai.MonthlyReport;
 import com.project.simsim_server.domain.diary.Diary;
 import com.project.simsim_server.domain.user.Users;
+import com.project.simsim_server.dto.ai.client.AILetterRequestDTO;
 import com.project.simsim_server.dto.ai.client.AILetterResponseDTO;
 import com.project.simsim_server.dto.ai.fastapi.*;
 import com.project.simsim_server.exception.ai.AIException;
@@ -50,10 +51,16 @@ public class AIService {
     /**
      * 1. AI 요청용 DTO 생성
      */
-    public DailyAiLetterRequestDTO generateRequestData(Users user, LocalDate targetDate, List<Diary> targetDiaries) {
+    public DailyAiLetterRequestDTO generateRequestData(Users user, AILetterRequestDTO requestDTO, List<Diary> targetDiaries) {
+
+        LocalDate targetDate = requestDTO.getTargetDate();
+
         // 페르소나 정보
-        String persona = user.getPersona();
-        log.warn("----[분석할 페르소나] {} : {}", user.getEmail(), user.getPersona());
+        String persona = requestDTO.getPersonaCode();
+        if (persona == null || !persona.equals("T") || !persona.equals("F")) {
+            persona = user.getPersona();
+        }
+        log.warn("----[분석할 페르소나] {} : {}", user.getEmail(), persona);
 
         // 요청 일자 하루치의 기록(AI 편지 생성용)
         List<DiaryContentDTO> diaries = new ArrayList<>();
@@ -67,7 +74,8 @@ public class AIService {
         // 2주간 AI 응답 정보(14일 ~ 2일전)
         LocalDate startDate = targetDate.minusDays(14);
         LocalDate endDate = targetDate.minusDays(2);
-        List<DailyAiInfo> summaryList = dailyAiInfoRepository.findAllByIdAndTargetDate(user.getUserId(), startDate, endDate);
+        List<DailyAiInfo> summaryList = dailyAiInfoRepository.findAllByIdAndTargetDate(user.getUserId(),
+                startDate, endDate);
 
         List<DiarySummaryDTO> summaries= new ArrayList<>();
         for (DailyAiInfo info : summaryList) {
@@ -83,7 +91,8 @@ public class AIService {
         // 월별 기록 정보(키워드 정보 생성용)
         LocalDateTime startDateTime = targetDate.withDayOfMonth(1).atStartOfDay();
         LocalDateTime endDateTime = targetDate.atTime(LocalTime.MAX);
-        List<Diary> monthlyDiariesInfo = diaryRepository.findDiariesByCreatedAtBetweenAndUserId(startDateTime, endDateTime, user.getUserId());
+        List<Diary> monthlyDiariesInfo
+                = diaryRepository.findDiariesByCreatedAtBetweenAndUserId(startDateTime, endDateTime, user.getUserId());
         List<DiaryContentDTO> monthlyDiaries = new ArrayList<>();
         for(Diary diary : monthlyDiariesInfo) {
             monthlyDiaries.add(DiaryContentDTO.builder()
@@ -187,10 +196,11 @@ public class AIService {
      * AI 응답에 DB 저장 처리
      */
     @Transactional
-    public AILetterResponseDTO requestToAI(Users user, LocalDate targetDate, List<Diary> targetDiaries) throws JsonProcessingException {
+    public AILetterResponseDTO requestToAI(Users user, AILetterRequestDTO requestDTO,
+                                           List<Diary> targetDiaries) throws JsonProcessingException {
 
         // AI 요청 정보 생성
-        DailyAiLetterRequestDTO requestData = generateRequestData(user, targetDate, targetDiaries);
+        DailyAiLetterRequestDTO requestData = generateRequestData(user, requestDTO, targetDiaries);
 
         // AI 요청
         String letter = requestLetter(user, requestData);
@@ -201,12 +211,12 @@ public class AIService {
         }
 
         // 모든 Diary의 isSendAble 상태를 false로 설정
-        List<Diary> diaries = diaryRepository.findAllByCreatedAtAndUserId(user.getUserId(), targetDate);
+        List<Diary> diaries = diaryRepository.findAllByCreatedAtAndUserId(user.getUserId(), requestData.getTargetDate());
         diaries.forEach(diary -> diary.setIsSendAble(false));
         diaryRepository.saveAll(diaries);
         DailyAiInfo aiData = dailyAiInfoRepository.save(DailyAiInfo.builder()
                 .userId(user.getUserId())
-                .targetDate(targetDate)
+                .targetDate(requestData.getTargetDate())
                 .diarySummary(summary)
                 .replyContent(letter)
                 .replyStatus("N")
@@ -214,8 +224,8 @@ public class AIService {
                 .thumsStatus("N")
                 .build());
 
-        int targetYear = targetDate.getYear();
-        int targetMonth = targetDate.getMonthValue();
+        int targetYear = requestData.getTargetDate().getYear();
+        int targetMonth = requestData.getTargetDate().getMonthValue();
         Long userId = user.getUserId();
         MonthlyReport reportData = null;
         List<MonthlyReport> reportDataList = monthlyReportRepository.findByIdAndTargetDate(userId,
@@ -226,7 +236,7 @@ public class AIService {
         } else {
             reportData = MonthlyReport.builder()
                     .userId(user.getUserId())
-                    .targetDate(targetDate)
+                    .targetDate(requestData.getTargetDate())
                     .keywordsData(keywords)
                     .build();
         }

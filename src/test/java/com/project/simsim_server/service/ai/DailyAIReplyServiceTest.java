@@ -1,12 +1,17 @@
 package com.project.simsim_server.service.ai;
 
+import com.project.simsim_server.domain.user.Users;
+import com.project.simsim_server.dto.ai.client.AILetterRequestDTO;
 import com.project.simsim_server.dto.ai.client.AILetterResponseDTO;
 import com.project.simsim_server.dto.ai.client.AIThumsRequestDTO;
 import com.project.simsim_server.exception.ai.AIErrorCode;
 import com.project.simsim_server.exception.ai.AIException;
+import com.project.simsim_server.repository.user.UsersRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+
+import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -16,6 +21,8 @@ class DailyAIReplyServiceTest {
 
     @Autowired
     private DailyAIReplyService dailyAIReplyService;
+    @Autowired
+    private UsersRepository usersRepository;
     private final Long TEST_USER_ID = 1L;
     private final Long TEST_AI_ID = 446L;
 
@@ -52,8 +59,10 @@ class DailyAIReplyServiceTest {
 
     @Test
     void 없는유저_확인() {
+        // given
         AIThumsRequestDTO sample3 = new AIThumsRequestDTO(TEST_AI_ID, "N");
 
+        // when & then
         assertThatThrownBy(() -> dailyAIReplyService.updateThumsStatus(sample3, 10000L))
                 .isInstanceOf(AIException.class)
                 .extracting(ex -> (AIException) ex)
@@ -68,8 +77,10 @@ class DailyAIReplyServiceTest {
 
     @Test
     void 없는AIID_확인() {
+        // given
         AIThumsRequestDTO sample4 = new AIThumsRequestDTO(100000L, "N");
 
+        // when & then
         assertThatThrownBy(() -> dailyAIReplyService.updateThumsStatus(sample4, TEST_USER_ID))
                 .isInstanceOf(AIException.class)
                 .extracting(ex -> (AIException) ex)
@@ -84,9 +95,25 @@ class DailyAIReplyServiceTest {
 
     @Test
     void 유효하지않은값_확인() {
+        // given
         AIThumsRequestDTO sample5 = new AIThumsRequestDTO(TEST_AI_ID, "K");
+
+        // when &  then
         assertThatThrownBy(() -> dailyAIReplyService.updateThumsStatus(sample5, TEST_USER_ID))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("유효하지 않은 값입니다. : K");
+    }
+
+    @Test
+    void 페르소나화면선택_확인() {
+        // given
+        LocalDate date = LocalDate.of(2025, 3, 30);
+        AILetterRequestDTO requestDTO = new AILetterRequestDTO(date, "F");
+        Users user = usersRepository.findById(TEST_USER_ID).get();
+
+        // when
+        dailyAIReplyService.save(requestDTO, user.getUserId());
+        assertThat(requestDTO.getPersonaCode()).isEqualTo("F");
+        assertThat(requestDTO.getPersonaCode()).isNotEqualTo(user.getUserId());
     }
 }
