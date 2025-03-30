@@ -78,7 +78,6 @@ public class DailyAIReplyService {
         }
 
         LocalDate targetDate = requestDTO.getTargetDate();
-
         Users user = usersRepository.findByIdAndUserStatus(userId)
                 .orElseThrow(() -> new AIException(AI_MAIL_FAIL));
 
